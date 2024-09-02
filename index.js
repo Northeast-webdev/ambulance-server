@@ -1,14 +1,15 @@
 const jwt = require("./src/jwt");
 const { fastify } = require("./src/init");
 const userRoutes = require("./src/controllers/user");
+const pdfRoutes = require("./src/controllers/pdf");
 
 fastify.decorate("authenticate", jwt.verifyToken);
-
 fastify.get("/", async (request, reply) => {
   return { hello: "world" };
 });
 
 userRoutes();
+pdfRoutes();
 
 const start = async () => {
   try {
