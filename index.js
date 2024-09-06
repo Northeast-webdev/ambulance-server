@@ -2,8 +2,21 @@ const jwt = require("./src/jwt");
 const { fastify } = require("./src/init");
 const userRoutes = require("./src/controllers/user");
 const pdfRoutes = require("./src/controllers/pdf");
+const { default: mongoose } = require("mongoose");
+// MongoDB connection setup
+const uri = process.env.MONGODB_URI;
+
+async function connectToDatabase() {
+  mongoose
+    .connect(uri)
+    .then(() => console.log("Connected to MongoDB"))
+    .catch((error) => console.error("Connection error", error));
+}
+
+connectToDatabase();
+
 fastify.decorate("authenticate", jwt.verifyToken);
-fastify.get("/", async (request, reply) => {
+fastify.get("/", async () => {
   return { hello: "world" };
 });
 

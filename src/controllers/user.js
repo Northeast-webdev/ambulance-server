@@ -1,8 +1,10 @@
-const { fastify, db } = require("../init");
+const { fastify } = require("../init");
 const bcrypt = require("bcrypt");
 const jwt = require("../jwt");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { default: mongoose } = require("mongoose");
 require("dotenv").config();
+
+const db = mongoose.connection;
 
 const register = async (request, reply) => {
   const { username, password, email, first_name, last_name, dob, phone } =
