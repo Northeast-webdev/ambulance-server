@@ -2,7 +2,6 @@ const jwt = require("./src/jwt");
 const { fastify } = require("./src/init");
 const userRoutes = require("./src/controllers/user");
 const pdfRoutes = require("./src/controllers/pdf");
-
 fastify.decorate("authenticate", jwt.verifyToken);
 fastify.get("/", async (request, reply) => {
   return { hello: "world" };
@@ -10,7 +9,6 @@ fastify.get("/", async (request, reply) => {
 
 userRoutes();
 pdfRoutes();
-
 const start = async () => {
   try {
     await fastify.listen({ port: 8080, host: "0.0.0.0" }); // Ensure it's listening on 0.0.0.0

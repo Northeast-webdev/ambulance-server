@@ -2,11 +2,5 @@ runtime: nodejs20
 instance_class: F2 # Choose instance size (F2 for small instances)
 env_variables:
   NODE_ENV: production
-  INSTANCE_CONNECTION_NAME: "bamboo-striker-433906-i0:europe-west6:test-db"
-  DB_USER: "test-user"
-  DB_PASS: "testpassword"
-  DB_NAME: "postgres"
+  MONGODB_URI: "mongodb+srv://webdevnortheast:2phqmp8BXukjvDxv@cluster0.rjfoi.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
   JWT_SECRET: "bamboo-striker-433906-i0wepofmpsdvcm"
-
-beta_settings:
-  cloud_sql_instances: "bamboo-striker-433906-i0:europe-west6:test-db"

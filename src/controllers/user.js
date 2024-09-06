@@ -1,19 +1,20 @@
-const { pool, fastify } = require("../init");
+const { fastify, db } = require("../init");
 const bcrypt = require("bcrypt");
 const jwt = require("../jwt");
+const { MongoClient, ServerApiVersion } = require("mongodb");
+require("dotenv").config();
 
 const register = async (request, reply) => {
   const { username, password, email, first_name, last_name, dob, phone } =
     request.body;
-  const client = await pool.connect();
 
   try {
     // Check if user already exists
-    const { rowCount } = await client.query(
-      "SELECT * FROM users WHERE username = $1 OR email = $2",
-      [username, email]
-    );
-    if (rowCount > 0) {
+    const existingUser = await db.collection("users").findOne({
+      $or: [{ username }, { email }],
+    });
+
+    if (existingUser) {
       return reply.code(400).send({ error: "User already exists" });
     }
 
@@ -21,34 +22,31 @@ const register = async (request, reply) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Insert the new user
-    await client.query(
-      "INSERT INTO users (username, password, email, first_name, last_name, dob, phone) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-      [username, hashedPassword, email, first_name, last_name, dob, phone]
-    );
+    await db.collection("users").insertOne({
+      username,
+      password: hashedPassword,
+      email,
+      first_name,
+      last_name,
+      dob,
+      phone,
+    });
 
     reply.send({ message: "User registered successfully" });
   } catch (err) {
-    reply.code(500).send({ error: err });
-  } finally {
-    client.release();
+    reply.code(500).send(err);
   }
 };
 
 const login = async (request, reply) => {
   const { username, password } = request.body;
-  const client = await pool.connect();
 
   try {
     // Check if user exists
-    const { rows } = await client.query(
-      "SELECT * FROM users WHERE username = $1",
-      [username]
-    );
-    if (rows.length === 0) {
+    const user = await db.collection("users").findOne({ username });
+    if (!user) {
       return reply.code(400).send({ error: "Invalid username or password" });
     }
-
-    const user = rows[0];
 
     // Compare the hashed password
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -61,116 +59,76 @@ const login = async (request, reply) => {
     reply.send({ token });
   } catch (err) {
     reply.code(500).send({ error: "Internal Server Error" });
-  } finally {
-    client.release();
   }
 };
 
 const createUser = async (request, reply) => {
   const { name, email } = request.body;
-  const client = await pool.connect();
+
   try {
-    const result = await client.query(
-      "INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *",
-      [name, email]
-    );
-    reply.send(result.rows[0]);
+    const result = await db.collection("users").insertOne({ name, email });
+    reply.send(result.ops[0]); // MongoDB returns the inserted documents in `ops` array
   } catch (error) {
     reply.code(500).send(error);
-  } finally {
-    client.release();
   }
 };
 
 const listUsers = async (request, reply) => {
-  const client = await pool.connect();
   try {
-    const { rows } = await client.query("SELECT * FROM users");
-    return rows;
-  } finally {
-    client.release();
+    const users = await db.collection("users").find().toArray();
+    return users;
+  } catch (err) {
+    reply.code(500).send({ error: "Internal Server Error" });
   }
 };
 
 const getUser = async (request, reply) => {
-  const client = await pool.connect();
   try {
-    const { rows } = await client.query("SELECT * FROM users WHERE id = $1", [
-      request.params.id,
-    ]);
-    return rows[0];
-  } finally {
-    client.release();
+    const user = await db.collection("users").findOne({
+      _id: request.params.id,
+    });
+    return user;
+  } catch (err) {
+    reply.code(500).send({ error: "Internal Server Error" });
   }
 };
 
 const updateUser = async (request, reply) => {
   const { email, first_name, last_name, dob, phone } = request.body;
-  const client = await pool.connect();
+  const updates = {};
+
   // if some fields are missing, do not update them
+  if (email) updates.email = email;
+  if (first_name) updates.first_name = first_name;
+  if (last_name) updates.last_name = last_name;
+  if (dob) updates.dob = dob;
+  if (phone) updates.phone = phone;
+
   try {
-    let query = "UPDATE users SET ";
-    let values = [];
-    let index = 1;
-
-    if (email) {
-      query += `email = $${index}, `;
-      values.push(email);
-      index++;
-    }
-
-    if (first_name) {
-      query += `first_name = $${index}, `;
-      values.push(first_name);
-      index++;
-    }
-
-    if (last_name) {
-      query += `last_name = $${index}, `;
-      values.push(last_name);
-      index++;
-    }
-
-    if (dob) {
-      query += `dob = $${index}, `;
-      values.push(dob);
-      index++;
-    }
-
-    if (phone) {
-      query += `phone = $${index}, `;
-      values.push(phone);
-      index++;
-    }
-
-    // Remove the trailing comma and space
-    query = query.slice(0, -2);
-
-    query += ` WHERE id = $${index} RETURNING *`;
-    console.log(query);
-    values.push(request.params.id);
-
-    const result = await client.query(query, values);
-    reply.send(result.rows[0]);
+    const result = await db
+      .collection("users")
+      .findOneAndUpdate(
+        { _id: request.params.id },
+        { $set: updates },
+        { returnDocument: "after" }
+      );
+    reply.send(result.value);
   } catch (error) {
     reply.code(500).send(error);
-  } finally {
-    client.release();
   }
 };
 
 const deleteUser = async (request, reply) => {
-  const client = await pool.connect();
   try {
-    const { rowCount } = await client.query("DELETE FROM users WHERE id = $1", [
-      request.params.id,
-    ]);
-    if (rowCount === 0) {
+    const result = await db.collection("users").deleteOne({
+      _id: request.params.id,
+    });
+    if (result.deletedCount === 0) {
       return reply.code(404).send({ error: "User not found" });
     }
     return { message: "User deleted successfully" };
-  } finally {
-    client.release();
+  } catch (err) {
+    reply.code(500).send({ error: "Internal Server Error" });
   }
 };
 

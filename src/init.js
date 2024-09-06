@@ -1,19 +1,29 @@
-const { Pool } = require("pg");
 const Fastify = require("fastify");
+const { MongoClient, ServerApiVersion } = require("mongodb");
 require("dotenv").config();
-
-const dbConfig = {
-  user: process.env.DB_USER, // DB user
-  password: process.env.DB_PASS, // DB password
-  database: process.env.DB_NAME, // Database name
-  host:
-    process.env.NODE_ENV == "production"
-      ? `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME}`
-      : "127.0.0.1", // For UNIX socket connection
-  port: 5432, // Default PostgreSQL port
-  ssl: false,
-};
-const pool = new Pool(dbConfig);
 const fastify = Fastify();
+// MongoDB connection setup
+const uri = process.env.MONGODB_URI;
+console.log(uri);
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+    serverSelectionTimeoutMS: 10000, // Increase timeout to 10 seconds
+  },
+});
+let db;
+console.log(db);
+async function connectToDatabase() {
+  try {
+    await client.connect();
+    db = client.db("test");
+    console.log("Connected to MongoDB");
+  } catch (err) {
+    console.error("Failed to connect to MongoDB", err);
+  }
+}
 
-module.exports = { pool, fastify };
+connectToDatabase();
+module.exports = { fastify, db };
