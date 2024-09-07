@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("../jwt");
 const { default: mongoose } = require("mongoose");
 require("dotenv").config();
-
+const { userSchema, User } = require("../schema/user.schema");
 const db = mongoose.connection;
 
 const register = async (request, reply) => {
@@ -12,7 +12,7 @@ const register = async (request, reply) => {
 
   try {
     // Check if user already exists
-    const existingUser = await db.collection("users").findOne({
+    const existingUser = await User.findOne({
       $or: [{ username }, { email }],
     });
 
@@ -22,9 +22,7 @@ const register = async (request, reply) => {
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Insert the new user
-    await db.collection("users").insertOne({
+    const user = new User({
       username,
       password: hashedPassword,
       email,
@@ -33,6 +31,7 @@ const register = async (request, reply) => {
       dob,
       phone,
     });
+    await user.save();
 
     reply.send({ message: "User registered successfully" });
   } catch (err) {
@@ -45,7 +44,7 @@ const login = async (request, reply) => {
 
   try {
     // Check if user exists
-    const user = await db.collection("users").findOne({ username });
+    const user = await User.findOne({ username });
     if (!user) {
       return reply.code(400).send({ error: "Invalid username or password" });
     }
@@ -68,17 +67,24 @@ const createUser = async (request, reply) => {
   const { name, email } = request.body;
 
   try {
-    const result = await db.collection("users").insertOne({ name, email });
-    reply.send(result.ops[0]); // MongoDB returns the inserted documents in `ops` array
+    const user = new User({ name, email });
+    await user.save();
+    reply.send(user); // MongoDB returns the inserted documents in `ops` array
   } catch (error) {
     reply.code(500).send(error);
   }
 };
 
 const listUsers = async (request, reply) => {
+  const { page = 1, limit = 10 } = request.query;
   try {
-    const users = await db.collection("users").find().toArray();
-    return users;
+    const users = await User.find()
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ created_at: -1 })
+      .select("first_name last_name username role created_at updated_at")
+      .exec();
+    return { users, page, limit };
   } catch (err) {
     reply.code(500).send({ error: "Internal Server Error" });
   }
@@ -86,9 +92,11 @@ const listUsers = async (request, reply) => {
 
 const getUser = async (request, reply) => {
   try {
-    const user = await db.collection("users").findOne({
+    const user = await User.findOne({
       _id: request.params.id,
-    });
+    })
+      .select("-password")
+      .exec();
     return user;
   } catch (err) {
     reply.code(500).send({ error: "Internal Server Error" });
@@ -109,11 +117,9 @@ const updateUser = async (request, reply) => {
   try {
     const result = await db
       .collection("users")
-      .findOneAndUpdate(
-        { _id: request.params.id },
-        { $set: updates },
-        { returnDocument: "after" }
-      );
+      .findOneAndUpdate({ _id: request.params.id }, updates, {
+        returnDocument: "after",
+      });
     reply.send(result.value);
   } catch (error) {
     reply.code(500).send(error);
@@ -122,7 +128,7 @@ const updateUser = async (request, reply) => {
 
 const deleteUser = async (request, reply) => {
   try {
-    const result = await db.collection("users").deleteOne({
+    const result = await User.deleteOne({
       _id: request.params.id,
     });
     if (result.deletedCount === 0) {
