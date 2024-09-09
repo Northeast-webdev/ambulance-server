@@ -1,30 +1,30 @@
 const jwt = require("./src/jwt");
-const { fastify } = require("./src/init");
-const userRoutes = require("./src/controllers/user");
-const pdfRoutes = require("./src/controllers/pdf");
-const { default: mongoose } = require("mongoose");
-// MongoDB connection setup
-const uri = process.env.MONGODB_URI;
+const { fastify, connectToDatabase } = require("./src/init");
+const userRoutes = require("./src/controllers/userController");
+const pdfRoutes = require("./src/controllers/pdfController");
+const authRoutes = require("./src/controllers/authController");
+const carRoutes = require("./src/controllers/carController");
+const runRoutes = require("./src/controllers/runController");
 
-async function connectToDatabase() {
-  mongoose
-    .connect(uri)
-    .then(() => console.log("Connected to MongoDB"))
-    .catch((error) => console.error("Connection error", error));
-}
-
-connectToDatabase();
-
-fastify.decorate("authenticate", jwt.verifyToken);
+fastify.decorate("authenticate", jwt.verifyToken); // Add the authenticate decorator for jwt
 fastify.get("/", async () => {
   return { hello: "world" };
 });
 
+// Connect to MongoDB
+connectToDatabase();
+
+// Register routes
+authRoutes();
 userRoutes();
 pdfRoutes();
+carRoutes();
+runRoutes();
+
+// Start the server
 const start = async () => {
   try {
-    await fastify.listen({ port: 8080, host: "0.0.0.0" }); // Ensure it's listening on 0.0.0.0
+    await fastify.listen({ port: 8080, host: "0.0.0.0" });
     console.log("Server is running on port 8080");
   } catch (err) {
     fastify.log.error(err);

@@ -1,3 +1,4 @@
+// schema/user.schema.js
 const { Schema, default: mongoose } = require("mongoose");
 
 const userSchema = new Schema({
