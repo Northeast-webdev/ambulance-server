@@ -1,4 +1,4 @@
-const jwt = require("./src/jwt");
+const { verifyToken } = require("./src/jwt");
 const { fastify, connectToDatabase } = require("./src/init");
 const userRoutes = require("./src/controllers/userController");
 const pdfRoutes = require("./src/controllers/pdfController");
@@ -6,7 +6,7 @@ const authRoutes = require("./src/controllers/authController");
 const carRoutes = require("./src/controllers/carController");
 const runRoutes = require("./src/controllers/runController");
 
-fastify.decorate("authenticate", jwt.verifyToken); // Add the authenticate decorator for jwt
+fastify.decorate("authenticate", verifyToken); // Add the authenticate decorator for jwt
 fastify.get("/", async () => {
   return { hello: "world" };
 });

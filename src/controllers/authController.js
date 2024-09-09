@@ -1,7 +1,7 @@
 // controllers/authController.js
 
 const bcrypt = require("bcrypt");
-const jwt = require("../jwt");
+const { generateToken } = require("../jwt");
 const { User } = require("../schema/user.schema");
 const { fastify } = require("../init");
 
@@ -55,7 +55,7 @@ const login = async (request, reply) => {
     }
 
     // Generate JWT token
-    const token = jwt.generateToken(user);
+    const token = generateToken(user);
     reply.send({ token });
   } catch (err) {
     reply.code(500).send({ error: "Internal Server Error" });
