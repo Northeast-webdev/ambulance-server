@@ -7,6 +7,13 @@ const carRoutes = require("./src/controllers/carController");
 const runRoutes = require("./src/controllers/runController");
 const fastifyStatic = require("@fastify/static");
 
+// Register the CORS plugin
+fastify.register(require("@fastify/cors"), {
+  origin: "*", // Allow all origins. Change this to the specific origin in production.
+  allowedHeaders: ["Content-Type", "Authorization"], // Allow only these headers.
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow only these HTTP methods.
+});
+
 // Serve static files from the frontend/dist folder
 fastify.register(fastifyStatic, {
   root: require("path").join(__dirname, "../frontend/dist"),
