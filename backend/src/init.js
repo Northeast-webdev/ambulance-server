@@ -1,5 +1,5 @@
 const Fastify = require("fastify");
-const fastify = Fastify({ logger: true });
+const fastify = Fastify({ logger: process.env.NODE_ENV !== "production" });
 const mongoose = require("mongoose");
 require("dotenv").config();
 

@@ -12,5 +12,11 @@
     "@sveltejs/vite-plugin-svelte": "^3.1.1",
     "svelte": "^4.2.18",
     "vite": "^5.4.1"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.45",
+    "svelte-navigator": "^3.2.2",
+    "tailwindcss": "^3.4.10"
   }
 }

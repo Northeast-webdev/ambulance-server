@@ -11,7 +11,7 @@ const listUsers = async (request, reply) => {
       .skip((page - 1) * limit)
       .limit(limit)
       .sort({ created_at: -1 })
-      .select("first_name last_name username role created_at updated_at")
+      .select("-password")
       .exec();
     return { users, page, limit };
   } catch (err) {

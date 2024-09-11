@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 // Helper function to generate JWT token
 const generateToken = (user) => {
@@ -7,7 +8,6 @@ const generateToken = (user) => {
 };
 
 const verifyToken = async (request, reply) => {
-  return true; // Disable authentication for now
   try {
     const token = request.headers.authorization?.split(" ")[1]; // Extract token from header
     if (!token) {

@@ -1,44 +1,67 @@
+<!-- App.svelte -->
 <script>
+	import { onMount } from "svelte";
+	import { Route, Router } from "svelte-navigator";
+	import { blur } from "svelte/transition";
+	import Header from "./components/Header.svelte";
+	import Loading from "./components/Loading.svelte";
+	import Login from "./routes/Login/index.svelte";
+	import PrivateRoute from "./routes/PrivateRoute/index.svelte";
+	import Runs from "./routes/Runs/index.svelte";
+	import Users from "./routes/Users/index.svelte";
+	import { token, user } from "./stores";
 
-  let users = []
-  // fetch a list of users from the server
-  fetch('http://localhost:8080/users', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  })
-    .then(response => response.json())
-    .then(data => {
-      users = data.users
-    })
-    .catch(error => {
-      console.error('Error:', error)
-    })
-  
+	let loading = true;
+
+	async function getUser() {
+		loading = true;
+		try {
+			const response = await fetch("http://0.0.0.0:8080/users/" + localStorage.getItem("id"), {
+				method: "GET",
+				headers: {
+					Authorization: `Bearer ${localStorage.getItem("token")}`,
+				},
+			});
+			const data = await response.json();
+			$user = data;
+		} catch (error) {
+			console.error("Error:", error);
+		} finally {
+			loading = false;
+		}
+	}
+
+  	$: token.subscribe((value) => {
+		if (value) {
+			getUser();
+		}
+	});
+
+	onMount(() => {
+		setTimeout(() => {
+			if (localStorage.getItem("token")) {
+				token.set(localStorage.getItem("token"));
+			}
+		}, 1000);
+	});
 </script>
-
 <main>
-  <h1>Users</h1>
-  <div class="grid-container">
-    {#each users as user}
-      <div>
-        <h2>{user.username}</h2>
-        <p>{user.role}</p>
-      </div>
-    {/each}
-  </div>
+{#if loading}
+	<div transition:blur={{ amount: 10, duration: 1000 }}>
+		<Loading />
+	</div>
+{:else}
+	<Router>
+<Header />
+		<PrivateRoute path="/users">
+			<Users />
+		</PrivateRoute>
+		<PrivateRoute path="runs">
+			<Runs />
+		</PrivateRoute>
+		<Route path="login">
+      		<Login />
+    	</Route>
+</Router>
+{/if}
 </main>
-
-<style>
-  .grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
-  }
-  div {
-    padding: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-</style>

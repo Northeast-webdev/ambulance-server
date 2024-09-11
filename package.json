@@ -9,6 +9,7 @@
     "dev:backend": "nodemon backend/index.js",
     "dev:frontend": "cd frontend && yarn dev",
     "build": "cd frontend && yarn build",
+    "build:dev": "cd frontend && rm -rf dist && yarn build",
     "postinstall": "cd frontend && yarn && cd ../backend && yarn"
   },
   "keywords": [],

@@ -7,6 +7,11 @@ const carRoutes = require("./src/controllers/carController");
 const runRoutes = require("./src/controllers/runController");
 const fastifyStatic = require("@fastify/static");
 
+// Serve static files from the frontend/dist folder
+fastify.register(fastifyStatic, {
+  root: require("path").join(__dirname, "../frontend/dist"),
+  prefix: "/",
+});
 // Register the CORS plugin
 fastify.register(require("@fastify/cors"), {
   origin: "*", // Allow all origins. Change this to the specific origin in production.
@@ -14,11 +19,6 @@ fastify.register(require("@fastify/cors"), {
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow only these HTTP methods.
 });
 
-// Serve static files from the frontend/dist folder
-fastify.register(fastifyStatic, {
-  root: require("path").join(__dirname, "../frontend/dist"),
-  prefix: "/",
-});
 fastify.decorate("authenticate", verifyToken); // Add the authenticate decorator for jwt
 
 // Connect to MongoDB
