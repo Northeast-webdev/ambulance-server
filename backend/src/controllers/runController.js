@@ -5,11 +5,11 @@ const { Run } = require("../schema/run.schema");
 require("dotenv").config();
 
 const createRun = async (request, reply) => {
-  const { car, title, meta, status } = request.body;
-  const run = new Run({ car, title, meta, status });
+  const { car, title, meta } = request.body;
+  const run = new Run({ car, title, meta });
   try {
     await run.save();
-    reply.send(run);
+    reply.send({ run: run });
   } catch (err) {
     reply.code(500).send({ error: "Internal Server Error" });
   }

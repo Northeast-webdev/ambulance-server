@@ -12,9 +12,9 @@
 .loader:before,
 .loader:after {
   content: "";
-  width: max(50px, 10vmin);
+  width: 30px;
   aspect-ratio: 1;
-  box-shadow: 0 0 0 10px inset #555;
+  box-shadow: 0 0 0 5px inset #222;
   animation: l4 1.5s infinite;
 }
 .loader:after {
@@ -33,7 +33,7 @@ main {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f0f0f0;
+    background-color: #fff;
     position: fixed;
     width: 100%;
     inset: 0;

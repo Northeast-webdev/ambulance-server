@@ -5,7 +5,7 @@ const { Schema, default: mongoose } = require("mongoose");
 const runSchema = new Schema({
   car: { type: Schema.Types.ObjectId, ref: "Car" },
   title: { type: String, required: true },
-  meta: { type: Object, required: true },
+  meta: { type: Object, required: true, default: {} },
   status: { type: String, default: "draft" },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },

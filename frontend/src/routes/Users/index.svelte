@@ -24,7 +24,7 @@
   <div class="container font-mono mx-auto">
     <div class="flex justify-between items-center">
         <h1 class="text-2xl font-bold mt-10 mb-5">Users</h1>
-        <button class="bg-green-600 hover:bg-green-800 text-white font-bold py-1 px-4 rounded flex items-center justify-center gap-4">
+        <button class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-1 px-4 rounded flex items-center justify-center gap-4">
         <span class="text-3xl">+</span>
         <Link to="#">New User</Link>
         </button>
