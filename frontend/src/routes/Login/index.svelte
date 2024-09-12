@@ -38,7 +38,7 @@
 
 </script>
 
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-500 to-green-900 p-6">
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-500 to-green-900 py-6 px-3">
   <div class="bg-white relative rounded-xl shadow-lg p-8 w-full max-w-md">
     <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Login</h1>
     <form on:submit|preventDefault={login} class="space-y-6">
