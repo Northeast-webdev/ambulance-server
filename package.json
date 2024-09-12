@@ -8,9 +8,8 @@
     "dev": "concurrently \"yarn dev:backend\" \"yarn dev:frontend\"",
     "dev:backend": "nodemon backend/index.js",
     "dev:frontend": "cd frontend && yarn dev",
-    "build": "cd frontend && yarn build",
     "build:dev": "cd frontend && rm -rf dist && yarn build",
-    "postinstall": "cd frontend && yarn && cd ../backend && yarn"
+    "postinstall": "cd backend && yarn"
   },
   "keywords": [],
   "author": "",
