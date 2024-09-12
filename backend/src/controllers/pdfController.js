@@ -137,7 +137,7 @@ const printPDF = async (request, reply) => {
 };
 
 const pdfRoutes = () => {
-  fastify.get("/pdf", printPDF);
+  fastify.get("/api/pdf", printPDF);
 };
 
 module.exports = pdfRoutes;

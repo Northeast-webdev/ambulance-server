@@ -1,22 +1,22 @@
 <script>
     import { onMount } from "svelte";
-    import { blur } from "svelte/transition";
-    
+    import { fade } from "svelte/transition";
+        
     let runs = []
     let show_form = false
     let meta_verifier = {
-    "Title": "title",
-      "C/S/B": "csb",
+      "Title": "title",
       "Ora": "ora",
       "Paziente": "paziente",
       "Servizio": "servizio",
-      "Tel": "tel",
       "Tipo di servizio": "tipo_di_servizio",
+      "C/S/B": "csb",
       "Partenza": "partenza",
       "Arrivo": "arrivo",
       "N. Richiesta": "n_richiesta",
       "Ricevuta": "ricevuta",
-      "Viaggio": "viaggio",
+      "Viaggi": "viaggio",
+      "Tel": "tel",
     };
     let new_run = {
       "csb": "",
@@ -33,7 +33,7 @@
       "title": "",
     }
     onMount(async () => {
-			fetch('http://0.0.0.0:8080/runs', {
+			fetch('http://0.0.0.0:8080/api/runs', {
 					method: 'GET',
 					headers: {
 						Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -55,7 +55,7 @@
     async function newRun() {
         try {
             const {title, ...meta} = new_run
-            const response = await fetch("http://0.0.0.0:8080/runs", {
+            const response = await fetch("http://0.0.0.0:8080/api/runs", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -86,55 +86,90 @@
     }
 </script>
 
-<main>
-  <div class="container font-mono mx-auto">
-    <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-bold mt-10 mb-5">Runs</h1>
-        <button on:click={newRunToggle} class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-1 px-4 rounded flex items-center justify-center gap-4">
-            <span class="text-3xl">+</span>
-            <span>New Run</span>
-        </button>
-    </div>
-  <div class="overflow-x-scroll">
-		<table class="w-full border-collapse">
-    <thead>
-      <tr>
-        {#each Object.keys(meta_verifier) as key}
-          <th class="py-2 px-4 bg-gray-100 border text-left">{key}</th>
-        {/each}
-      </tr>
-    </thead>
-    {#each runs as run}
-      <tr>
-        {#each Object.keys(meta_verifier) as key}
-				{#if key === "Title"}
-					<td class="py-2 px-4 border"><a href="/runs/{run._id}">{run.title}</a></td>
-				{:else}
-          <td class="py-2 px-4 border">{run.meta[meta_verifier[key]]}</td>
-				{/if}
-        {/each}
-      </tr>
-    {/each}
-  </table>
-	</div>
+<div class="container mx-auto p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold">Runs</h1>
+    <button
+      on:click={newRunToggle}
+      class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-md"
+    >
+      <span class="text-2xl">+</span>
+      <span>New Run</span>
+    </button>
   </div>
-  {#if show_form}
-    <div class="fixed inset-0" transition:blur={{amount: 10, duration: 600}}>
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div class="fixed inset-0 bg-slate-900 bg-opacity-30 cursor-pointer z-10" on:click={newRunToggle} />
-            <form on:submit|preventDefault={newRun} class="max-w-screen-lg max-h-[800px] overflow-y-scroll font-mono mx-auto bg-slate-50 p-10 z-20 relative rounded-xl top-16">
-                <h2 class="text-3xl text-center font-bold mb-4">New Run</h2>
-                <div class="flex flex-col gap-4">
-                    {#each Object.keys(meta_verifier) as key}
-                        <label class="flex flex-col gap-1">
-                            <span>{key}</span>
-                            <input type="text" class="border outline-none  border-gray-300 rounded p-2 focus:ring ring-offset-2 ring-offset-green-800 transition focus:ring-green-800 focus:ring-opacity-20" bind:value={new_run[meta_verifier[key]]} />
-                        </label>
-                    {/each}
-                    <button type="submit" class="bg-green-700 transition-colors hover:bg-green-800 text-white font-bold py-3 px-4 rounded">Submit</button>
-                </div>
-            </form>
+
+  <!-- Table Container with Overflow for Responsiveness -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full border-collapse shadow-lg rounded-lg overflow-hidden">
+      <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
+        <tr>
+          {#each Object.keys(meta_verifier) as key}
+            {#if key !== "Title"}
+              <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b">{key}</th>
+            {/if}
+          {/each}
+        </tr>
+      </thead>
+      <tbody>
+        {#each runs as run, index}
+          <tr class="{index % 2 === 0 ? 'bg-white' : 'bg-gray-100'} border-b">
+            {#each Object.keys(meta_verifier) as key}
+              {#if key !== "Title"}
+                <td class="py-3 px-4 border-r">{run.meta[meta_verifier[key]]}</td>
+              {/if}
+            {/each}
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{#if show_form}
+  <!-- Modal Background -->
+  <div transition:fade={{duration: 300}} class="fixed inset-0 z-40 flex items-center justify-center bg-white bg-opacity-80 backdrop-blur-sm transition-opacity duration-500">
+    <!-- Form Modal -->
+    <div class="relative max-w-screen-lg w-full max-h-[80vh] overflow-y-auto bg-white p-8 rounded-xl border-2 shadow-xl z-50 transform transition-all duration-500">
+      <button
+        class="absolute text-3xl top-4 right-4 text-gray-600 hover:text-gray-800"
+        on:click={newRunToggle}
+        aria-label="Close form"
+      >
+        ✕
+      </button>
+      <h2 class="text-3xl font-bold text-center mb-6">Add a New Run</h2>
+      <form on:submit|preventDefault={newRun} class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {#each Object.keys(meta_verifier) as key}
+            <div>
+              <label for="field-{key}" class="block text-sm font-medium text-gray-700 mb-1">
+                {key} <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                id="field-{key}"
+                class="block w-full border valid:border-green-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-600 transition-all"
+                bind:value={new_run[meta_verifier[key]]}
+              />
+            </div>
+          {/each}
+        </div>
+        <div class="flex gap-4 mt-4">
+          <button
+            type="submit"
+            class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg flex-1 transition duration-200"
+          >
+            Submit
+          </button>
+          <button
+            type="reset"
+            class="bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 px-4 rounded-lg flex-1 transition duration-200"
+          >
+            Reset
+          </button>
+        </div>
+      </form>
     </div>
-  {/if}
-</main>
+  </div>
+{/if}

@@ -3,8 +3,7 @@ const { Schema, default: mongoose } = require("mongoose");
 
 const carSchema = new Schema({
   meta: { type: Object, required: true },
-  name: { type: String, required: true },
-  status: { type: String, default: "draft" },
+  status: { type: String, default: "available" },
   user: { type: Schema.Types.ObjectId, ref: "User" },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },

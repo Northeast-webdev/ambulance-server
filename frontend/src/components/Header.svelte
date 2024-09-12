@@ -3,6 +3,7 @@
 // @ts-nocheck
 
   import { Link, useNavigate } from "svelte-navigator";
+  import logo from "../assets/logo.png";
   import { token, user } from "../stores";
 
   const navigate = useNavigate();
@@ -18,23 +19,39 @@
     navigate("/login", { replace: true });
   }
 </script>
-
 {#if $token}
-<main>
-  <header class="flex justify-between items-center p-4 bg-gray-900 font-mono">
-    <h3 class="font-bold text-gray-50">Ciao, {$user.username}</h3>
-    <div class="link-cont">
-      {#each links as link}
-        <Link to={link.path} class=" hover:underline hover:animate-pulse text-gray-100 hover:text-gray-50">{link.name}</Link>
-      {/each}
-    </div>
-    <button class="hover:animate-pulse text-emerald-50  border px-4" on:click={handleLogout}>Log Out</button>
-  </header>
-</main>
-{/if}
+  <header class="p-4 bg-gradient-to-l from-green-600 to-green-900 shadow-lg  shadow-gray-300">
+    <div class="container mx-auto flex justify-between items-center">
+      <!-- Logo -->
+      <div class="flex items-center">
+        <img src={logo} alt="logo" class="w-10 h-10 object-contain" />
+      </div>
 
-<style>
- .link-cont{
-  @apply flex gap-10;
- }
-</style>
+      <!-- Navigation Links -->
+      <nav class="flex-1 mx-6 space-x-6">
+        {#each links as link}
+          <Link
+            to={link.path}
+            class="text-gray-100 hover:text-gray-50 text-lg font-medium transition duration-200"
+          >
+            {link.name}
+          </Link>
+        {/each}
+      </nav>
+
+      <!-- User Information -->
+      <div class="text-gray-50 text-right mx-6">
+        <h3 class="font-semibold">{`${$user.first_name} ${$user.last_name}`}</h3>
+        <p class="text-sm uppercase tracking-widest">{$user.role}</p>
+      </div>
+
+      <!-- Logout Button -->
+      <button
+        class="bg-green-800 hover:bg-green-900 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
+        on:click={handleLogout}
+      >
+        Log Out
+      </button>
+    </div>
+  </header>
+{/if}

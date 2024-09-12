@@ -5,13 +5,13 @@ const { Run } = require("../schema/run.schema");
 require("dotenv").config();
 
 const createRun = async (request, reply) => {
-  const { car, title, meta } = request.body;
-  const run = new Run({ car, title, meta });
+  const { car, title, meta, status } = request.body;
+  const run = new Run({ car, title, meta, status });
   try {
     await run.save();
     reply.send({ run: run });
   } catch (err) {
-    reply.code(500).send({ error: "Internal Server Error" });
+    reply.code(500).send({ error: err });
   }
 };
 
@@ -26,7 +26,7 @@ const listRuns = async (request, reply) => {
       .exec();
     return { runs, page, limit };
   } catch (err) {
-    reply.code(500).send({ error: "Internal Server Error" });
+    reply.code(500).send({ error: err });
   }
 };
 
@@ -39,7 +39,7 @@ const getRun = async (request, reply) => {
       .exec();
     return run;
   } catch (err) {
-    reply.code(500).send({ error: "Internal Server Error" });
+    reply.code(500).send({ error: err });
   }
 };
 
@@ -79,17 +79,21 @@ const deleteRun = async (request, reply) => {
     }
     reply.send({ message: "Run deleted successfully" });
   } catch (err) {
-    reply.code(500).send({ error: "Internal Server Error" });
+    reply.code(500).send({ error: err });
   }
 };
 
 const runRoutes = () => {
-  fastify.post("/runs", { preHandler: [fastify.authenticate] }, createRun);
-  fastify.get("/runs", { preHandler: [fastify.authenticate] }, listRuns);
-  fastify.get("/runs/:id", { preHandler: [fastify.authenticate] }, getRun);
-  fastify.put("/runs/:id", { preHandler: [fastify.authenticate] }, updateRun);
+  fastify.post("/api/runs", { preHandler: [fastify.authenticate] }, createRun);
+  fastify.get("/api/runs", { preHandler: [fastify.authenticate] }, listRuns);
+  fastify.get("/api/runs/:id", { preHandler: [fastify.authenticate] }, getRun);
+  fastify.put(
+    "/api/runs/:id",
+    { preHandler: [fastify.authenticate] },
+    updateRun
+  );
   fastify.delete(
-    "/runs/:id",
+    "/api/runs/:id",
     { preHandler: [fastify.authenticate] },
     deleteRun
   );

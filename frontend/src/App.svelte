@@ -1,12 +1,13 @@
 <!-- App.svelte -->
 <script>
 	import { onMount } from "svelte";
-	import { Route, Router } from "svelte-navigator";
+	import { navigate, Route, Router } from "svelte-navigator";
 	import { blur } from "svelte/transition";
 	import Header from "./components/Header.svelte";
 	import Loading from "./components/Loading.svelte";
+	import PrivateRoute from "./components/PrivateRoute/index.svelte";
+	import Cars from "./routes/Cars/index.svelte";
 	import Login from "./routes/Login/index.svelte";
-	import PrivateRoute from "./routes/PrivateRoute/index.svelte";
 	import Runs from "./routes/Runs/index.svelte";
 	import Users from "./routes/Users/index.svelte";
 	import { token, user } from "./stores";
@@ -14,9 +15,14 @@
 	let loading = true;
 
 	async function getUser() {
+		if(!localStorage.getItem("id")) {
+			loading = false;
+			navigate("/login", { replace: true });
+			return;
+		}
 		loading = true;
 		try {
-			const response = await fetch("http://0.0.0.0:8080/users/" + localStorage.getItem("id"), {
+			const response = await fetch("http://0.0.0.0:8080/api/users/" + localStorage.getItem("id"), {
 				method: "GET",
 				headers: {
 					Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -41,11 +47,13 @@
 		setTimeout(() => {
 			if (localStorage.getItem("token")) {
 				token.set(localStorage.getItem("token"));
+			} else {
+				getUser();
 			}
 		}, 1000);
 	});
 </script>
-<main>
+<div class="font-sans">
 {#if loading}
 	<div transition:blur={{ amount: 10, duration: 1000 }}>
 		<Loading />
@@ -59,9 +67,12 @@
 		<PrivateRoute path="runs">
 			<Runs />
 		</PrivateRoute>
+		<PrivateRoute path="cars">
+			<Cars />
+		</PrivateRoute>
 		<Route path="login">
       		<Login />
     	</Route>
 </Router>
 {/if}
-</main>
+</div>

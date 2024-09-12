@@ -6,7 +6,7 @@ const { User } = require("../schema/user.schema");
 const { fastify } = require("../init");
 
 const register = async (request, reply) => {
-  const { username, password, email, first_name, last_name, dob, phone } =
+  const { username, password, email, first_name, last_name, dob, phone, role } =
     request.body;
 
   try {
@@ -16,7 +16,10 @@ const register = async (request, reply) => {
     }).exec();
 
     if (existingUser) {
-      return reply.code(400).send({ error: "User already exists" });
+      const field = existingUser.username === username ? "username" : "email";
+      return reply
+        .code(400)
+        .send({ error: `User with this ${field} already exists` });
     }
 
     // Hash the password
@@ -29,6 +32,7 @@ const register = async (request, reply) => {
       last_name,
       dob,
       phone,
+      role,
     });
     await user.save();
 
@@ -64,9 +68,9 @@ const login = async (request, reply) => {
 
 const authRoutes = () => {
   // Registration endpoint
-  fastify.post("/register", register);
+  fastify.post("/api/register", register);
   // Login endpoint
-  fastify.post("/login", login);
+  fastify.post("/api/login", login);
 };
 
 module.exports = authRoutes;
