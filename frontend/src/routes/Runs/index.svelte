@@ -1,9 +1,11 @@
 <script>
     import { onMount } from "svelte";
     import { fade } from "svelte/transition";
+    import LoadingList from "../../components/LoadingList.svelte";
         
     let runs = []
     let show_form = false
+    let loading = false
     let meta_verifier = {
       "Title": "title",
       "Ora": "ora",
@@ -33,6 +35,7 @@
       "title": "",
     }
     onMount(async () => {
+      loading = true;
 			fetch(import.meta.env.VITE_API_URL + '/api/runs', {
 					method: 'GET',
 					headers: {
@@ -46,6 +49,9 @@
 			.catch(error => {
 				console.error('Error:', error)
 			})
+      .finally(() => {
+        loading = false;
+      });
     });
 
     function newRunToggle() {
@@ -86,6 +92,9 @@
     }
 </script>
 
+{#if loading}
+  <LoadingList />
+{:else}
 <div class="container mx-auto p-6">
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold">Runs</h1>
@@ -124,6 +133,7 @@
     </table>
   </div>
 </div>
+{/if}
 
 {#if show_form}
   <!-- Modal Background -->

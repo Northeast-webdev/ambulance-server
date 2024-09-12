@@ -8,9 +8,11 @@
   import MdiEyeOff from 'virtual:icons/mdi/eye-off';
   import MdiPencil from 'virtual:icons/mdi/pencil';
   import MdiTrashCan from 'virtual:icons/mdi/trash-can';
+  import LoadingList from "../../components/LoadingList.svelte";
   import { user as storeUser } from "../../stores";
     let show_password = false
     $: type = show_password ? 'text' : 'password'
+    let loading = false
     let users = []
     let show_form = false
     let action = "new"
@@ -28,6 +30,7 @@
     let new_user = {username : "", password : "", email : "", first_name : "", last_name : "", dob : "", phone : "", role: "driver"}
 
     const getUsers = async () => {
+      loading = true;
 			fetch(import.meta.env.VITE_API_URL + '/api/users', {
 					method: 'GET',
 					headers: {
@@ -42,6 +45,9 @@
 			.catch(error => {
 				console.error('Error:', error)
 			})
+      .finally(() => {
+        loading = false;
+      });
     }
     onMount(getUsers);
 
@@ -122,6 +128,11 @@
         }
     }
 </script>
+
+
+{#if loading}
+  <LoadingList />
+{:else}
 <div class="container mx-auto p-6">
   <div class="flex justify-between items-center mb-6">
     <div>
@@ -217,6 +228,7 @@
     </table>
   </div>
 </div>
+{/if}
 
 {#if show_form}
   <!-- Modal Background -->

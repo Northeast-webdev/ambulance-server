@@ -1,15 +1,18 @@
 <!-- routes/Login/index.svelte -->
 <script>
   import { useLocation, useNavigate } from "svelte-navigator";
+  import Loading from "../../components/Loading.svelte";
   import { token } from "../../stores";
 
   let username = "";
   let password = "";
+  let loading = false;
   const navigate = useNavigate();
   const location = useLocation();
   let t = ""
   async function login() {
     try {
+      loading = true;
         const response = await fetch(import.meta.env.VITE_API_URL + "/api/login", {
             method: "POST",
             headers: {
@@ -22,7 +25,9 @@
         localStorage.setItem("token", token);
         localStorage.setItem("id", id);
     } catch (error) {
-        console.error("Error:", error);
+        alert(error.error);
+    } finally {
+        loading = false;
     }
   }
   $: if (t) {
@@ -34,7 +39,7 @@
 </script>
 
 <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-500 to-green-900 p-6">
-  <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
+  <div class="bg-white relative rounded-xl shadow-lg p-8 w-full max-w-md">
     <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Login</h1>
     <form on:submit|preventDefault={login} class="space-y-6">
       <div>
@@ -64,5 +69,10 @@
         Login
       </button>
     </form>
+    {#if loading}
+      <div class="absolute inset-0 rounded-xl bg-opacity-60 backdrop-blur-sm bg-white flex justify-center items-center">
+        <Loading iconOnly />
+      </div>
+    {/if}
   </div>
 </div>

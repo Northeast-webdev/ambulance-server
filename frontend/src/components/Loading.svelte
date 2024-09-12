@@ -1,7 +1,15 @@
 <!-- components/Loading.svelte -->
+<script>
+  export let iconOnly = false;
+</script>
+
+{#if iconOnly}
+<div class="loader"></div>
+{:else}
 <main>
   <div class="loader"></div>
 </main>
+{/if}
 
 <style scoped>
 /* HTML: <div class="loader"></div> */

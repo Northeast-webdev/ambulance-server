@@ -62,7 +62,7 @@ const login = async (request, reply) => {
     const token = generateToken(user);
     reply.send({ token, id: user._id });
   } catch (err) {
-    reply.code(500).send(err);
+    reply.code(500).send({ error: err });
   }
 };
 

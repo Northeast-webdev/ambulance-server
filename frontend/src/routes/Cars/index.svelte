@@ -5,11 +5,13 @@
   import { fade } from "svelte/transition";
   import MdiPencil from 'virtual:icons/mdi/pencil';
   import MdiTrashCan from 'virtual:icons/mdi/trash-can';
+  import LoadingList from "../../components/LoadingList.svelte";
     let cars = []
     let drivers = []
     let show_form = false
     let action = "new"
     let car_id = ""
+    let loading = false
     let meta_verifier = {
       "Driver": "driver",
       "Brand": "brand",
@@ -30,6 +32,7 @@
     }
 
     const getCars = async () => {
+      loading = true;
 			fetch( import.meta.env.VITE_API_URL + '/api/cars', {
 					method: 'GET',
 					headers: {
@@ -43,6 +46,9 @@
 			.catch(error => {
 				console.error('Error:', error)
 			})
+      .finally(() => {
+        loading = false;
+      });
 
       fetch(import.meta.env.VITE_API_URL + '/api/users', {
 					method: 'GET',
@@ -138,6 +144,10 @@
       }
     }
 </script>
+
+{#if loading}
+  <LoadingList />
+{:else}
 <div class="container mx-auto p-6">
   <div class="flex justify-between items-center mb-6">
     <div>
@@ -219,6 +229,7 @@
     </table>
   </div>
 </div>
+{/if}
 
 {#if show_form}
   <!-- Modal Background -->
