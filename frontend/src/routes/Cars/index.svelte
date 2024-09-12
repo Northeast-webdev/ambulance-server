@@ -177,7 +177,7 @@
       </thead>
       <tbody>
         {#each cars as car, index}
-          <tr class="{index % 2 === 0 ? 'bg-white' : 'bg-gray-100'} border-b">
+          <tr class="{index % 2 === 0 ? 'bg-white' : 'bg-gray-100'} border-b border-l">
             <td class="py-3 px-4 border-r">{car.user ? `${car.user.first_name} ${car.user.last_name}` : ''}</td>
             <td class="py-3 px-4 border-r">{car.meta.brand}</td>
             <td class="py-3 px-4 border-r">{car.meta.model}</td>

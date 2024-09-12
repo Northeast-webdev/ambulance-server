@@ -166,7 +166,7 @@
       </thead>
       <tbody>
         {#each users as user, index}
-          <tr class="{index % 2 === 0 ? 'bg-white' : 'bg-gray-100'} border-b">
+          <tr class="{index % 2 === 0 ? 'bg-white' : 'bg-gray-100'} border-b border-l">
             <td class="py-3 px-4 border-r">{user.username}</td>
             <td class="py-3 px-4 border-r">{user.first_name}</td>
             <td class="py-3 px-4 border-r">{user.last_name}</td>

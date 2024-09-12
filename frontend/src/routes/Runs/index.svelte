@@ -121,7 +121,7 @@
       </thead>
       <tbody>
         {#each runs as run, index}
-          <tr class="{index % 2 === 0 ? 'bg-white' : 'bg-gray-100'} border-b">
+          <tr class="{index % 2 === 0 ? 'bg-white' : 'bg-gray-100'} border-b border-l">
             {#each Object.keys(meta_verifier) as key}
               {#if key !== "Title"}
                 <td class="py-3 px-4 border-r">{run.meta[meta_verifier[key]]}</td>
