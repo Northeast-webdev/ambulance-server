@@ -20,8 +20,8 @@
   }
 </script>
 {#if $token}
-  <header class="py-4 px-3 bg-gradient-to-l from-green-600 to-green-900 shadow-lg  shadow-gray-300">
-    <div class="container mx-auto flex justify-between items-center">
+  <header class="bg-gradient-to-l from-green-600 to-green-900 shadow-lg  shadow-gray-300">
+    <div class="container py-4 px-3 mx-auto flex justify-between items-center">
       <!-- Logo -->
       <div class="flex items-center">
         <img src={logo} alt="logo" class="w-10 h-10 object-contain" />
