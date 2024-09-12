@@ -22,12 +22,13 @@
 		}
 		loading = true;
 		try {
-			const response = await fetch("http://0.0.0.0:8080/api/users/" + localStorage.getItem("id"), {
+			const response = await fetch(import.meta.env.VITE_API_URL + "/api/users/" + localStorage.getItem("id"), {
 				method: "GET",
 				headers: {
 					Authorization: `Bearer ${localStorage.getItem("token")}`,
 				},
 			});
+
 			const data = await response.json();
 			$user = data;
 		} catch (error) {

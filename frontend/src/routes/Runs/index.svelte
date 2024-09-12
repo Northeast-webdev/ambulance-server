@@ -33,7 +33,7 @@
       "title": "",
     }
     onMount(async () => {
-			fetch('http://0.0.0.0:8080/api/runs', {
+			fetch(import.meta.env.VITE_API_URL + '/api/runs', {
 					method: 'GET',
 					headers: {
 						Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -55,7 +55,7 @@
     async function newRun() {
         try {
             const {title, ...meta} = new_run
-            const response = await fetch("http://0.0.0.0:8080/api/runs", {
+            const response = await fetch(import.meta.env.VITE_API_URL + "/api/runs", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

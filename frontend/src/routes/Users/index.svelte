@@ -28,7 +28,7 @@
     let new_user = {username : "", password : "", email : "", first_name : "", last_name : "", dob : "", phone : "", role: "driver"}
 
     const getUsers = async () => {
-			fetch('http://0.0.0.0:8080/api/users', {
+			fetch(import.meta.env.VITE_API_URL + '/api/users', {
 					method: 'GET',
 					headers: {
 						Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -56,7 +56,7 @@
         return
       }
       try {
-            const response = await fetch("http://0.0.0.0:8080/api/users/" + id, {
+            const response = await fetch(import.meta.env.VITE_API_URL + "/api/users/" + id, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -78,7 +78,7 @@
     async function newUser() {
         if (action === "new") {
           try {
-            const response = await fetch("http://0.0.0.0:8080/register", {
+            const response = await fetch(import.meta.env.VITE_API_URL + "/api/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -100,7 +100,7 @@
           }
         } else {
           try {
-            const response = await fetch("http://0.0.0.0:8080/api/users/" + user_id, {
+            const response = await fetch(import.meta.env.VITE_API_URL + "/api/users/" + user_id, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",

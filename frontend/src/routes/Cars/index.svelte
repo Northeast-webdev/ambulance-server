@@ -30,7 +30,7 @@
     }
 
     const getCars = async () => {
-			fetch('http://0.0.0.0:8080/api/cars', {
+			fetch( import.meta.env.VITE_API_URL + '/api/cars', {
 					method: 'GET',
 					headers: {
 						Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -44,7 +44,7 @@
 				console.error('Error:', error)
 			})
 
-      fetch('http://0.0.0.0:8080/users', {
+      fetch(import.meta.env.VITE_API_URL + '/api/users', {
 					method: 'GET',
 					headers: {
 						Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -71,7 +71,7 @@
         return
       }
       try {
-            const response = await fetch("http://0.0.0.0:8080/api/cars/" + id, {
+            const response = await fetch(import.meta.env.VITE_API_URL + "/api/cars/" + id, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -94,7 +94,7 @@
       if(action === "new"){
         try {
             const {driver, status, ...meta} = new_car
-            const response = await fetch("http://0.0.0.0:8080/api/cars", {
+            const response = await fetch(import.meta.env.VITE_API_URL + "/api/cars", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -116,7 +116,7 @@
       } else {
         try {
             const {driver, status, ...meta} = new_car
-            const response = await fetch("http://0.0.0.0:8080/api/cars/" + car_id, {
+            const response = await fetch(import.meta.env.VITE_API_URL + "/api/cars/" + car_id, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
