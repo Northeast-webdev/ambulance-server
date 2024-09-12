@@ -2,5 +2,5 @@ runtime: nodejs20
 instance_class: F2 # Choose instance size (F2 for small instances)
 env_variables:
   NODE_ENV: production
-  MONGODB_URI: "mongodb+srv://webdevnortheast:2phqmp8BXukjvDxv@cluster0.rjfoi.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+  MONGODB_URI: "mongodb+srv://webdevnortheast:2phqmp8BXukjvDxv@cluster0.rjfoi.mongodb.net/ambulance?retryWrites=true&w=majority&appName=Cluster0"
   JWT_SECRET: "bamboo-striker-433906-i0wepofmpsdvcm"
