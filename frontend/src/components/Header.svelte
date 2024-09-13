@@ -8,6 +8,7 @@
 
   const navigate = useNavigate();
   const links = [
+    { name: "Map", path: "/" },
     { name: "Users", path: "/users" },
     { name: "Runs", path: "/runs" },
     { name: "Cars", path: "/cars" },

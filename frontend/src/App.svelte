@@ -8,6 +8,7 @@
   import PrivateRoute from "./components/PrivateRoute/index.svelte";
   import Cars from "./routes/Cars/index.svelte";
   import Login from "./routes/Login/index.svelte";
+  import Map from "./routes/Map/index.svelte";
   import Runs from "./routes/Runs/index.svelte";
   import Users from "./routes/Users/index.svelte";
   import { token, user } from "./stores";
@@ -68,6 +69,9 @@
   {:else}
     <Router>
       <Header />
+      <PrivateRoute path="/">
+        <Map />
+      </PrivateRoute>
       <PrivateRoute path="/users">
         <Users />
       </PrivateRoute>
