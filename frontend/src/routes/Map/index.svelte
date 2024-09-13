@@ -16,12 +16,12 @@
       status: "Available",
       id: 1,
     },
-    { name: "John Snow", lat: 40.7228, lng: -74.006, status: "On Trip", id: 2 },
+    { name: "John Snow", lat: 40.7228, lng: -74.006, status: "Busy", id: 2 },
     {
       name: "Luca Brasi",
       lat: 40.7138,
       lng: -74.016,
-      status: "On Trip",
+      status: "Busy",
       id: 3,
     },
     { name: "Mario Rossi", lat: 40.7228, lng: -74.0, status: "Offline", id: 4 },
@@ -44,7 +44,7 @@
         html: `<div class="marker-circle ${
           driver.status === "Available"
             ? "bg-green-500 text-green-100"
-            : driver.status === "On Trip"
+            : driver.status === "Busy"
               ? "bg-amber-500 text-amber-100"
               : "bg-red-500 text-red-100"
         }">${driver.id}</div>`, // Inner HTML to show the ID

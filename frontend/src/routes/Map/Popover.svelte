@@ -9,7 +9,7 @@
     Status: <span
       class={driver.status === "Available"
         ? "bg-green-500 text-green-100 p-2 rounded-full"
-        : driver.status === "On Trip"
+        : driver.status === "Busy"
           ? "bg-amber-500 text-amber-100 p-2 rounded-full"
           : "bg-red-500 text-red-100 p-2 rounded-full"}>{driver.status}</span
     >
