@@ -30,3 +30,7 @@
 .leaflet-control-attribution.leaflet-control {
   display: none;
 }
+
+.leaflet-pane.leaflet-tile-pane {
+  filter: saturate(0.5);
+}
