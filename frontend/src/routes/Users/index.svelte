@@ -242,7 +242,7 @@
       >
         ✕
       </button>
-      <h2 class="text-3xl font-bold text-center mb-6">Add a New User</h2>
+      <h2 class="text-3xl font-bold text-center mb-6">{action === "new" ? "Add a new User" : "Edit a User"}</h2>
       <form on:submit|preventDefault={newUser} class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           {#each Object.keys(meta_verifier) as key}
