@@ -19,7 +19,13 @@ const listRuns = async (request, reply) => {
   const { page = 1, limit = 10 } = request.query;
   try {
     const runs = await Run.find()
-      .populate("car")
+      .populate({
+        path: "car",
+        populate: {
+          path: "user",
+          model: "User",
+        },
+      })
       .skip((page - 1) * limit)
       .limit(limit)
       .sort({ created_at: -1 })

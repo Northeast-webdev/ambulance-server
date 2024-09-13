@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { fade } from "svelte/transition";
+  import { fade, fly } from "svelte/transition";
   import LoadingList from "../../components/LoadingList.svelte";
 
   let runs = [];
@@ -125,20 +125,100 @@
           </tr>
         </thead>
         <tbody>
-          {#each runs as run, index}
+          {#each runs as run}
             <tr
-              class="{index % 2 === 0
-                ? 'bg-white'
-                : 'bg-gray-100'} border-b border-l"
+              class="{run.status === 'cancelled'
+                ? 'bg-red-200 border-red-300'
+                : run.status === 'ongoing'
+                  ? 'bg-amber-200 border-amber-300'
+                  : run.status === 'completed'
+                    ? 'bg-green-200 border-green-300'
+                    : 'bg-gray-50'} border-b border-l"
             >
               {#each Object.keys(meta_verifier) as key}
-                {#if key !== "Title"}
-                  <td class="py-3 px-4 border-r"
+                {#if key !== "Title" && key !== "Paziente"}
+                  <td class="py-3 px-4 border-r border-inherit"
                     >{run.meta[meta_verifier[key]]}</td
                   >
+                {:else if key === "Paziente"}
+                  <td class="py-3 px-4 border-r border-inherit">
+                    <button
+                      class="text-blue-800 font-semibold underline"
+                      on:click={() => {
+                        run.visibleInfo = !run.visibleInfo;
+                      }}
+                    >
+                      {run.meta[meta_verifier[key]]}
+                    </button>
+                  </td>
                 {/if}
               {/each}
             </tr>
+            <!-- Patient and run status, with showing the assigned car that are revealed on name click -->
+            {#if run.visibleInfo}
+              <tr
+                transition:fly={{ x: 40, duration: 300 }}
+                class={run.status === "cancelled"
+                  ? "bg-red-200"
+                  : run.status === "ongoing"
+                    ? "bg-amber-200"
+                    : run.status === "completed"
+                      ? "bg-green-200"
+                      : "bg-gray-100"}
+              >
+                <td
+                  class="py-3 px-4"
+                  colspan={Object.keys(meta_verifier).length - 1}
+                >
+                  <div class="flex items-center justify-evenly mx-10">
+                    <div class="flex items-center gap-4">
+                      <p class="text-gray-800">Status paziente</p>
+                      <div
+                        title="Cancelled"
+                        class="bg-red-400 w-4 h-4 rounded-full {run.status ===
+                        'cancelled'
+                          ? 'ring-4 ring-red-600'
+                          : ''}"
+                      ></div>
+                      <div
+                        title="Ongoing"
+                        class="bg-yellow-500 w-4 h-4 rounded-full {run.status ===
+                        'ongoing'
+                          ? 'ring-4 ring-yellow-600'
+                          : ''}"
+                      ></div>
+                      <div
+                        title="Completed"
+                        class="bg-green-500 w-4 h-4 rounded-full {run.status ===
+                        'completed'
+                          ? 'ring-4 ring-green-600'
+                          : ''}"
+                      ></div>
+                    </div>
+
+                    {#if run.car}
+                      <p class="text-gray-800 cursor-pointer">
+                        Mezzo assegnato: <span class="hover:underline"
+                          >{run.car.meta.plate_number} - {run.car.user
+                            .first_name}
+                          {run.car.user.last_name}</span
+                        >
+                      </p>
+                    {:else if run.status !== "cancelled"}
+                      <button
+                        class="bg-green-500 hover:bg-green-600 transition text-white font-bold py-2 px-6 rounded-lg"
+                      >
+                        Assign Car
+                      </button>
+                    {:else}
+                      <p class="text-gray-800 cursor-pointer py-2 px-6">
+                        Cancelled
+                      </p>
+                    {/if}
+                  </div>
+                </td>
+              </tr>
+            {/if}
           {/each}
         </tbody>
       </table>
