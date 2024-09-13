@@ -9,25 +9,28 @@
   let loading = false;
   const navigate = useNavigate();
   const location = useLocation();
-  let t = ""
+  let t = "";
   async function login() {
     try {
       loading = true;
-        const response = await fetch(import.meta.env.VITE_API_URL + "/api/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ username, password }),
-        });
-        const {token, id} = await response.json();
-        t = token;
-        localStorage.setItem("token", token);
-        localStorage.setItem("id", id);
+      const response = await fetch(
+        import.meta.env.VITE_API_URL + "/api/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+        }
+      );
+      const { token, id } = await response.json();
+      t = token;
+      localStorage.setItem("token", token);
+      localStorage.setItem("id", id);
     } catch (error) {
-        alert(error.error);
+      alert(error.error);
     } finally {
-        loading = false;
+      loading = false;
     }
   }
   $: if (t) {
@@ -35,15 +38,18 @@
     const from = ($location.state && $location.state.from) || "/";
     navigate(from, { replace: true });
   }
-
 </script>
 
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-500 to-green-900 py-6 px-3">
+<div
+  class="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-500 to-green-900 py-6 px-3"
+>
   <div class="bg-white relative rounded-xl shadow-lg p-8 w-full max-w-md">
     <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Login</h1>
     <form on:submit|preventDefault={login} class="space-y-6">
       <div>
-        <label for="username" class="block text-sm font-medium text-gray-600">Username</label>
+        <label for="username" class="block text-sm font-medium text-gray-600"
+          >Username</label
+        >
         <input
           type="text"
           id="username"
@@ -53,7 +59,9 @@
         />
       </div>
       <div>
-        <label for="password" class="block text-sm font-medium text-gray-600">Password</label>
+        <label for="password" class="block text-sm font-medium text-gray-600"
+          >Password</label
+        >
         <input
           type="password"
           id="password"
@@ -70,7 +78,9 @@
       </button>
     </form>
     {#if loading}
-      <div class="absolute inset-0 rounded-xl bg-opacity-60 backdrop-blur-sm bg-white flex justify-center items-center">
+      <div
+        class="absolute inset-0 rounded-xl bg-opacity-60 backdrop-blur-sm bg-white flex justify-center items-center"
+      >
         <Loading iconOnly />
       </div>
     {/if}

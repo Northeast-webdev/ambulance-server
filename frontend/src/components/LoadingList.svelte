@@ -11,7 +11,9 @@
 
   <!-- Table Skeleton -->
   <div class="overflow-x-auto">
-    <div class="min-w-full border-collapse shadow-lg rounded-lg overflow-hidden">
+    <div
+      class="min-w-full border-collapse shadow-lg rounded-lg overflow-hidden"
+    >
       <!-- Table Header Skeleton -->
       <div class="flex bg-gradient-to-l from-gray-200 to-gray-300 p-2">
         {#each Array(5) as _, i}
@@ -22,7 +24,9 @@
       <!-- Table Body Skeleton -->
       <div>
         {#each Array(6) as _, rowIndex}
-          <div class="flex {rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'} p-2">
+          <div
+            class="flex {rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-100'} p-2"
+          >
             {#each Array(5) as _, colIndex}
               <div class="h-6 w-1/5 bg-gray-200 rounded-md mr-4"></div>
             {/each}

@@ -1,6 +1,6 @@
 <!-- components/Header/index.svelte -->
 <script>
-// @ts-nocheck
+  // @ts-nocheck
 
   import { Link, useNavigate } from "svelte-navigator";
   import logo from "../assets/logo.png";
@@ -19,8 +19,11 @@
     navigate("/login", { replace: true });
   }
 </script>
+
 {#if $token}
-  <header class="bg-gradient-to-l from-green-600 to-green-900 shadow-lg  shadow-gray-300">
+  <header
+    class="bg-gradient-to-l from-green-600 to-green-900 shadow-lg shadow-gray-300"
+  >
     <div class="container py-4 px-3 mx-auto flex justify-between items-center">
       <!-- Logo -->
       <div class="flex items-center">
@@ -41,7 +44,9 @@
 
       <!-- User Information -->
       <div class="text-gray-50 text-right mx-6">
-        <h3 class="font-semibold">{`${$user.first_name} ${$user.last_name}`}</h3>
+        <h3 class="font-semibold">
+          {`${$user.first_name} ${$user.last_name}`}
+        </h3>
         <p class="text-sm uppercase tracking-widest">{$user.role}</p>
       </div>
 
