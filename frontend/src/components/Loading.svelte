@@ -11,7 +11,11 @@
     class="fixed w-full min-h-screen flex items-center justify-center bg-gradient-to-tl from-green-700 to-green-800"
   >
     <div class="flex items-center justify-center gap-4 flex-col">
-      <img src={logo} alt="logo" class="w-10 h-10 object-contain" />
+      <img
+        src={logo}
+        alt="logo"
+        class="w-10 h-10 object-contain rounded-full bg-white p-1"
+      />
       <div class="loader"></div>
     </div>
   </main>

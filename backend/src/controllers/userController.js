@@ -5,9 +5,13 @@ const { User } = require("../schema/user.schema");
 require("dotenv").config();
 
 const listUsers = async (request, reply) => {
-  const { page = 1, limit = 10 } = request.query;
+  const { page = 1, limit = 10, type } = request.query;
+  if (type && type !== "driver" && type !== "operator") {
+    return reply.code(400).send({ error: "Invalid user type" });
+  }
+  const query = type ? { role: type } : {};
   try {
-    const users = await User.find()
+    const users = await User.find(query)
       .skip((page - 1) * limit)
       .limit(limit)
       .sort({ created_at: -1 })

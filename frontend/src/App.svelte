@@ -6,6 +6,7 @@
   import Header from "./components/Header.svelte";
   import Loading from "./components/Loading.svelte";
   import PrivateRoute from "./components/PrivateRoute/index.svelte";
+  import CarChecklists from "./routes/CarChecklists/index.svelte";
   import Cars from "./routes/Cars/index.svelte";
   import Login from "./routes/Login/index.svelte";
   import Map from "./routes/Map/index.svelte";
@@ -80,6 +81,9 @@
       </PrivateRoute>
       <PrivateRoute path="cars">
         <Cars />
+      </PrivateRoute>
+      <PrivateRoute path="car-checklists">
+        <CarChecklists />
       </PrivateRoute>
       <Route path="login">
         <Login />

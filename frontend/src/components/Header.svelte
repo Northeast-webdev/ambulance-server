@@ -12,6 +12,7 @@
     { name: "Users", path: "/users" },
     { name: "Runs", path: "/runs" },
     { name: "Cars", path: "/cars" },
+    { name: "Car Checklists", path: "/car-checklists" },
   ];
   function handleLogout() {
     token.set(null);
@@ -28,7 +29,11 @@
     <div class="container py-4 px-3 mx-auto flex justify-between items-center">
       <!-- Logo -->
       <div class="flex items-center">
-        <img src={logo} alt="logo" class="w-10 h-10 object-contain" />
+        <img
+          src={logo}
+          alt="logo"
+          class="w-10 h-10 object-contain rounded-full bg-white p-1"
+        />
       </div>
 
       <!-- Navigation Links -->

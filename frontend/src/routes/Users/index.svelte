@@ -3,7 +3,7 @@
   import moment from "moment";
   import { onMount } from "svelte";
   import { Link } from "svelte-navigator";
-  import { fade } from "svelte/transition";
+  import { fade, fly } from "svelte/transition";
   import MdiEye from "virtual:icons/mdi/eye";
   import MdiEyeOff from "virtual:icons/mdi/eye-off";
   import MdiPencil from "virtual:icons/mdi/pencil";
@@ -17,6 +17,7 @@
   let show_form = false;
   let action = "new";
   let user_id = "";
+  let userType = "driver";
   let meta_verifier = {
     Role: "role",
     Email: "email",
@@ -38,27 +39,11 @@
     role: "driver",
   };
 
-  const getUsers = async () => {
+  onMount(() => {
     loading = true;
-    fetch(import.meta.env.VITE_API_URL + "/api/users", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        users = data.users;
-        console.log("users: ", users);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      })
-      .finally(() => {
-        loading = false;
-      });
-  };
-  onMount(getUsers);
+    getDrivers();
+    loading = false;
+  });
 
   function newUserToggle() {
     show_form = !show_form;
@@ -89,7 +74,11 @@
         alert(data.error);
         return;
       }
-      await getUsers();
+      if (userType === "driver") {
+        await getDrivers();
+      } else {
+        await getOperators();
+      }
     } catch (error) {
       console.error("Error:", error);
     }
@@ -115,7 +104,11 @@
           alert(data.error);
           return;
         }
-        await getUsers();
+        if (userType === "driver") {
+          await getDrivers();
+        } else {
+          await getOperators();
+        }
         new_user = {
           username: "",
           password: "",
@@ -148,7 +141,11 @@
           alert(data.error);
           return;
         }
-        await getUsers();
+        if (userType === "driver") {
+          await getDrivers();
+        } else {
+          await getOperators();
+        }
         new_user = {
           username: "",
           password: "",
@@ -165,17 +162,81 @@
       }
     }
   }
+
+  async function getDrivers() {
+    userType = "driver";
+    fetch(import.meta.env.VITE_API_URL + "/api/users?type=driver", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        users = data.users;
+        console.log("users: ", users);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }
+
+  async function getOperators() {
+    userType = "operator";
+    fetch(import.meta.env.VITE_API_URL + "/api/users?type=operator", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        users = data.users;
+        console.log("users: ", users);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }
 </script>
 
 {#if loading}
   <LoadingList />
 {:else}
+  <!-- Submenu buttons -->
+  <div class=" mb-6 shadow-lg">
+    <div class="container mx-auto p-4 flex gap-4">
+      <button
+        class="{userType === 'driver'
+          ? 'bg-emerald-200 text-emerald-700'
+          : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
+        on:click={getDrivers}
+      >
+        <span>Drivers</span>
+      </button>
+      <button
+        class="{userType === 'operator'
+          ? 'bg-emerald-200  text-emerald-700'
+          : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
+        on:click={getOperators}
+      >
+        <span>Operators</span>
+      </button>
+    </div>
+  </div>
   <div class="container mx-auto py-6 px-3">
     <div class="flex justify-between items-center mb-6">
       <div>
-        <h1 class="text-3xl font-bold">Users</h1>
+        <h1 class="text-3xl font-bold capitalize">{userType}s</h1>
         <p class="text-gray-500">
-          {users.filter((x) => x.driver_status === "free").length} available users
+          {users.filter((x) => x.driver_status === "free").length} available {userType ===
+          "driver"
+            ? users.length > 1
+              ? "drivers"
+              : "driver"
+            : users.length > 1
+              ? "operators"
+              : "operator"}
         </p>
       </div>
       <button
@@ -206,15 +267,24 @@
             <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
               >Email</th
             >
-            <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-              >Role</th
-            >
-            <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-              >Car</th
-            >
-            <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-              >Status</th
-            >
+            {#if userType === "driver"}
+              <th
+                transition:fly={{
+                  x: 100,
+                  duration: 300,
+                }}
+                class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                >Car</th
+              >
+              <th
+                transition:fly={{
+                  x: 100,
+                  duration: 300,
+                }}
+                class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                >Status</th
+              >
+            {/if}
             <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
               >Created At</th
             >
@@ -227,6 +297,11 @@
         <tbody>
           {#each users as user, index}
             <tr
+              transition:fly|local={{
+                x: 100,
+                duration: 300,
+                delay: index * 100,
+              }}
               class="{index % 2 === 0
                 ? 'bg-white'
                 : 'bg-gray-100'} border-b border-l"
@@ -235,30 +310,31 @@
               <td class="py-3 px-4 border-r">{user.first_name}</td>
               <td class="py-3 px-4 border-r">{user.last_name}</td>
               <td class="py-3 px-4 border-r">{user.email}</td>
-              <td class="py-3 px-4 border-r uppercase">{user.role}</td>
-              <td class="py-3 px-4 border-r">
-                {#if user.car}
-                  <Link
-                    to={`/cars/${user.car._id}`}
-                    class="text-blue-600 hover:underline">See Car</Link
-                  >
-                {:else}
-                  <span class="text-gray-500">-</span>
-                {/if}
-              </td>
-              <td class="py-3 px-4 border-r">
-                {#if user.driver_status === "free"}
-                  <span
-                    class="text-green-900 bg-green-300 px-4 py-1 rounded-full inline-block"
-                    >Free</span
-                  >
-                {:else}
-                  <span
-                    class="text-red-900 bg-red-200 px-4 py-1 rounded-full inline-block"
-                    >Busy</span
-                  >
-                {/if}
-              </td>
+              {#if userType === "driver"}
+                <td class="py-3 px-4 border-r">
+                  {#if user.car}
+                    <Link
+                      to={`/cars/${user.car._id}`}
+                      class="text-blue-600 hover:underline">See Car</Link
+                    >
+                  {:else}
+                    <span class="text-gray-500">-</span>
+                  {/if}
+                </td>
+                <td class="py-3 px-4 border-r">
+                  {#if user.driver_status === "free"}
+                    <span
+                      class="text-green-900 bg-green-300 px-4 py-1 rounded-full inline-block"
+                      >Free</span
+                    >
+                  {:else}
+                    <span
+                      class="text-red-900 bg-red-200 px-4 py-1 rounded-full inline-block"
+                      >Busy</span
+                    >
+                  {/if}
+                </td>
+              {/if}
               <td class="py-3 px-4 border-r"
                 >{moment(user.created_at).format("DD/MM/YYYY HH:MM")}</td
               >
@@ -462,3 +538,14 @@
     </div>
   </div>
 {/if}
+
+<style>
+  input:disabled {
+    cursor: not-allowed;
+  }
+  table,
+  th,
+  td {
+    transition: all 0.3s;
+  }
+</style>

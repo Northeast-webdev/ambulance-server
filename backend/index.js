@@ -6,6 +6,7 @@ const authRoutes = require("./src/controllers/authController");
 const carRoutes = require("./src/controllers/carController");
 const runRoutes = require("./src/controllers/runController");
 const fastifyStatic = require("@fastify/static");
+const carChecklistRoutes = require("./src/controllers/carChecklistController");
 
 // Serve static files from the frontend/dist folder
 fastify.register(fastifyStatic, {
@@ -30,6 +31,7 @@ userRoutes();
 pdfRoutes();
 carRoutes();
 runRoutes();
+carChecklistRoutes();
 
 // Start the server
 const start = async () => {
