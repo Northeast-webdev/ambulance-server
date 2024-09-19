@@ -14,12 +14,13 @@
   $: type = show_password ? "text" : "password";
   let loading = false;
   let users = [];
+  let cars = [];
   let show_form = false;
   let action = "new";
   let user_id = "";
   let userType = "driver";
   let meta_verifier = {
-    Role: "role",
+    Car: "car",
     Email: "email",
     Username: "username",
     Password: "password",
@@ -36,14 +37,32 @@
     last_name: "",
     dob: "",
     phone: "",
-    role: "driver",
+    car: "",
   };
 
   onMount(() => {
     loading = true;
     getDrivers();
+    getCars();
     loading = false;
   });
+
+  async function getCars() {
+    fetch(import.meta.env.VITE_API_URL + "/api/cars", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        cars = data.cars;
+        console.log("cars: ", cars);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }
 
   function newUserToggle() {
     show_form = !show_form;
@@ -95,7 +114,7 @@
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-            body: JSON.stringify({ ...new_user }),
+            body: JSON.stringify({ ...new_user, role: userType }),
           }
         );
         const data = await response.json();
@@ -117,7 +136,7 @@
           last_name: "",
           dob: "",
           phone: "",
-          role: "driver",
+          car: "",
         };
         show_form = false;
       } catch (error) {
@@ -154,7 +173,7 @@
           last_name: "",
           dob: "",
           phone: "",
-          role: "driver",
+          car: "",
         };
         show_form = false;
       } catch (error) {
@@ -351,9 +370,9 @@
                         email: user.email,
                         first_name: user.first_name,
                         last_name: user.last_name,
-                        dob: user.dob,
+                        dob: user.dob.split("T")[0],
                         phone: user.phone,
-                        role: user.role,
+                        car: user.car ? user.car._id : "",
                       };
                       show_form = true;
                     }}
@@ -393,7 +412,19 @@
     >
       <button
         class="absolute top-4 right-4 text-3xl text-gray-600 hover:text-gray-800"
-        on:click={newUserToggle}
+        on:click={() => {
+          show_form = false;
+          new_user = {
+            username: "",
+            password: "",
+            email: "",
+            first_name: "",
+            last_name: "",
+            dob: "",
+            phone: "",
+            car: "",
+          };
+        }}
         aria-label="Close form"
       >
         ✕
@@ -405,7 +436,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           {#each Object.keys(meta_verifier) as key}
             <div>
-              {#if key === "Role"}
+              {#if key === "Car"}
                 <label
                   for="field-{key}"
                   class="block text-sm font-medium text-gray-700 mb-1"
@@ -417,8 +448,14 @@
                   class="block w-full border outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-600 transition-all"
                   bind:value={new_user[meta_verifier[key]]}
                 >
-                  <option value="driver">Driver</option>
-                  <option value="operator">Operator</option>
+                  <option value="">Select a car</option>
+                  {#each cars as car}
+                    <option value={car._id}
+                      >{car.meta.brand}
+                      {car.meta.model}
+                      {car.meta.plate_number}</option
+                    >
+                  {/each}
                 </select>
               {:else}
                 <label

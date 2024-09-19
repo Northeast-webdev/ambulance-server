@@ -5,18 +5,12 @@
   let checklists = [];
   let loading = false;
   let meta_verifier = {
-    Title: "title",
-    Ora: "ora",
-    Paziente: "paziente",
-    Servizio: "servizio",
-    "Tipo di servizio": "tipo_di_servizio",
-    "C/S/B": "csb",
-    Partenza: "partenza",
-    Arrivo: "arrivo",
-    "N. Richiesta": "n_richiesta",
-    Ricevuta: "ricevuta",
-    Viaggi: "viaggio",
-    Tel: "tel",
+    Driver: "driver",
+    Brand: "brand",
+    Model: "model",
+    Kilometers: "kilometers",
+    "Plate Number": "plate_number",
+    "Carbon Level": "carbon_level",
   };
 
   const getChecklists = async () => {

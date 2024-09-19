@@ -38,7 +38,7 @@ const getUser = async (request, reply) => {
 };
 
 const updateUser = async (request, reply) => {
-  const { email, first_name, last_name, dob, phone, role } = request.body;
+  const { email, first_name, last_name, dob, phone, car } = request.body;
   const updates = {};
 
   // if some fields are missing, do not update them
@@ -47,7 +47,11 @@ const updateUser = async (request, reply) => {
   if (last_name) updates.last_name = last_name;
   if (dob) updates.dob = dob;
   if (phone) updates.phone = phone;
-  if (role) updates.role = role;
+  if (car === "") {
+    updates.car = null;
+  } else if (car) {
+    updates.car = car;
+  }
 
   updates.updated_at = new Date().toISOString();
 

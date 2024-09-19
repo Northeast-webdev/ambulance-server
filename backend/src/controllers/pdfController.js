@@ -14,7 +14,7 @@ const printPDF = async (request, reply) => {
     filename = new Date().getTime().toString();
   }
   const logo = fs
-    .readFileSync(`${process.cwd()}/img/logo.png`)
+    .readFileSync(`${process.cwd()}/backend/img/logo.png`)
     .toString("base64");
   // Set your HTML content here
   const htmlContent = `
@@ -87,8 +87,8 @@ const printPDF = async (request, reply) => {
             text-align: center;
         }
         #headerTable img {
-            width: 100px;
-            height: 100px;
+            width: 40px;
+            height: 40px;
             object-fit: contain;
             display: block;
             margin: 0 auto;
@@ -115,13 +115,15 @@ const printPDF = async (request, reply) => {
   await page.setContent(htmlContent);
 
   await page.pdf({
-    path: `pdf/${filename}.pdf`,
+    path: `${process.cwd()}/backend/pdf/${filename}.pdf`,
     format: "A4",
     printBackground: true,
   });
   await browser.close();
   // return the path to the generated PDF
-  const stream = fs.readFileSync(`pdf/${filename}.pdf`);
+  const stream = fs.readFileSync(
+    `${process.cwd()}/backend/pdf/${filename}.pdf`
+  );
 
   // download the PDF
   reply.header("Content-Type", "application/pdf");
