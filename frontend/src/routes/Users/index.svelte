@@ -404,14 +404,12 @@
   <!-- Modal Background -->
   <div
     transition:fade={{ duration: 300 }}
-    class="fixed inset-0 z-40 flex items-center justify-center bg-white bg-opacity-80 backdrop-blur-sm"
+    class="fixed inset-0 z-40 flex items-center justify-center overflow-y-auto p-8"
   >
     <!-- Form Modal -->
-    <div
-      class="relative max-w-screen-lg w-full max-h-[80vh] overflow-y-auto bg-white p-8 rounded-xl shadow-xl border-2 z-50 transform transition-all duration-500"
-    >
+    <div class="relative max-w-screen-lg w-full max-h-[80vh] bg-white z-50">
       <button
-        class="absolute top-4 right-4 text-3xl text-gray-600 hover:text-gray-800"
+        class="absolute top-0 right-6 text-3xl text-gray-600 hover:text-gray-800"
         on:click={() => {
           show_form = false;
           new_user = {
@@ -429,7 +427,7 @@
       >
         ✕
       </button>
-      <h2 class="text-3xl font-bold text-center mb-6">
+      <h2 class="text-3xl font-bold text-left mb-6">
         {action === "new" ? "Add a new User" : "Edit a User"}
       </h2>
       <form on:submit|preventDefault={newUser} class="space-y-6">
