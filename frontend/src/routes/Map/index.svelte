@@ -237,6 +237,22 @@
       console.error("Error:", error);
     }
   }
+
+  onMount(() => {
+    fetch(import.meta.env.VITE_API_URL + "/api/cars", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        cars = data.cars;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  });
 </script>
 
 <div class="min-h-screen p-6">

@@ -437,7 +437,7 @@
                   class="block w-full border outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
                   bind:value={new_user[meta_verifier[key]]}
                 >
-                  <option value="">Select a car</option>
+                  <option value="">Seleziona</option>
                   {#each cars as car}
                     <option value={car._id}
                       >{car.meta.brand}
