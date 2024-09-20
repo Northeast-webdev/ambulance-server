@@ -11,6 +11,7 @@
     Kilometers: "kilometers",
     "Plate Number": "plate_number",
     "Carbon Level": "carbon_level",
+    "PDF Link": "pdf_link"
   };
 
   const getChecklists = async () => {
