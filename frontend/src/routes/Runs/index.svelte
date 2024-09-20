@@ -376,7 +376,7 @@
                         on:click={() => openPopup(run)}
                         class="bg-lime-500 hover:bg-lime-600 transition text-white font-bold py-2 px-6 rounded-lg"
                       >
-                        Assign Car
+                        Assegna corsa
                       </button>
                     {:else}
                       <p class="text-gray-800 cursor-pointer py-2 px-6">
