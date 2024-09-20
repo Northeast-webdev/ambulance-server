@@ -333,12 +333,12 @@
                   {#if user.driver_status === "free"}
                     <span
                       class="text-green-900 bg-green-300 px-4 py-1 rounded-full inline-block"
-                      >Free</span
+                      >Disponibile</span
                     >
                   {:else}
                     <span
                       class="text-red-900 bg-red-200 px-4 py-1 rounded-full inline-block"
-                      >Busy</span
+                      >Non disponibile</span
                     >
                   {/if}
                 </td>
