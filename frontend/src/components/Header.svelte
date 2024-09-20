@@ -8,11 +8,11 @@
 
   const navigate = useNavigate();
   const links = [
-    { name: "Map", path: "/" },
-    { name: "Users", path: "/users" },
-    { name: "Runs", path: "/runs" },
-    { name: "Cars", path: "/cars" },
-    { name: "Car Checklists", path: "/car-checklists" },
+    { name: "Utenti", path: "/users" },
+    { name: "Mappa", path: "/" },
+    { name: "Corse", path: "/runs" },
+    { name: "Mezzi", path: "/cars" },
+    { name: "Mezzi Checklist", path: "/car-checklists" },
   ];
   function handleLogout() {
     token.set(null);

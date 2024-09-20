@@ -68,8 +68,8 @@ const updateRun = async (request, reply) => {
       {
         returnDocument: "after",
       }
-    ).exec();
-    reply.send(result);
+    );
+    reply.send({ run: result });
   } catch (error) {
     reply.code(500).send(error);
   }

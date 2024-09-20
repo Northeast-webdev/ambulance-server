@@ -6,12 +6,12 @@
   let loading = false;
   let meta_verifier = {
     Driver: "driver",
-    Brand: "brand",
-    Model: "model",
-    Kilometers: "kilometers",
-    "Plate Number": "plate_number",
-    "Carbon Level": "carbon_level",
-    "PDF Link": "pdf_link"
+    Marca: "brand",
+    Modello: "model",
+    Chilometri: "kilometers",
+    Targa: "plate_number",
+    "Livello carburante": "carbon_level",
+    "PDF Link": "pdf_link",
   };
 
   const getChecklists = async () => {
@@ -42,7 +42,7 @@
 {:else}
   <div class="container mx-auto py-6 px-3">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold">Car Checklists</h1>
+      <h1 class="text-3xl font-bold">Mezzi Checklist</h1>
     </div>
 
     <!-- Table Container with Overflow for Responsiveness -->

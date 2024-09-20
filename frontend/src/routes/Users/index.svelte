@@ -2,7 +2,6 @@
   // @ts-nocheck
   import moment from "moment";
   import { onMount } from "svelte";
-  import { Link } from "svelte-navigator";
   import { fade, fly } from "svelte/transition";
   import MdiEye from "virtual:icons/mdi/eye";
   import MdiEyeOff from "virtual:icons/mdi/eye-off";
@@ -20,14 +19,14 @@
   let user_id = "";
   let userType = "driver";
   let meta_verifier = {
-    Car: "car",
+    Mezzo: "car",
     Email: "email",
     Username: "username",
     Password: "password",
-    "First Name": "first_name",
-    "Last Name": "last_name",
-    "Date of Birth": "dob",
-    Phone: "phone",
+    Nome: "first_name",
+    Cognome: "last_name",
+    "Data di nascita": "dob",
+    Telefono: "phone",
   };
   let new_user = {
     username: "",
@@ -231,7 +230,7 @@
           : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
         on:click={getDrivers}
       >
-        <span>Drivers</span>
+        <span>Driver</span>
       </button>
       <button
         class="{userType === 'operator'
@@ -239,23 +238,16 @@
           : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
         on:click={getOperators}
       >
-        <span>Operators</span>
+        <span>Operator</span>
       </button>
     </div>
   </div>
   <div class="container mx-auto py-6 px-3">
     <div class="flex justify-between items-center mb-6">
       <div>
-        <h1 class="text-3xl font-bold capitalize">{userType}s</h1>
+        <h1 class="text-3xl font-bold">Lista dei {userType}</h1>
         <p class="text-gray-500">
-          {users.filter((x) => x.driver_status === "free").length} available {userType ===
-          "driver"
-            ? users.length > 1
-              ? "drivers"
-              : "driver"
-            : users.length > 1
-              ? "operators"
-              : "operator"}
+          {users.filter((x) => x.driver_status === "free").length} disponibile {userType}
         </p>
       </div>
       <button
@@ -263,7 +255,7 @@
         class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-md"
       >
         <span class="text-2xl">+</span>
-        <span>New User</span>
+        <span>Aggiungi {userType}</span>
       </button>
     </div>
 
@@ -278,10 +270,10 @@
               >Username</th
             >
             <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-              >Name</th
+              >Nome</th
             >
             <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-              >Surname</th
+              >Cognome</th
             >
             <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
               >Email</th
@@ -293,7 +285,7 @@
                   duration: 300,
                 }}
                 class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                >Car</th
+                >Mezzo</th
               >
               <th
                 transition:fly={{
@@ -305,11 +297,11 @@
               >
             {/if}
             <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-              >Created At</th
+              >Data di Creazione</th
             >
             <th
               class="py-3 px-4 text-center font-semibold text-gray-700 border-b"
-              >Actions</th
+              >Azioni</th
             >
           </tr>
         </thead>
@@ -332,10 +324,7 @@
               {#if userType === "driver"}
                 <td class="py-3 px-4 border-r">
                   {#if user.car}
-                    <Link
-                      to={`/cars/${user.car._id}`}
-                      class="text-blue-600 hover:underline">See Car</Link
-                    >
+                    <span class="font-bold"> {user.car.meta.plate_number}</span>
                   {:else}
                     <span class="text-gray-500">-</span>
                   {/if}
@@ -379,14 +368,14 @@
                     class="border-amber-600 border hover:bg-amber-600 text-amber-600 hover:text-amber-100 font-bold py-2 px-4 rounded-lg transition duration-200"
                   >
                     <MdiPencil class="w-4 h-4 inline" />
-                    <span>Edit</span>
+                    <span>Modifica</span>
                   </button>
                   <button
                     on:click={deleteCar(user._id)}
                     class="border-red-600 border hover:bg-red-600 text-red-600 hover:text-red-100 font-bold py-2 px-4 rounded-lg transition duration-200"
                   >
                     <MdiTrashCan class="w-4 h-4 inline" />
-                    <span>Delete</span>
+                    <span>Elimina</span>
                   </button>
                 {:else}
                   <div class="text-gray-500 py-4 px-4"></div>
@@ -428,13 +417,15 @@
         ✕
       </button>
       <h2 class="text-3xl font-bold text-left mb-6">
-        {action === "new" ? "Add a new " + userType : "Edit a " + userType}
+        {action === "new" ? "Aggiungi " + userType : "Modifica " + userType}
       </h2>
       <form on:submit|preventDefault={newUser} class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           {#each Object.keys(meta_verifier) as key}
-            <div class="{key === "Car" && userType !== "driver" ? "hidden" : ""}">
-              {#if key === "Car" && userType === "driver"}
+            <div
+              class={key === "Mezzo" && userType !== "driver" ? "hidden" : ""}
+            >
+              {#if key === "Mezzo" && userType === "driver"}
                 <label
                   for="field-{key}"
                   class="block text-sm font-medium text-gray-700 mb-1"
@@ -443,7 +434,7 @@
                 </label>
                 <select
                   id="field-{key}"
-                  class="block w-full border outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-600 transition-all"
+                  class="block w-full border outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
                   bind:value={new_user[meta_verifier[key]]}
                 >
                   <option value="">Select a car</option>
@@ -455,7 +446,7 @@
                     >
                   {/each}
                 </select>
-              {:else if key !== "Car"}
+              {:else if key !== "Mezzo"}
                 <label
                   for="field-{key}"
                   class="block text-sm font-medium text-gray-700 mb-1"
@@ -467,7 +458,7 @@
                     type="email"
                     id="field-{key}"
                     required
-                    class="block w-full border valid:border-green-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-600 transition-all"
+                    class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
                     bind:value={new_user[meta_verifier[key]]}
                   />
                 {:else if meta_verifier[key] === "phone"}
@@ -475,7 +466,7 @@
                     type="tel"
                     id="field-{key}"
                     required
-                    class="block w-full border valid:border-green-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-600 transition-all"
+                    class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
                     bind:value={new_user[meta_verifier[key]]}
                   />
                 {:else if meta_verifier[key] === "dob"}
@@ -483,7 +474,7 @@
                     type="date"
                     id="field-{key}"
                     required
-                    class="block w-full border valid:border-green-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-600 transition-all"
+                    class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
                     bind:value={new_user[meta_verifier[key]]}
                   />
                 {:else if meta_verifier[key] === "password" && type === "password"}
@@ -493,7 +484,7 @@
                       id="field-{key}"
                       disabled={action === "edit"}
                       required
-                      class="block w-full disabled:bg-gray-200 border valid:border-green-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-600 transition-all"
+                      class="block w-full disabled:bg-gray-200 border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
                       bind:value={new_user[meta_verifier[key]]}
                     />
                     <div
@@ -521,7 +512,7 @@
                       id="field-{key}"
                       disabled={action === "edit"}
                       required
-                      class="block w-full disabled:bg-gray-200 border valid:border-green-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-600 transition-all"
+                      class="block w-full disabled:bg-gray-200 border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
                       bind:value={new_user[meta_verifier[key]]}
                     />
                     <div
@@ -530,7 +521,7 @@
                       <input
                         type="checkbox"
                         id="show_password"
-                        class="form-checkbox hidden text-green-600"
+                        class="form-checkbox hidden text-lime-600"
                         bind:checked={show_password}
                       />
                       <label
@@ -547,7 +538,7 @@
                     type="text"
                     id="field-{key}"
                     required
-                    class="block w-full border valid:border-green-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-600 transition-all"
+                    class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
                     bind:value={new_user[meta_verifier[key]]}
                   />
                 {/if}
@@ -555,18 +546,12 @@
             </div>
           {/each}
         </div>
-        <div class="flex gap-4 mt-4">
+        <div class="flex gap-4 justify-end mt-4">
           <button
             type="submit"
-            class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg flex-1 transition duration-200"
+            class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
           >
-            Submit
-          </button>
-          <button
-            type="reset"
-            class="bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 px-4 rounded-lg flex-1 transition duration-200"
-          >
-            Reset
+            Conferma dettagli
           </button>
         </div>
       </form>

@@ -1,4 +1,8 @@
 <script>
+  // @ts-nocheck
+
+  import L from "leaflet";
+  import "leaflet/dist/leaflet.css";
   import { onMount } from "svelte";
   import { fade, fly } from "svelte/transition";
   import LoadingList from "../../components/LoadingList.svelte";
@@ -8,23 +12,115 @@
   let showPopup = false;
   let showFinalPopup = false;
   let loading = false;
+  let showMap = false;
   let cars = [];
   let selected_car = null;
   let selected_run = null;
+  let map;
+  let driver_id = "";
+  let drivers = [
+    {
+      name: "Allen Jack",
+      lat: 40.7128,
+      lng: -74.006,
+      status: "Available",
+      id: 1,
+    },
+    { name: "John Snow", lat: 40.7228, lng: -74.006, status: "Busy", id: 2 },
+    {
+      name: "Luca Brasi",
+      lat: 40.7138,
+      lng: -74.016,
+      status: "Busy",
+      id: 3,
+    },
+    { name: "Mario Rossi", lat: 40.7228, lng: -74.0, status: "Offline", id: 4 },
+  ];
+
+  $: showMap && getMapInfo();
+
+  function getMapInfo() {
+    if (map) return;
+    // Initialize the Leaflet map
+    map = L.map("map").setView([40.7128, -74.006], 13);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+      map
+    );
+
+    // Add markers for drivers
+    drivers.forEach((driver) => {
+      // Create a custom DivIcon for each marker with the driver's ID
+      const customIcon = L.divIcon({
+        className: "custom-marker", // Custom CSS class for styling
+        html: `<div class="marker-circle ${
+          driver.status === "Available"
+            ? "bg-green-500 text-green-100"
+            : driver.status === "Busy"
+              ? "bg-amber-500 text-amber-100"
+              : "bg-red-500 text-red-100"
+        }">${driver.id}</div>`, // Inner HTML to show the ID
+        iconSize: [20, 20], // Size of the marker
+      });
+
+      const marker = L.marker([driver.lat, driver.lng], {
+        icon: customIcon,
+      }).addTo(map);
+
+      marker.on("click", () => marker.openMapPopup());
+
+      if (driver.status !== "Offline") animateMarker(marker);
+    });
+  }
+
+  function openMapPopup(id) {
+    driver_id = id;
+    showPopup = true;
+  }
+
+  // Function to animate markers smoothly
+  function animateMarker(marker) {
+    setInterval(() => {
+      const currentLatLng = marker.getLatLng();
+      const newLatLng = [
+        currentLatLng.lat + (Math.random() - 0.5) * 0.001,
+        currentLatLng.lng + (Math.random() - 0.5) * 0.001,
+      ];
+
+      marker.setLatLng(newLatLng);
+    }, 1000);
+  }
   let meta_verifier = {
-    Title: "title",
+    "C/S/B": "csb",
     Ora: "ora",
     Paziente: "paziente",
     Servizio: "servizio",
+    Tel: "tel",
     "Tipo di servizio": "tipo_di_servizio",
-    "C/S/B": "csb",
     Partenza: "partenza",
     Arrivo: "arrivo",
     "N. Richiesta": "n_richiesta",
     Ricevuta: "ricevuta",
     Viaggi: "viaggio",
-    Tel: "tel",
+    "Note particolari": "note_particolari",
   };
+  let types = {
+    Titolo: "text",
+    Ora: "time",
+    Paziente: "text",
+    Servizio: "select",
+    "Tipo di servizio": "text",
+    "C/S/B": "select",
+    Partenza: "time",
+    Arrivo: "time",
+    "N. Richiesta": "text",
+    Ricevuta: "text",
+    Viaggi: "text",
+    Tel: "tel",
+    "Note particolari": "textarea",
+  };
+
   let new_run = {
     csb: "",
     ora: "",
@@ -37,7 +133,20 @@
     n_richiesta: "",
     ricevuta: "",
     viaggio: "",
-    title: "",
+  };
+
+  let options = {
+    servizio: [
+      { value: "a", text: "A" },
+      { value: "b", text: "B" },
+      { value: "c", text: "C" },
+      { value: "d", text: "D" },
+    ],
+    csb: [
+      { value: "c", text: "C" },
+      { value: "s", text: "S" },
+      { value: "b", text: "B" },
+    ],
   };
 
   const getRuns = async () => {
@@ -115,14 +224,13 @@
 
   async function newRun() {
     try {
-      const { title, ...meta } = new_run;
       const response = await fetch(import.meta.env.VITE_API_URL + "/api/runs", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ meta, title }),
+        body: JSON.stringify({ meta: new_run, title: new_run.paziente }),
       });
       const data = await response.json();
       selected_run = data.run._id;
@@ -140,7 +248,6 @@
         n_richiesta: "",
         ricevuta: "",
         viaggio: "",
-        title: "",
       };
     } catch (error) {
       console.error("Error:", error);
@@ -157,13 +264,13 @@
 {:else}
   <div class="container mx-auto py-6 px-3">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold">Runs</h1>
+      <h1 class="text-3xl font-bold">Corse</h1>
       <button
         on:click={newRunToggle}
         class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-md"
       >
         <span class="text-2xl">+</span>
-        <span>New Run</span>
+        <span>Aggiungi Corsa</span>
       </button>
     </div>
 
@@ -175,7 +282,7 @@
         <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
           <tr>
             {#each Object.keys(meta_verifier) as key}
-              {#if key !== "Title"}
+              {#if key !== "Titolo" && key !== "Note particolari"}
                 <th
                   class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
                   >{key}</th
@@ -196,7 +303,7 @@
                     : 'bg-gray-50'} border-b border-l"
             >
               {#each Object.keys(meta_verifier) as key}
-                {#if key !== "Title" && key !== "Paziente"}
+                {#if key !== "Titolo" && key !== "Paziente" && key !== "Note particolari"}
                   <td class="py-3 px-4 border-r border-inherit"
                     >{run.meta[meta_verifier[key]]}</td
                   >
@@ -249,7 +356,7 @@
                       ></div>
                       <div
                         title="Completed"
-                        class="bg-green-500 w-4 h-4 rounded-full {run.status ===
+                        class="bg-lime-500 w-4 h-4 rounded-full {run.status ===
                         'completed'
                           ? 'ring-4 ring-green-600'
                           : ''}"
@@ -267,7 +374,7 @@
                     {:else if run.status !== "cancelled"}
                       <button
                         on:click={() => openPopup(run)}
-                        class="bg-green-500 hover:bg-green-600 transition text-white font-bold py-2 px-6 rounded-lg"
+                        class="bg-lime-500 hover:bg-lime-600 transition text-white font-bold py-2 px-6 rounded-lg"
                       >
                         Assign Car
                       </button>
@@ -307,7 +414,7 @@
               : 'text-gray-300'} font-semibold"
           >
             <span class="text-4xl">1</span>
-            <span class="pb-1 text-xl">Enter the information</span>
+            <span class="pb-1 text-xl">Inserisci le informazioni</span>
           </div>
         </div>
 
@@ -323,7 +430,7 @@
               : 'text-gray-300'} font-semibold"
           >
             <span class="text-4xl">2</span>
-            <span class="pb-1 text-xl">Assign and Send</span>
+            <span class="pb-1 text-xl">Assegna ed invia</span>
           </div>
         </div>
 
@@ -339,7 +446,7 @@
               : 'text-gray-300'} font-semibold"
           >
             <span class="text-4xl">3</span>
-            <span class="pb-1 text-xl">Assignment completed</span>
+            <span class="pb-1 text-xl">Assegnazione completata</span>
           </div>
         </div>
       </div>
@@ -347,15 +454,15 @@
     <div class="max-w-screen-lg w-full">
       {#if show_form}
         <!-- Form Modal -->
-        <div class="max-h-[80vh] z-50 transform transition-all duration-500">
+        <div class="z-50 transform transition-all duration-500">
           <button
-            class="absolute text-3xl -top-1/4 mt-2 right-6 text-gray-600 hover:text-gray-800"
+            class="absolute text-3xl -top-[12vh] mt-2 right-6 text-gray-600 hover:text-gray-800"
             on:click={() => (show_form = false)}
             aria-label="Close form"
           >
             ✕
           </button>
-          <h2 class="text-3xl font-bold mb-6">New Run</h2>
+          <h2 class="text-3xl font-bold mb-6">Nuova Corsa</h2>
           <form
             on:submit|preventDefault={() => {
               show_form = false;
@@ -364,37 +471,63 @@
             }}
             class="space-y-6"
           >
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {#each Object.keys(meta_verifier) as key}
-                <div>
+                <div
+                  class={types[key] === "textarea"
+                    ? "md:col-span-2 lg:col-span-4"
+                    : ""}
+                >
                   <label
                     for="field-{key}"
                     class="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    {key} <span class="text-red-500">*</span>
+                    {key}
+                    <span
+                      class="text-red-500 {types[key] === 'textarea'
+                        ? 'hidden'
+                        : ''}">*</span
+                    >
                   </label>
-                  <input
-                    type="text"
-                    required
-                    id="field-{key}"
-                    class="block w-full border valid:border-green-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-600 transition-all"
-                    bind:value={new_run[meta_verifier[key]]}
-                  />
+                  {#if types[key] === "select"}
+                    <select
+                      required
+                      id="field-{key}"
+                      class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 bg-white transition-all"
+                      bind:value={new_run[meta_verifier[key]]}
+                    >
+                      <option value="" disabled>Seleziona</option>
+                      {#each options[meta_verifier[key]] as option}
+                        <option value={option.value}>{option.text}</option>
+                      {/each}
+                      <!-- Add your options here -->
+                    </select>
+                  {:else if types[key] === "textarea"}
+                    <textarea
+                      id="field-{key}"
+                      class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
+                      bind:value={new_run[meta_verifier[key]]}
+                    ></textarea>
+                  {:else}
+                    <input
+                      type={types[key]}
+                      required
+                      id="field-{key}"
+                      class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
+                      value={new_run[meta_verifier[key]]}
+                      on:input={(e) =>
+                        (new_run[meta_verifier[key]] = e.target.value)}
+                    />
+                  {/if}
                 </div>
               {/each}
             </div>
-            <div class="flex gap-4 mt-4">
+            <div class="flex gap-4 justify-end mt-4">
               <button
                 type="submit"
-                class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg flex-1 transition duration-200"
+                class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
               >
-                Confirm
-              </button>
-              <button
-                type="reset"
-                class="bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 px-4 rounded-lg flex-1 transition duration-200"
-              >
-                Reset
+                Conferma dettagli
               </button>
             </div>
           </form>
@@ -410,25 +543,25 @@
           >
             ✕
           </button>
-          <h2 class="text-3xl font-bold mb-6">Assigning a Car</h2>
+          <h2 class="text-3xl font-bold mb-6">Assegnazione a mezzo</h2>
           <p class="text-gray-700 mb-6">
-            Do you want to assign the run to a vehicle now?
+            Vuoi assegnare già da ora la corsa ad un mezzo?
           </p>
           <div class="flex items-center gap-4 mb-12">
             <button
               on:click={updateRun}
-              class="bg-green-700 hover:bg-green-900 text-white font-bold py-2 px-6 rounded-lg"
+              class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg"
             >
-              Assign Car
+              Assegna mezzo
             </button>
             <button
               class="bg-amber-700 hover:bg-amber-900 text-white font-bold py-2 px-6 rounded-lg"
               on:click={() => (showPopup = false)}
             >
-              Skip
+              Salta per ora
             </button>
           </div>
-          <h2 class="text-3xl font-bold mb-6">Vehicle List</h2>
+          <h2 class="text-3xl font-bold mb-6">Lista veicoli</h2>
           <table
             class="min-w-full border-collapse shadow-lg rounded-lg overflow-hidden"
           >
@@ -439,15 +572,15 @@
                 ></th>
                 <th
                   class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                  >Plate Number</th
+                  >Targa</th
                 >
                 <th
                   class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                  >Model</th
+                  >Modello</th
                 >
                 <th
                   class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                  >Brand</th
+                  >Marca</th
                 >
                 <th
                   class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
@@ -463,7 +596,7 @@
               {#each cars as car}
                 <tr
                   class="border-b cursor-pointer {selected_car === car._id
-                    ? 'bg-green-100'
+                    ? 'bg-lime-100'
                     : 'bg-gray-50'}"
                   on:click={() =>
                     selected_car === car._id
@@ -473,7 +606,7 @@
                   <td class="border-r text-center">
                     <input
                       type="radio"
-                      class="bg-gray-200 checked:bg-green-600 checked:border-transparent checked:text-white rounded-full appearance-none w-4 h-4 border pointer-events-none border-gray-300 checked:ring-2 checked:ring-green-600 checked:ring-offset-2 checked:ring-offset-gray-200"
+                      class="bg-gray-200 checked:bg-lime-600 checked:border-transparent checked:text-white rounded-full appearance-none w-4 h-4 border pointer-events-none border-gray-300 checked:ring-2 checked:ring-lime-600 checked:ring-offset-2 checked:ring-offset-gray-200"
                       checked={selected_car === car._id}
                     />
                   </td>
@@ -488,6 +621,20 @@
               {/each}
             </tbody>
           </table>
+
+          <button
+            on:click={() => (showMap = !showMap)}
+            class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg my-6"
+          >
+            {!showMap ? "Vedi" : "Nascondi"} mappa
+          </button>
+          <!-- Map Container -->
+          <div class={showMap ? "" : "opacity-0"}>
+            <div
+              id="map"
+              class="aspect-[16/7] rounded-lg shadow-md z-10 mb-8"
+            ></div>
+          </div>
         </div>
       {/if}
       {#if showFinalPopup}
@@ -499,15 +646,20 @@
           >
             ✕
           </button>
-          <h2 class="text-3xl font-bold mb-6">Thank You!</h2>
+          <h2 class="text-3xl font-bold mb-6">
+            Hai assegnato la corsa al mezzo
+          </h2>
           <p class="text-gray-700 mb-6">
-            The run has been successfully assigned to the selected vehicle.
+            Il guidatore riceverà una notifica per l'accettazione della corsa
           </p>
           <button
-            class="bg-green-700 hover:bg-green-900 text-white font-bold py-2 px-6 rounded-lg"
-            on:click={() => (showFinalPopup = false)}
+            class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg"
+            on:click={() => {
+              show_form = true;
+              showFinalPopup = false;
+            }}
           >
-            Close
+            Crea un’altra corsa
           </button>
         </div>
       {/if}
