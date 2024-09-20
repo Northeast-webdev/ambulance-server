@@ -362,8 +362,11 @@
                           : ''}"
                       ></div>
                     </div>
-
-                    {#if run.car && run.status !== "cancelled"}
+                    {#if run.status === "completed"}
+                      <p class="text-gray-800 cursor-pointer py-2 px-6">
+                        Corsa completata
+                      </p>
+                    {:else if run.car && run.status !== "cancelled"}
                       <p class="text-gray-800 cursor-pointer">
                         Mezzo assegnato: <span class="hover:underline"
                           >{run.car.meta.plate_number} - {run.car.user
@@ -380,7 +383,7 @@
                       </button>
                     {:else}
                       <p class="text-gray-800 cursor-pointer py-2 px-6">
-                        Cancelled
+                        Corsa annullata
                       </p>
                     {/if}
                   </div>
