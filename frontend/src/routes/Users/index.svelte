@@ -433,7 +433,7 @@
       <form on:submit|preventDefault={newUser} class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           {#each Object.keys(meta_verifier) as key}
-            <div>
+            <div class="{key === "Car" && userType !== "driver" ? "hidden" : ""}">
               {#if key === "Car" && userType === "driver"}
                 <label
                   for="field-{key}"
