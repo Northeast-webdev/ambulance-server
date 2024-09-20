@@ -341,21 +341,21 @@
                     <div class="flex items-center gap-4">
                       <p class="text-gray-800">Status paziente</p>
                       <div
-                        title="Cancelled"
+                        title="Annullata"
                         class="bg-red-400 w-4 h-4 rounded-full {run.status ===
                         'cancelled'
                           ? 'ring-4 ring-red-600'
                           : ''}"
                       ></div>
                       <div
-                        title="Ongoing"
+                        title="In corso"
                         class="bg-yellow-500 w-4 h-4 rounded-full {run.status ===
                         'ongoing'
                           ? 'ring-4 ring-yellow-600'
                           : ''}"
                       ></div>
                       <div
-                        title="Completed"
+                        title="Completata"
                         class="bg-lime-500 w-4 h-4 rounded-full {run.status ===
                         'completed'
                           ? 'ring-4 ring-green-600'
