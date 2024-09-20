@@ -455,7 +455,7 @@
                     >
                   {/each}
                 </select>
-              {:else}
+              {:else if key !== "Car"}
                 <label
                   for="field-{key}"
                   class="block text-sm font-medium text-gray-700 mb-1"
