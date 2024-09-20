@@ -404,7 +404,7 @@
   <!-- Modal Background -->
   <div
     transition:fade={{ duration: 300 }}
-    class="fixed inset-0 z-40 flex items-center justify-center overflow-y-auto p-8"
+    class="fixed inset-0 z-40 flex items-center justify-center overflow-y-auto p-8 bg-white"
   >
     <!-- Form Modal -->
     <div class="relative max-w-screen-lg w-full max-h-[80vh] bg-white z-50">
@@ -428,13 +428,13 @@
         ✕
       </button>
       <h2 class="text-3xl font-bold text-left mb-6">
-        {action === "new" ? "Add a new User" : "Edit a User"}
+        {action === "new" ? "Add a new " + userType : "Edit a " + userType}
       </h2>
       <form on:submit|preventDefault={newUser} class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           {#each Object.keys(meta_verifier) as key}
             <div>
-              {#if key === "Car"}
+              {#if key === "Car" && userType === "driver"}
                 <label
                   for="field-{key}"
                   class="block text-sm font-medium text-gray-700 mb-1"
