@@ -71,7 +71,9 @@
   }
 
   async function deleteCar(id) {
-    const confirm = window.confirm("Are you sure you want to delete this car?");
+    const confirm = window.confirm(
+      "Sei sicuro di voler eliminare questo mezzo?"
+    );
     if (!confirm) {
       return;
     }

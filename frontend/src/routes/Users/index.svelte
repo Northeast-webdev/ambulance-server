@@ -70,7 +70,7 @@
 
   async function deleteCar(id) {
     const confirm = window.confirm(
-      "Are you sure you want to delete this user?"
+      "Sei sicuro di voler eliminare questo utente?"
     );
     if (!confirm) {
       return;
