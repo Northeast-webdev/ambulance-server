@@ -363,7 +363,7 @@
                       ></div>
                     </div>
 
-                    {#if run.car}
+                    {#if run.car && run.status !== "cancelled"}
                       <p class="text-gray-800 cursor-pointer">
                         Mezzo assegnato: <span class="hover:underline"
                           >{run.car.meta.plate_number} - {run.car.user
