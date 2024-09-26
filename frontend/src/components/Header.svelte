@@ -13,6 +13,7 @@
     { name: "Corse", path: "/runs" },
     { name: "Mezzi", path: "/cars" },
     { name: "Mezzi Checklist", path: "/car-checklists" },
+    { name: "Materiali Checklist", path: "/material-checklists" },
   ];
   function handleLogout() {
     token.set(null);

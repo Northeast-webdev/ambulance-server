@@ -1,6 +1,7 @@
 // controllers/userController.js
 
 const { fastify } = require("../init");
+const { Car } = require("../schema/car.schema");
 const { User } = require("../schema/user.schema");
 require("dotenv").config();
 
@@ -29,7 +30,10 @@ const getUser = async (request, reply) => {
     const user = await User.findOne({
       _id: request.params.id,
     })
-      .select("-password")
+      .select("-password -__v")
+      .populate("car", "-created_at -updated_at")
+      .populate("material_checklists")
+      .populate("car_checklists")
       .exec();
     return user;
   } catch (err) {
@@ -38,7 +42,8 @@ const getUser = async (request, reply) => {
 };
 
 const updateUser = async (request, reply) => {
-  const { email, first_name, last_name, dob, phone, car } = request.body;
+  const { email, first_name, last_name, dob, phone, car, last_location } =
+    request.body;
   const updates = {};
 
   // if some fields are missing, do not update them
@@ -47,8 +52,19 @@ const updateUser = async (request, reply) => {
   if (last_name) updates.last_name = last_name;
   if (dob) updates.dob = dob;
   if (phone) updates.phone = phone;
+  if (last_location) updates.last_location = last_location;
   if (car === "") {
     updates.car = null;
+    const existingCar = await Car.findOne({ user: request.params.id });
+    if (existingCar) {
+      await Car.findOneAndUpdate(
+        { _id: existingCar._id },
+        { user: null },
+        {
+          returnDocument: "after",
+        }
+      );
+    }
   } else if (car) {
     updates.car = car;
   }

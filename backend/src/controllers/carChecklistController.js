@@ -2,14 +2,30 @@
 
 const { fastify } = require("../init");
 const { CarChecklist } = require("../schema/carChecklist.schema");
+const { User } = require("../schema/user.schema");
+const { Car } = require("../schema/car.schema");
+const { printCarChecklist, findPDF } = require("./pdfController");
 
 const createCarChecklist = async (request, reply) => {
   const { car, checklist, user } = request.body;
   const carChecklist = new CarChecklist({ car, checklist, user });
+  const userExists = await User.findOne({ _id: user });
   try {
     await carChecklist.save();
+    if (userExists) {
+      await User.updateOne(
+        { _id: user },
+        { $push: { car_checklists: carChecklist._id } }
+      );
+    }
+
+    // print the pdf here
+    printCarChecklist({
+      checklistId: carChecklist._id,
+    });
     reply.send(carChecklist);
   } catch (err) {
+    console.log(err);
     reply.code(500).send({ error: err });
   }
 };
@@ -18,7 +34,7 @@ const listCarChecklists = async (request, reply) => {
   const { page = 1, limit = 10 } = request.query;
   try {
     const checklists = await CarChecklist.find()
-      .populate("car", "brand model _id")
+      .populate("car", "name _id meta")
       .populate("user", "first_name last_name _id")
       .skip((page - 1) * limit)
       .limit(limit)
@@ -70,12 +86,19 @@ const deleteCarChecklist = async (request, reply) => {
   }
 };
 
+const getPdfForCarChecklist = async (request, reply) => {
+  const { id } = request.params;
+  await findPDF({ checklistId: id }, reply);
+};
+
 const carChecklistRoutes = () => {
   fastify.post("/api/car-checklist", createCarChecklist);
   fastify.get("/api/car-checklist", listCarChecklists);
   fastify.get("/api/car-checklist/:id", getCarChecklist);
   fastify.put("/api/car-checklist/:id", updateCarChecklist);
   fastify.delete("/api/car-checklist/:id", deleteCarChecklist);
+  // get pdf for car checklist
+  fastify.get("/api/checklist/:id/pdf", getPdfForCarChecklist);
 };
 
 module.exports = carChecklistRoutes;

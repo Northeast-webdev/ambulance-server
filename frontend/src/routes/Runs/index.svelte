@@ -3,7 +3,7 @@
 
   import L from "leaflet";
   import "leaflet/dist/leaflet.css";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { fade, fly } from "svelte/transition";
   import LoadingList from "../../components/LoadingList.svelte";
 
@@ -18,26 +18,50 @@
   let selected_run = null;
   let map;
   let driver_id = "";
-  let drivers = [
-    {
-      name: "Allen Jack",
-      lat: 40.7128,
-      lng: -74.006,
-      status: "Available",
-      id: 1,
-    },
-    { name: "John Snow", lat: 40.7228, lng: -74.006, status: "Busy", id: 2 },
-    {
-      name: "Luca Brasi",
-      lat: 40.7138,
-      lng: -74.016,
-      status: "Busy",
-      id: 3,
-    },
-    { name: "Mario Rossi", lat: 40.7228, lng: -74.0, status: "Offline", id: 4 },
-  ];
-
+  let drivers = [];
+  let socket;
   $: showMap && getMapInfo();
+
+  onMount(() => {
+    socket = new WebSocket(import.meta.env.VITE_WS_URL + "/api/runs/admin");
+
+    socket.onopen = () => {
+      console.log("WebSocket connection established");
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      const id = data.documentKey._id;
+      const status = data.updateDescription.updatedFields.status;
+      const car = data.updateDescription.updatedFields.car;
+      runs = runs.map((run) => {
+        if (run._id === id) {
+          run.status = status || run.status;
+          run.car = car
+            ? cars.find((c) => c._id === car) || run.car
+            : car === null
+              ? null
+              : run.car;
+        }
+        return run;
+      });
+      console.log(data);
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket connection closed");
+    };
+
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+  });
+
+  onDestroy(() => {
+    if (socket) {
+      socket.close();
+    }
+  });
 
   function getMapInfo() {
     if (map) return;
@@ -49,28 +73,60 @@
       map
     );
 
+    if (new_run.partenza && new_run.arrivo) {
+      const partenzaIcon = L.divIcon({
+        className: "custom-marker", // Custom CSS class for styling
+        html: `<div class="marker-circle bg-indigo-500 text-indigo-100">A</div>`,
+        iconSize: [20, 20], // Size of the marker
+      });
+
+      const partenzaMarker = L.marker(
+        [new_run.geometry.latitude, new_run.geometry.longitude],
+        {
+          icon: partenzaIcon,
+        }
+      ).addTo(map);
+
+      const arrivoIcon = L.divIcon({
+        className: "custom-marker", // Custom CSS class for styling
+        html: `<div class="marker-circle bg-indigo-500 text-indigo-100">B</div>`,
+        iconSize: [20, 20], // Size of the marker
+      });
+
+      const arrivoMarker = L.marker(
+        [new_run.end_geometry.latitude, new_run.end_geometry.longitude],
+        {
+          icon: arrivoIcon,
+        }
+      ).addTo(map);
+    }
+
     // Add markers for drivers
-    drivers.forEach((driver) => {
+    drivers.forEach((driver, i) => {
       // Create a custom DivIcon for each marker with the driver's ID
       const customIcon = L.divIcon({
         className: "custom-marker", // Custom CSS class for styling
         html: `<div class="marker-circle ${
-          driver.status === "Available"
+          driver.status === "free"
             ? "bg-green-500 text-green-100"
-            : driver.status === "Busy"
+            : driver.status === "busy"
               ? "bg-amber-500 text-amber-100"
               : "bg-red-500 text-red-100"
-        }">${driver.id}</div>`, // Inner HTML to show the ID
+        }">${i + 1}</div>`, // Inner HTML to show the ID
         iconSize: [20, 20], // Size of the marker
       });
 
-      const marker = L.marker([driver.lat, driver.lng], {
-        icon: customIcon,
-      }).addTo(map);
+      const marker = L.marker(
+        [driver.last_location.latitude, driver.last_location.longitude],
+        {
+          icon: customIcon,
+        }
+      ).addTo(map);
 
-      marker.on("click", () => marker.openMapPopup());
-
-      if (driver.status !== "Offline") animateMarker(marker);
+      map.setView(
+        [driver.last_location.latitude, driver.last_location.longitude],
+        13
+      );
     });
   }
 
@@ -79,18 +135,6 @@
     showPopup = true;
   }
 
-  // Function to animate markers smoothly
-  function animateMarker(marker) {
-    setInterval(() => {
-      const currentLatLng = marker.getLatLng();
-      const newLatLng = [
-        currentLatLng.lat + (Math.random() - 0.5) * 0.001,
-        currentLatLng.lng + (Math.random() - 0.5) * 0.001,
-      ];
-
-      marker.setLatLng(newLatLng);
-    }, 1000);
-  }
   let meta_verifier = {
     "C/S/B": "csb",
     Ora: "ora",
@@ -112,8 +156,8 @@
     Servizio: "select",
     "Tipo di servizio": "text",
     "C/S/B": "select",
-    Partenza: "time",
-    Arrivo: "time",
+    Partenza: "autocomplete",
+    Arrivo: "autocomplete",
     "N. Richiesta": "text",
     Ricevuta: "text",
     Viaggi: "text",
@@ -181,12 +225,75 @@
       .finally(() => {
         loading = false;
       });
+
+    fetch(import.meta.env.VITE_API_URL + "/api/cars", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        drivers = data.cars;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
   };
 
   onMount(getRuns);
 
   function newRunToggle() {
     show_form = true;
+    setTimeout(() => {
+      const partenzaInput = document.getElementById(
+        "field-Partenza-autocomplete"
+      );
+      const arrivoInput = document.getElementById("field-Arrivo-autocomplete");
+      const partenzaAutocomplete = new google.maps.places.Autocomplete(
+        partenzaInput
+      );
+      const arrivoAutocomplete = new google.maps.places.Autocomplete(
+        arrivoInput
+      );
+
+      partenzaAutocomplete.addListener("place_changed", () => {
+        const place = partenzaAutocomplete.getPlace();
+        if (!place.geometry || !place.geometry.location) {
+          console.error("No geometry available for the selected place");
+          return;
+        }
+        new_run.partenza = place.formatted_address;
+        new_run.geometry = {
+          latitude: place.geometry.location.lat(),
+          longitude: place.geometry.location.lng(),
+        };
+        console.log(
+          "Selected place:",
+          place.formatted_address,
+          place.geometry.location.lat(),
+          place.geometry.location.lng()
+        );
+      });
+      arrivoAutocomplete.addListener("place_changed", () => {
+        const place = arrivoAutocomplete.getPlace();
+        if (!place.geometry || !place.geometry.location) {
+          console.error("No geometry available for the selected place");
+          return;
+        }
+        new_run.arrivo = place.formatted_address;
+        new_run.end_geometry = {
+          latitude: place.geometry.location.lat(),
+          longitude: place.geometry.location.lng(),
+        };
+        console.log(
+          "Selected place:",
+          place.formatted_address,
+          place.geometry.location.lat(),
+          place.geometry.location.lng()
+        );
+      });
+    }, 2000);
   }
 
   async function updateRun() {
@@ -224,31 +331,23 @@
 
   async function newRun() {
     try {
+      const { geometry, end_geometry, ...newR } = new_run;
       const response = await fetch(import.meta.env.VITE_API_URL + "/api/runs", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ meta: new_run, title: new_run.paziente }),
+        body: JSON.stringify({
+          meta: newR,
+          status: "pending",
+          geometry: geometry,
+        }),
       });
       const data = await response.json();
       selected_run = data.run._id;
       runs = [...runs, data.run];
       show_form = false;
-      new_run = {
-        csb: "",
-        ora: "",
-        paziente: "",
-        servizio: "",
-        tel: "",
-        tipo_di_servizio: "",
-        partenza: "",
-        arrivo: "",
-        n_richiesta: "",
-        ricevuta: "",
-        viaggio: "",
-      };
     } catch (error) {
       console.error("Error:", error);
     }
@@ -298,9 +397,11 @@
                 ? 'bg-red-200 border-red-300'
                 : run.status === 'ongoing'
                   ? 'bg-amber-200 border-amber-300'
-                  : run.status === 'completed'
-                    ? 'bg-green-200 border-green-300'
-                    : 'bg-gray-50'} border-b border-l"
+                  : run.status === 'picked_up'
+                    ? 'bg-sky-200 border-sky-300'
+                    : run.status === 'completed'
+                      ? 'bg-green-200 border-green-300'
+                      : 'bg-gray-50'} border-b border-l"
             >
               {#each Object.keys(meta_verifier) as key}
                 {#if key !== "Titolo" && key !== "Paziente" && key !== "Note particolari"}
@@ -329,9 +430,11 @@
                   ? "bg-red-200"
                   : run.status === "ongoing"
                     ? "bg-amber-200"
-                    : run.status === "completed"
-                      ? "bg-green-200"
-                      : "bg-gray-100"}
+                    : run.status === "picked_up"
+                      ? "bg-sky-200"
+                      : run.status === "completed"
+                        ? "bg-green-200"
+                        : "bg-gray-100"}
               >
                 <td
                   class="py-3 px-4"
@@ -355,8 +458,15 @@
                           : ''}"
                       ></div>
                       <div
-                        title="Completata"
-                        class="bg-lime-500 w-4 h-4 rounded-full {run.status ===
+                        title="Paziente preso"
+                        class="bg-sky-500 w-4 h-4 rounded-full {run.status ===
+                        'picked_up'
+                          ? 'ring-4 ring-sky-600'
+                          : ''}"
+                      ></div>
+                      <div
+                        title="Paziente consegnato"
+                        class="bg-green-500 w-4 h-4 rounded-full {run.status ===
                         'completed'
                           ? 'ring-4 ring-green-600'
                           : ''}"
@@ -370,8 +480,10 @@
                       <p class="text-gray-800 cursor-pointer">
                         Mezzo assegnato: <span class="hover:underline"
                           >{run.car.meta.plate_number} - {run.car.user
-                            .first_name}
-                          {run.car.user.last_name}</span
+                            ? `${run.car.user.first_name} ${
+                                run.car.user.last_name
+                              }`
+                            : "Nessun driver"}</span
                         >
                       </p>
                     {:else if run.status !== "cancelled"}
@@ -401,9 +513,9 @@
 {#if showPopup || show_form || showFinalPopup}
   <div
     transition:fade={{ duration: 300 }}
-    class="fixed inset-0 z-40 flex items-center flex-col gap-10 justify-center overflow-y-auto p-4 mb-8 bg-white transition-opacity duration-500"
+    class="fixed inset-0 z-40 flex items-center flex-col gap-10 justify-center p-4 mb-8 bg-white transition-opacity duration-500"
   >
-    <div class="flex max-w-screen-lg w-full mx-auto py-8">
+    <div class="flex max-w-screen-lg w-full mx-auto pt-32">
       <div class="flex items-center">
         <!-- Step 1 -->
         <div
@@ -454,12 +566,12 @@
         </div>
       </div>
     </div>
-    <div class="max-w-screen-lg w-full">
+    <div class="max-w-screen-lg w-full overflow-y-auto">
       {#if show_form}
         <!-- Form Modal -->
         <div class="z-50 transform transition-all duration-500">
           <button
-            class="absolute text-3xl -top-[12vh] mt-2 right-6 text-gray-600 hover:text-gray-800"
+            class="absolute text-3xl top-0 mt-2 right-6 text-gray-600 hover:text-gray-800"
             on:click={() => (show_form = false)}
             aria-label="Close form"
           >
@@ -511,6 +623,17 @@
                       class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
                       bind:value={new_run[meta_verifier[key]]}
                     ></textarea>
+                  {:else if types[key] === "autocomplete"}
+                    <input
+                      type={types[key]}
+                      required
+                      id="field-{key}-autocomplete"
+                      placeholder="Cerca..."
+                      class="autocomplete-input block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
+                      value={new_run[meta_verifier[key]]}
+                      on:input={(e) =>
+                        (new_run[meta_verifier[key]] = e.target.value)}
+                    />
                   {:else}
                     <input
                       type={types[key]}
@@ -540,7 +663,7 @@
         <!-- Form Modal -->
         <div class="max-h-[80vh] z-50 transform transition-all duration-500">
           <button
-            class="absolute text-3xl -top-1/4 mt-2 right-6 text-gray-600 hover:text-gray-800"
+            class="absolute text-3xl top-0 mt-2 right-6 text-gray-600 hover:text-gray-800"
             on:click={() => (showPopup = false)}
             aria-label="Close form"
           >
@@ -601,10 +724,12 @@
                   class="border-b cursor-pointer {selected_car === car._id
                     ? 'bg-lime-100'
                     : 'bg-gray-50'}"
-                  on:click={() =>
+                  on:click={() => {
+                    // if (car.status === "busy") return;
                     selected_car === car._id
                       ? (selected_car = null)
-                      : (selected_car = car._id)}
+                      : (selected_car = car._id);
+                  }}
                 >
                   <td class="border-r text-center">
                     <input
@@ -643,7 +768,7 @@
       {#if showFinalPopup}
         <div class="max-h-[80vh] z-50 transform transition-all duration-500">
           <button
-            class="absolute text-3xl -top-1/4 mt-2 right-6 text-gray-600 hover:text-gray-800"
+            class="absolute text-3xl top-0 mt-2 right-6 text-gray-600 hover:text-gray-800"
             on:click={() => (showFinalPopup = false)}
             aria-label="Close form"
           >

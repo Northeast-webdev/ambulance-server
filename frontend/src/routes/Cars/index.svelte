@@ -11,13 +11,14 @@
   let car_id = "";
   let loading = false;
   let meta_verifier = {
+    Nome: "name",
     Driver: "driver",
     Marca: "brand",
     Modello: "model",
     Chilometri: "kilometers",
     Targa: "plate_number",
-    "Livello carburante": "carbon_level",
     Status: "status",
+    "Livello carburante": "carbon_level",
   };
   let new_car = {
     driver: "",
@@ -27,6 +28,7 @@
     plate_number: "",
     carbon_level: "",
     status: "",
+    name: "",
   };
   let selectedCar = null;
 
@@ -103,7 +105,7 @@
   async function newCar() {
     if (action === "new") {
       try {
-        const { driver, status, ...meta } = new_car;
+        const { driver, status, name, ...meta } = new_car;
         const response = await fetch(
           import.meta.env.VITE_API_URL + "/api/cars",
           {
@@ -112,7 +114,7 @@
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-            body: JSON.stringify({ meta, user: driver, status }),
+            body: JSON.stringify({ meta, user: driver, status, name }),
           }
         );
         const data = await response.json();
@@ -128,7 +130,7 @@
       }
     } else {
       try {
-        const { driver, status, ...meta } = new_car;
+        const { driver, name, status, ...meta } = new_car;
         const response = await fetch(
           import.meta.env.VITE_API_URL + "/api/cars/" + car_id,
           {
@@ -140,6 +142,7 @@
             body: JSON.stringify({
               meta,
               user: driver === "" ? null : driver,
+              name,
               status,
             }),
           }
@@ -198,7 +201,7 @@
           >
             <div class="p-4">
               <h3 class="text-lg font-bold text-gray-800 text-center">
-                {car.meta.plate_number}
+                {car.name}
               </h3>
               <img
                 src={vanImage}
@@ -326,7 +329,7 @@
                 </select>
               </div>
             {:else if key === "Status"}
-              <div class="col-span-2">
+              <div>
                 <label
                   for="field-{key}"
                   class="block text-sm font-medium text-gray-700 mb-1"

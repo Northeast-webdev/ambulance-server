@@ -14,6 +14,10 @@ const userSchema = new Schema({
   car: { type: Schema.Types.ObjectId, ref: "Car" },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
+  material_checklists: [
+    { type: Schema.Types.ObjectId, ref: "MaterialChecklist" },
+  ],
+  car_checklists: [{ type: Schema.Types.ObjectId, ref: "CarChecklist" }],
 });
 const User = mongoose.model("User", userSchema);
 

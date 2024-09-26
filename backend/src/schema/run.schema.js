@@ -4,8 +4,12 @@ const { Schema, default: mongoose } = require("mongoose");
 
 const runSchema = new Schema({
   car: { type: Schema.Types.ObjectId, ref: "Car" },
-  title: { type: String, default: "" },
   meta: { type: Object, required: true, default: {} },
+  geometry: {
+    latitude: { type: Number, required: true },
+    longitude: { type: Number, required: true },
+  },
+  notification_sent: { type: Boolean, default: false },
   status: { type: String, default: "pending" },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },

@@ -14,7 +14,7 @@
 
   const getChecklists = async () => {
     loading = true;
-    fetch(import.meta.env.VITE_API_URL + "/api/car-checklist", {
+    fetch(import.meta.env.VITE_API_URL + "/api/material-checklist", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -41,7 +41,7 @@
 {:else}
   <div class="container mx-auto py-6 px-3">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold">Mezzi Checklist</h1>
+      <h1 class="text-3xl font-bold">Materiali Checklist</h1>
     </div>
 
     <!-- Table Container with Overflow for Responsiveness -->

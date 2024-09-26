@@ -1,88 +1,144 @@
 // controllers/pdfController.js
-
 const puppeteer = require("puppeteer");
 const fs = require("fs");
-const { fastify } = require("../init");
+const { CarChecklist } = require("../schema/carChecklist.schema");
+const { MaterialChecklist } = require("../schema/materialChecklist.schema");
 
-const printPDF = async (request, reply) => {
+const printCarChecklist = async (request) => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  const title = request.query.title || "My PDF";
-  const content = request.query.content || "My PDF content";
-  let filename = request.query.filename || "output";
-  if (filename === "timestamp") {
-    filename = new Date().getTime().toString();
-  }
+
+  // Fetch checklist from database or request body
+  const checklistId = request.checklistId; // Assuming you're passing the checklist ID as a query param
+  const carChecklist = await CarChecklist.findById(checklistId)
+    .populate("car")
+    .populate("user");
+  const checklist = carChecklist.checklist; // Checklist object
+  const filename =
+    "checklist-" +
+    carChecklist.car.name +
+    "-" +
+    carChecklist.created_at.toISOString().split("T")[0];
   const logo = fs
     .readFileSync(`${process.cwd()}/backend/img/logo.png`)
     .toString("base64");
+  const labels = {
+    luciPosizioneAnteriori: "Luci posizione anteriori",
+    anabbaglianti: "Anabbaglianti",
+    abbaglianti: "Abbaglianti",
+    fendinebbia: "Fendinebbia",
+    frecceAnteriori: "Frecce anteriori",
+    luciPosizionePosteriori: "Luci posizione posteriori",
+    luciStop: "Luci stop",
+    luciRetromarcia: "Luci retromarcia",
+    retronebbia: "Retronebbia",
+    freccePosteriori: "Frecce posteriori",
+    luceTarga: "Luce targa",
+    lampeggianti: "Lampeggianti",
+    strobo: "Strobo",
+    fariAusiliari: "Fari ausiliari",
+    sirene: "Sirene (no dopo le ore 22)",
+    triangoloEmergenza: "Triangolo emergenza",
+    torcia: "Torcia",
+    kitSostituzionePneumatico: "Kit sostituzione pneumatico",
+    kitAntiscasso: "Kit antiscasso",
+    ruotaDiScorta: "Ruota di scorta",
+    cateneDaNeve: "Catene da neve",
+    documentiNecessari: "Documenti necessari",
+  };
+  // Generate table rows based on the checklist object
+  const checklistRows = Object.entries(checklist)
+    .map(([key, value]) => {
+      const status = value ? "Si" : "No";
+      return `
+        <tr>
+          <td>${labels[key]}</td>
+          <td>${status}</td>
+        </tr>`;
+    })
+    .join("");
+
   // Set your HTML content here
   const htmlContent = `
     <html>
     <head>
-        <title>${title}</title> 
+        <title>Checklist Mezzo ${carChecklist.car.name}</title> 
     </head>
     <body>
-    <table id="headerTable">
+      <table id="headerTable">
         <tr>
-            <td><img src="data:image/png;base64,${logo}" alt="Logo" /></td>
-            <td><h1>${title}</h1></td>
-            <td>${content}</td>
+          <td><img src="data:image/png;base64,${logo}" alt="Logo" /></td>
+          <td><h3>Checklist Mezzo ${carChecklist.car.name}</h3></td>
+          <td>${carChecklist.created_at.toISOString().split("T")[0]}</td>
         </tr>
-    </table>
+      </table>
       <table id="mainTable">
         <thead>
             <tr>
-                <th>Header 1</th>
-                <th>Header 2</th>
-                <th>Header 3</th>
-                <th>Header 1</th>
-                <th>Header 2</th>
-                <th>Header 3</th>
+                <th>Elemento</th>
+                <th>Valore</th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>Row 1, Cell 1</td>
-                <td>Row 1, Cell 2</td>
-                <td>Row 1, Cell 3</td>
-                <td>Row 1, Cell 1</td>
-                <td>Row 1, Cell 2</td>
-                <td>Row 1, Cell 3</td>
-            </tr>
-            <tr>
-                <td>Row 2, Cell 1</td>
-                <td>Row 2, Cell 2</td>
-                <td>Row 2, Cell 3</td>
-                <td>Row 2, Cell 1</td>
-                <td>Row 2, Cell 2</td>
-                <td>Row 2, Cell 3</td>
-            </tr>
-            <tr>
-                <td>Row 3, Cell 1</td>
-                <td>Row 3, Cell 2</td>
-                <td>Row 3, Cell 3</td>
-                <td>Row 3, Cell 1</td>
-                <td>Row 3, Cell 2</td>
-                <td>Row 3, Cell 3</td>
-            </tr>
+        <tr>
+          <td>Nome</td>
+          <td>${carChecklist.car.name}</td>
+        </tr>
+        <tr>
+          <td>Marca</td>
+          <td>${carChecklist.car.meta.brand}</td>
+        </tr>
+        <tr>
+          <td>Modello</td>
+          <td>${carChecklist.car.meta.model}</td>
+        </tr>
+        <tr>
+          <td>Targa</td>
+          <td>${carChecklist.car.meta.plate_number}</td>
+        </tr>
+        <tr>
+          <td>Autista</td>
+          <td>${carChecklist.user.first_name} ${
+    carChecklist.user.last_name
+  }</td>
+        </tr>
+        <tr>
+          <td>Inizio turno</td>
+          <td>${
+            carChecklist.car.shift_start.toISOString().split("T")[0] +
+            " " +
+            carChecklist.car.shift_start
+              .toISOString()
+              .split("T")[1]
+              .split(".")[0]
+          }</td>
+        </tr>
+        <tr>
+          <td>Chilometri</td>
+          <td>${carChecklist.car.meta.kilometers}</td>
+        </tr>
+        <tr>
+          <td>Livello carburante</td>
+          <td>${carChecklist.car.meta.carbon_level}</td>
+        </tr>
+            ${checklistRows}
         </tbody>
-    </table>
-    <style>
+      </table>
+      <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
         html, body {
             box-sizing: border-box;
-            }
+        }
         * {
             font-family: 'Roboto', sans-serif;
         }
         #headerTable {
             width: 100%;
-            margin-bottom: 20px;
+            max-width: 800px;
+            margin: 0 auto 20px;
             border: 0;
-            table-layout: fixed;
         }
-        #headerTable h1, #headerTable td {
+        #headerTable h3, #headerTable td {
             margin: 0;
             text-align: center;
         }
@@ -108,7 +164,7 @@ const printPDF = async (request, reply) => {
             background-color: #f2f2f2;
             font-weight: 600;
         }
-    </style>
+      </style>
     </body>
     </html>
   `;
@@ -120,26 +176,184 @@ const printPDF = async (request, reply) => {
     printBackground: true,
   });
   await browser.close();
-  // return the path to the generated PDF
-  const stream = fs.readFileSync(
-    `${process.cwd()}/backend/pdf/${filename}.pdf`
-  );
 
-  // download the PDF
-  reply.header("Content-Type", "application/pdf");
-  reply.header("Content-Disposition", `attachment; filename=${filename}.pdf`);
-  reply.send(stream);
-  // delete the generated PDF
-  fs.rm(`pdf/${filename}.pdf`, (err) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
+  return {
+    statusCode: 200,
+    filename: filename,
+  };
+};
+
+const printMaterialChecklist = async (request) => {
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+
+  // Fetch checklist from database or request body
+  const checklistId = request.checklistId; // Assuming you're passing the checklist ID as a query param
+  const materialChecklist = await MaterialChecklist.findById(
+    checklistId
+  ).populate("car");
+  const checklist = materialChecklist.checklist; // Checklist object
+  const filename =
+    "checklist_inf-" +
+    materialChecklist.car.name +
+    "-" +
+    materialChecklist.created_at.toISOString().split("T")[0];
+  const logo = fs
+    .readFileSync(`${process.cwd()}/backend/img/logo.png`)
+    .toString("base64");
+  const labels = {
+    gloves: "Gloves",
+    mask: "Mask",
+    gown: "Gown",
+    cap: "Cap",
+    shoeCover: "Shoe Cover",
+    faceShield: "Face Shield",
+    goggles: "Goggles",
+    respirator: "Respirator",
+    apron: "Apron",
+    hairNet: "Hair Net",
+    scrubs: "Scrubs",
+    thermometer: "Thermometer",
+  };
+  // Generate table rows based on the checklist object
+  const checklistRows = Object.entries(checklist)
+    .map(([key, value]) => {
+      const status = value ? "Yes" : "No";
+      return `
+        <tr>
+          <td>${labels[key]}</td>
+          <td>${status}</td>
+        </tr>`;
+    })
+    .join("");
+
+  // Set your HTML content here
+  const htmlContent = `
+    <html>
+    <head>
+        <title>Checklist Materiale infermieristico mezzo ${
+          materialChecklist.car.name
+        }</title> 
+    </head>
+    <body>
+      <table id="headerTable">
+        <tr>
+          <td><img src="data:image/png;base64,${logo}" alt="Logo" /></td>
+          <td><h3>Checklist Materiale infermieristico mezzo ${
+            materialChecklist.car.name
+          }</h3></td>
+          <td>${materialChecklist.created_at.toISOString().split("T")[0]}</td>
+        </tr>
+      </table>
+      <table id="mainTable">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${checklistRows}
+        </tbody>
+      </table>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+        html, body {
+            box-sizing: border-box;
+        }
+        * {
+            font-family: 'Roboto', sans-serif;
+        }
+        #headerTable {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto 20px;
+            border: 0;
+        }
+        #headerTable h3, #headerTable td {
+            margin: 0;
+            text-align: center;
+        }
+        #headerTable img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+        #mainTable {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #mainTable th, #mainTable td {
+            border: 1px solid black;
+            padding: 8px 4px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+        #mainTable th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+        }
+      </style>
+    </body>
+    </html>
+  `;
+  await page.setContent(htmlContent);
+
+  await page.pdf({
+    path: `${process.cwd()}/backend/pdf/${filename}.pdf`,
+    format: "A4",
+    printBackground: true,
   });
+  await browser.close();
+
+  return {
+    statusCode: 200,
+    filename: filename,
+  };
 };
 
-const pdfRoutes = () => {
-  fastify.get("/api/pdf", printPDF);
+const findPDF = async (request, reply) => {
+  const { checklistId } = request;
+  const carChecklist = await CarChecklist.findById(checklistId)
+    .populate("car")
+    .populate("user");
+  const materialChecklist = await MaterialChecklist.findById(
+    checklistId
+  ).populate("car");
+
+  if (carChecklist) {
+    const filePath = `${process.cwd()}/backend/pdf/checklist-${
+      carChecklist.car.name
+    }-${carChecklist.created_at.toISOString().split("T")[0]}.pdf`;
+    const fileStream = fs.readFileSync(filePath);
+    // download the PDF
+    reply.header("Content-Type", "application/pdf");
+    reply.header(
+      "Content-Disposition",
+      `attachment; filename=${filePath.split("/").pop()}`
+    );
+    reply.send(fileStream);
+  } else if (materialChecklist) {
+    const filePath = `${process.cwd()}/backend/pdf/checklist_inf-${
+      materialChecklist.car.name
+    }-${materialChecklist.created_at.toISOString().split("T")[0]}.pdf`;
+    const fileStream = fs.readFileSync(filePath);
+    // download the PDF
+    reply.header("Content-Type", "application/pdf");
+    reply.header(
+      "Content-Disposition",
+      `attachment; filename=${filePath.split("/").pop()}`
+    );
+    reply.send(fileStream);
+  } else {
+    return {
+      statusCode: 404,
+      message: "Checklist not found",
+    };
+  }
 };
 
-module.exports = pdfRoutes;
+module.exports = { printCarChecklist, printMaterialChecklist, findPDF };

@@ -8,7 +8,7 @@
   import MdiPencil from "virtual:icons/mdi/pencil";
   import MdiTrashCan from "virtual:icons/mdi/trash-can";
   import LoadingList from "../../components/LoadingList.svelte";
-  import { user as storeUser } from "../../stores";
+  import { user as storeUser, user } from "../../stores";
   let show_password = false;
   $: type = show_password ? "text" : "password";
   let loading = false;
@@ -40,6 +40,9 @@
   };
 
   onMount(() => {
+    if ($user.role !== "administrator") {
+      return;
+    }
     loading = true;
     getDrivers();
     getCars();
@@ -220,6 +223,13 @@
 
 {#if loading}
   <LoadingList />
+{:else if $user.role !== "administrator"}
+  <div class="flex justify-center items-center flex-col fixed inset-0 z-10">
+    <h1 class="text-3xl font-bold">Accesso Negato</h1>
+    <p class="text-gray-500">
+      Non hai i permessi necessari per visualizzare questa pagina.
+    </p>
+  </div>
 {:else}
   <!-- Submenu buttons -->
   <div class=" mb-6 shadow-lg">

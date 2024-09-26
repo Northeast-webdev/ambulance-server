@@ -10,6 +10,7 @@
   import Cars from "./routes/Cars/index.svelte";
   import Login from "./routes/Login/index.svelte";
   import Map from "./routes/Map/index.svelte";
+  import MaterialChecklists from "./routes/MaterialChecklists/index.svelte";
   import Runs from "./routes/Runs/index.svelte";
   import Users from "./routes/Users/index.svelte";
   import { token, user } from "./stores";
@@ -84,6 +85,9 @@
       </PrivateRoute>
       <PrivateRoute path="car-checklists">
         <CarChecklists />
+      </PrivateRoute>
+      <PrivateRoute path="material-checklists">
+        <MaterialChecklists />
       </PrivateRoute>
       <Route path="login">
         <Login />

@@ -60,7 +60,7 @@ const login = async (request, reply) => {
 
     // Generate JWT token
     const token = generateToken(user);
-    reply.send({ token, id: user._id });
+    reply.send({ token, id: user._id, role: user.role });
   } catch (err) {
     reply.code(500).send({ error: err });
   }
