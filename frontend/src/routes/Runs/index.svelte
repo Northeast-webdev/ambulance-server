@@ -45,7 +45,6 @@
         }
         return run;
       });
-      console.log(data);
     };
 
     socket.onclose = () => {
