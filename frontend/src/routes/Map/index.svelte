@@ -409,19 +409,6 @@
       const data = await response.json();
       selected_run = data.run._id;
       show_form = false;
-      new_run = {
-        csb: "",
-        ora: "",
-        paziente: "",
-        servizio: "",
-        tel: "",
-        tipo_di_servizio: "",
-        partenza: "",
-        arrivo: "",
-        n_richiesta: "",
-        ricevuta: "",
-        viaggio: "",
-      };
     } catch (error) {
       console.error("Error:", error);
     }
