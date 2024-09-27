@@ -16,7 +16,7 @@ const createCar = async (request, reply) => {
 };
 
 const listCars = async (request, reply) => {
-  const { page = 1, limit = 10 } = request.query;
+  const { page = 1, limit = 20 } = request.query;
   try {
     const cars = await Car.find()
       .populate("user", "first_name last_name _id")
