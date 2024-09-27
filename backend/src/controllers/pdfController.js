@@ -191,7 +191,9 @@ const printMaterialChecklist = async (request) => {
   const checklistId = request.checklistId; // Assuming you're passing the checklist ID as a query param
   const materialChecklist = await MaterialChecklist.findById(
     checklistId
-  ).populate("car");
+  )
+  .populate("user")
+  .populate("car");
   const checklist = materialChecklist.checklist; // Checklist object
   const filename =
     "checklist_inf-" +
@@ -201,20 +203,20 @@ const printMaterialChecklist = async (request) => {
   const logo = fs
     .readFileSync(`${process.cwd()}/backend/img/logo.png`)
     .toString("base64");
-  const labels = {
-    gloves: "Gloves",
-    mask: "Mask",
-    gown: "Gown",
-    cap: "Cap",
-    shoeCover: "Shoe Cover",
-    faceShield: "Face Shield",
-    goggles: "Goggles",
-    respirator: "Respirator",
-    apron: "Apron",
-    hairNet: "Hair Net",
-    scrubs: "Scrubs",
-    thermometer: "Thermometer",
-  };
+    const labels = {
+      guanti: 'Guanti',
+      maschera: 'Maschera',
+      camice: 'Camice',
+      cappello: 'Cappello',
+      copriscarpe: 'Copriscarpe',
+      visiera: 'Visiera',
+      occhiali: 'Occhiali',
+      respiratore: 'Respiratore',
+      grembiule: 'Grembiule',
+      cuffia: 'Cuffia',
+      divise: 'Divise',
+      termometro: 'Termometro',
+    };
   // Generate table rows based on the checklist object
   const checklistRows = Object.entries(checklist)
     .map(([key, value]) => {
@@ -253,6 +255,43 @@ const printMaterialChecklist = async (request) => {
             </tr>
         </thead>
         <tbody>
+        <tr>
+          <td>Nome</td>
+          <td>${materialChecklist.car.name}</td>
+        </tr>
+        <tr>
+          <td>Marca</td>
+          <td>${materialChecklist.car.meta.brand}</td>
+        </tr>
+        <tr>
+          <td>Modello</td>
+          <td>${materialChecklist.car.meta.model}</td>
+        </tr>
+        <tr>
+          <td>Targa</td>
+          <td>${materialChecklist.car.meta.plate_number}</td>
+        </tr>
+        <tr>
+          <td>Autista</td>
+          <td>
+          ${materialChecklist.user.first_name} ${materialChecklist.user.last_name}
+         </td>
+        </tr>
+        <tr>
+          <td>Inizio turno</td>
+          <td>${
+            materialChecklist.car.shift_start.toISOString().split("T")[0] +
+            " " +
+            materialChecklist.car.shift_start
+              .toISOString()
+              .split("T")[1]
+              .split(".")[0]
+          }</td>
+        </tr>
+        <tr>
+          <td>Chilometri</td>
+          <td>${materialChecklist.car.meta.kilometers}</td>
+        </tr>
             ${checklistRows}
         </tbody>
       </table>
