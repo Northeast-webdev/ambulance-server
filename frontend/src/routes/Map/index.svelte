@@ -240,7 +240,9 @@
     })
       .then((response) => response.json())
       .then((data) => {
-        drivers = data.cars;
+        drivers = data.cars.sort((a, b) => {
+          a.created_at.localeCompare(b.created_at);
+        });
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -252,7 +254,8 @@
     drivers.forEach((driver, i) => {
       const markerContent = document.createElement("div");
       markerContent.className = `marker-circle ${getMarkerClass(driver.status)}`;
-      markerContent.textContent = i + 1; // Set the marker ID
+      markerContent.textContent = driver.name; // Set the marker ID
+      markerContent.style.fontSize = driver.name.length > 4 ? "10px" : "12px";
 
       if (driverMarkers.has(driver._id)) {
         // If marker already exists, just update its position

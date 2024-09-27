@@ -45,7 +45,7 @@ const updateCar = async (request, reply) => {
   const { meta, status, user, last_location, shift_start, name } = request.body;
   const updates = {};
   const carWithUser = await Car.findOne({ user });
-  if (user !== null && carWithUser) {
+  if (user && user !== null && carWithUser) {
     return reply
       .code(400)
       .send({ error: "This user has already been assigned" });
