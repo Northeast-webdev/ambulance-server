@@ -12,22 +12,16 @@
   let loading = false;
   let meta_verifier = {
     Nome: "name",
-    Driver: "driver",
     Marca: "brand",
     Modello: "model",
     Chilometri: "kilometers",
     Targa: "plate_number",
-    Status: "status",
-    "Livello carburante": "carbon_level",
   };
   let new_car = {
-    driver: "",
     brand: "",
     model: "",
     kilometers: "",
     plate_number: "",
-    carbon_level: "",
-    status: "",
     name: "",
   };
   let selectedCar = null;
@@ -105,7 +99,7 @@
   async function newCar() {
     if (action === "new") {
       try {
-        const { driver, status, name, ...meta } = new_car;
+        const { name, ...meta } = new_car;
         const response = await fetch(
           import.meta.env.VITE_API_URL + "/api/cars",
           {
@@ -114,7 +108,7 @@
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-            body: JSON.stringify({ meta, user: driver, status, name }),
+            body: JSON.stringify({ meta, name }),
           }
         );
         const data = await response.json();
@@ -130,7 +124,7 @@
       }
     } else {
       try {
-        const { driver, name, status, ...meta } = new_car;
+        const { name, ...meta } = new_car;
         const response = await fetch(
           import.meta.env.VITE_API_URL + "/api/cars/" + car_id,
           {
@@ -141,9 +135,7 @@
             },
             body: JSON.stringify({
               meta,
-              user: driver === "" ? null : driver,
               name,
-              status,
             }),
           }
         );

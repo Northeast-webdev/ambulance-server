@@ -5,19 +5,10 @@ const { Car } = require("../schema/car.schema");
 const { User } = require("../schema/user.schema");
 
 const createCar = async (request, reply) => {
-  const { meta, user, status, name } = request.body;
-  const car = new Car({ meta, user, status, name });
-  const userExists = await User.findOne({ _id: user });
-  const carWithUser = await Car.findOne({ user });
-  if (carWithUser) {
-    return reply.code(400).send({ error: "User already has a car" });
-  }
-  if (!userExists) {
-    return reply.code(404).send({ error: "User not found" });
-  }
+  const { meta, name } = request.body;
+  const car = new Car({ meta, name });
   try {
     await car.save();
-    await User.updateOne({ _id: user }, { car: car._id });
     reply.send(car);
   } catch (err) {
     reply.code(500).send({ error: err });
