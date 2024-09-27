@@ -11,8 +11,8 @@ const carSchema = new Schema({
   shift_start: { type: Date, default: Date.now },
   runs: [{ type: Schema.Types.ObjectId, ref: "Run", default: [] }],
   last_location: {
-    latitude: { type: Number, default: 0 },
-    longitude: { type: Number, default: 0 },
+    latitude: { type: Number, default: 44.42580512807064 },
+    longitude: { type: Number, default: 8.850582457670813 },
   },
 });
 const Car = mongoose.model("Car", carSchema);
