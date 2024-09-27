@@ -37,6 +37,9 @@
       .then((response) => response.json())
       .then((data) => {
         cars = data.cars;
+        if (selectedCar) {
+          selectedCar = cars.find((x) => x._id === selectedCar._id);
+        }
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -237,7 +240,7 @@
           <p><strong>Chilometri:</strong> {selectedCar.meta.kilometers}</p>
           <p>
             <strong>Livello carburante:</strong>
-            {selectedCar.meta.carbon_level}
+            {selectedCar.meta.carbon_level || "0"}%
           </p>
           <p>
             <strong>Driver:</strong>
@@ -266,9 +269,26 @@
           </p>
           <button
             on:click={() => (selectedCar = null)}
-            class="mt-4 bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+            class="mt-4 block bg-sky-600 hover:bg-sky-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
           >
             Chiudi
+          </button>
+          <button
+            on:click={() => {
+              action = "edit";
+              car_id = selectedCar._id;
+              new_car = {
+                name: selectedCar.name,
+                brand: selectedCar.meta.brand,
+                model: selectedCar.meta.model,
+                kilometers: selectedCar.meta.kilometers,
+                plate_number: selectedCar.meta.plate_number,
+              };
+              show_form = true;
+            }}
+            class="mt-2 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+          >
+            Modifica
           </button>
         </div>
       {/if}
