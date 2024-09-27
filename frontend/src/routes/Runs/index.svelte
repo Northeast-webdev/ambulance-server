@@ -31,6 +31,7 @@
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
+      if (!data.documentKey || !data.updateDescription.updatedFields) return;
       const id = data.documentKey._id;
       const status = data.updateDescription.updatedFields.status;
       const car = data.updateDescription.updatedFields.car;

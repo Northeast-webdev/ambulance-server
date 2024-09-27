@@ -103,6 +103,7 @@
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
+      if (!data.documentKey || !data.updateDescription.updatedFields) return;
       const id = data.documentKey._id;
       const last_location = data.updateDescription.updatedFields.last_location;
       if (!last_location || !id) return;
