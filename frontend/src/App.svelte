@@ -36,11 +36,19 @@
           },
         }
       );
-
       const data = await response.json();
+      console.log(data);
+      if (data.error) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("id");
+        token.set(null);
+        user.set({});
+        navigate("/login", { replace: true });
+        return;
+      }
       $user = data;
     } catch (error) {
-      console.error("Error:", error);
+      console.error(error);
     } finally {
       loading = false;
     }

@@ -23,7 +23,18 @@
           body: JSON.stringify({ username, password }),
         }
       );
-      const { token, id } = await response.json();
+      const { token, id, role } = await response.json();
+      if (!token) {
+        alert("Nome utente o password non validi");
+        loading = false;
+        return;
+      }
+      if (role === "driver") {
+        alert("Non hai i permessi per accedere le risorse");
+        loading = false;
+        return;
+      }
+      console.log(token, id, role);
       t = token;
       localStorage.setItem("token", token);
       localStorage.setItem("id", id);
