@@ -742,7 +742,9 @@
                   <td class="py-3 px-4 border-r">{car.meta.brand}</td>
                   <td class="py-3 px-4 border-r uppercase">{car.status}</td>
                   <td class="py-3 px-4"
-                    >{`${car.user.first_name} ${car.user.last_name}`}</td
+                    >{car.user
+                      ? `${car.user.first_name} ${car.user.last_name}`
+                      : "Nessun driver"}</td
                   >
                 </tr>
               {/each}
