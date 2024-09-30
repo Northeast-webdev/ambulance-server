@@ -100,17 +100,21 @@ const getChecklistsForCar = async (request, reply) => {
   try {
     const car_checklists = await CarChecklist.find({
       car: request.params.id,
-    }).exec();
+    })
+      .populate("user", "first_name last_name _id")
+      .exec();
     const material_checklists = await MaterialChecklist.find({
       car: request.params.id,
-    }).exec();
+    })
+      .populate("user", "first_name last_name _id")
+      .exec();
     return { car_checklists, material_checklists };
   } catch (err) {
     reply.code(500).send({ error: err });
   }
 };
 
-const websocketHandler = (socket, req) => {
+const websocketHandler = (socket) => {
   console.log("Client connected");
 
   // Create change stream to listen for changes in the collection
@@ -149,8 +153,8 @@ const carRoutes = () => {
   );
 
   fastify.register(async (fastify) => {
-    fastify.get("/api/cars/ws", { websocket: true }, (socket, req) => {
-      websocketHandler(socket, req);
+    fastify.get("/api/cars/ws", { websocket: true }, (socket) => {
+      websocketHandler(socket);
     });
   });
 };
