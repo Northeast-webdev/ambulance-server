@@ -94,6 +94,11 @@
 
   $: showMap && getMapInfo();
 
+  $: showFinalPopup &&
+    setTimeout(() => {
+      getMapInfo();
+    }, 1000);
+
   onMount(() => {
     socket = new WebSocket(import.meta.env.VITE_WS_URL + "/api/cars/ws");
 
@@ -177,13 +182,13 @@
       // Create a custom DivIcon for each marker with the driver's ID
       const customIcon = L.divIcon({
         className: "custom-marker", // Custom CSS class for styling
-        html: `<div class="marker-circle ${
+        html: `<div style="font-size: ${driver.name.length > 4 ? "10px" : "12px"}" class="marker-circle ${
           driver.status === "free"
             ? "bg-green-500 text-green-100"
             : driver.status === "busy"
               ? "bg-amber-500 text-amber-100"
               : "bg-red-500 text-red-100"
-        }">${i + 1}</div>`, // Inner HTML to show the ID
+        }">${driver.name}</div>`, // Inner HTML to show the ID
         iconSize: [20, 20], // Size of the marker
       });
 
@@ -714,14 +719,7 @@
         </div>
       {/if}
       {#if showFinalPopup}
-        <div class="max-h-[80vh] z-50 transform transition-all duration-500">
-          <button
-            class="absolute text-3xl top-0 mt-2 right-6 text-gray-600 hover:text-gray-800"
-            on:click={() => (showFinalPopup = false)}
-            aria-label="Close form"
-          >
-            ✕
-          </button>
+        <div class="z-50 transform transition-all duration-500">
           <h2 class="text-3xl font-bold mb-6">
             Hai assegnato la corsa al mezzo
           </h2>
@@ -729,13 +727,26 @@
             Il guidatore riceverà una notifica per l'accettazione della corsa
           </p>
           <button
-            class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg"
+            class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg mb-4"
             on:click={() => {
               show_form = true;
               showFinalPopup = false;
             }}
           >
             Crea un’altra corsa
+          </button>
+          <!-- Map Container -->
+          <div
+            id="map"
+            class="aspect-[16/7] max-w-2xl rounded-lg shadow-md z-10 mb-8"
+          ></div>
+
+          <button
+            class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg ml-auto block"
+            on:click={() => (showFinalPopup = false)}
+            aria-label="Close form"
+          >
+            Torna alla gestione corse
           </button>
         </div>
       {/if}

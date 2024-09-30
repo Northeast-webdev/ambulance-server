@@ -24,6 +24,8 @@
     plate_number: "",
     name: "",
   };
+  let material_checklists = [];
+  let car_checklists = [];
   let selectedCar = null;
 
   const getCars = async () => {
@@ -155,6 +157,27 @@
       }
     }
   }
+
+  async function handleSelectCar(car) {
+    selectedCar = car;
+    fetch(
+      import.meta.env.VITE_API_URL + "/api/cars/" + car._id + "/checklists",
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        material_checklists = data.material_checklists;
+        car_checklists = data.car_checklists;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }
 </script>
 
 {#if loading}
@@ -163,7 +186,7 @@
   <div class="container mx-auto py-6 px-3">
     <div class="flex justify-between items-center mb-6">
       <div>
-        <h1 class="text-3xl font-bold">Mezzi</h1>
+        <h1 class="text-3xl font-bold">Garage</h1>
         <p class="text-gray-500">
           {cars.filter((x) => x.status === "free").length} disponibile {cars.length >
           1
@@ -191,7 +214,7 @@
             class="shadow-lg rounded-lg overflow-hidden {car === selectedCar
               ? 'bg-emerald-100'
               : 'bg-white'}"
-            on:click={() => (selectedCar = car)}
+            on:click={() => handleSelectCar(car)}
             aria-label="Select car"
           >
             <div class="p-4">

@@ -3,6 +3,8 @@
 const { fastify } = require("../init");
 const { Car } = require("../schema/car.schema");
 const { User } = require("../schema/user.schema");
+const { CarChecklist } = require("../schema/carChecklist.schema");
+const { MaterialChecklist } = require("../schema/materialChecklist.schema");
 
 const createCar = async (request, reply) => {
   const { meta, name } = request.body;
@@ -22,7 +24,7 @@ const listCars = async (request, reply) => {
       .populate("user", "first_name last_name _id")
       .skip((page - 1) * limit)
       .limit(limit)
-      .sort({ created_at: -1 })
+      .sort({ name: 1 })
       .exec();
     return { cars, page, limit };
   } catch (err) {
@@ -94,6 +96,20 @@ const deleteCar = async (request, reply) => {
   }
 };
 
+const getChecklistsForCar = async (request, reply) => {
+  try {
+    const car_checklists = await CarChecklist.find({
+      car: request.params.id,
+    }).exec();
+    const material_checklists = await MaterialChecklist.find({
+      car: request.params.id,
+    }).exec();
+    return { car_checklists, material_checklists };
+  } catch (err) {
+    reply.code(500).send({ error: err });
+  }
+};
+
 const websocketHandler = (socket, req) => {
   console.log("Client connected");
 
@@ -125,6 +141,11 @@ const carRoutes = () => {
     "/api/cars/:id",
     { preHandler: [fastify.authenticate] },
     deleteCar
+  );
+  fastify.get(
+    "/api/cars/:id/checklists",
+    { preHandler: [fastify.authenticate] },
+    getChecklistsForCar
   );
 
   fastify.register(async (fastify) => {

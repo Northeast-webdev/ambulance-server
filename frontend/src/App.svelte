@@ -88,7 +88,7 @@
       <PrivateRoute path="runs">
         <Runs />
       </PrivateRoute>
-      <PrivateRoute path="cars">
+      <PrivateRoute path="garage">
         <Cars />
       </PrivateRoute>
       <PrivateRoute path="car-checklists">

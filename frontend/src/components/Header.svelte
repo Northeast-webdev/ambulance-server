@@ -11,7 +11,7 @@
     { name: "Utenti", path: "/users" },
     { name: "Mappa", path: "/" },
     { name: "Corse", path: "/runs" },
-    { name: "Mezzi", path: "/cars" },
+    { name: "Garage", path: "/garage" },
     { name: "Mezzi Checklist", path: "/car-checklists" },
     { name: "Materiali Checklist", path: "/material-checklists" },
   ];
