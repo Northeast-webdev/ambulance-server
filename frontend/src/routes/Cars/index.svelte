@@ -32,6 +32,7 @@
     plate_number: "",
     name: "",
   };
+  let loadingCar = false;
   let material_checklists = [];
   let car_checklists = [];
   let selectedCar = null;
@@ -168,6 +169,7 @@
 
   async function handleSelectCar(car) {
     selectedCar = car;
+    loadingCar = true;
     fetch(
       import.meta.env.VITE_API_URL + "/api/cars/" + car._id + "/checklists",
       {
@@ -185,13 +187,15 @@
       })
       .catch((error) => {
         console.error("Error:", error);
+      })
+      .finally(() => {
+        loadingCar = false;
       });
     setTimeout(() => {
-      window.scrollTo({
-        top: document.getElementById("selected-car").offsetTop,
-        behavior: "smooth",
-      });
-    }, 1000);
+      document
+        .getElementById("selected-car")
+        .scrollIntoView({ behavior: "smooth" });
+    }, 100);
   }
 </script>
 
@@ -269,178 +273,180 @@
           </button>
         {/each}
       </div>
-      {#if selectedCar}
-        <div class="mt-6 pt-8 bg-white mb-8" id="selected-car">
+      <div id="selected-car" class={loadingCar ? "h-screen" : ""}>
+        {#if selectedCar}
+          <div class="mt-6 pt-8 bg-white mb-8">
+            <h2 class="text-2xl font-bold mb-4">
+              Stato mezzo {selectedCar.name}
+            </h2>
+            <p><strong>Targa:</strong> {selectedCar.meta.plate_number}</p>
+            <p><strong>Marca:</strong> {selectedCar.meta.brand}</p>
+            <p><strong>Modello:</strong> {selectedCar.meta.model}</p>
+            <p><strong>Chilometri:</strong> {selectedCar.meta.kilometers}</p>
+            <p>
+              <strong>Livello carburante:</strong>
+              {selectedCar.meta.carbon_level || "0"}%
+            </p>
+            <p>
+              <strong>Driver:</strong>
+              {selectedCar.user
+                ? `${selectedCar.user.first_name} ${selectedCar.user.last_name}`
+                : "Nessun driver"}
+            </p>
+            <p>
+              <strong>Status:</strong>
+              {#if selectedCar.status === "free"}
+                <span
+                  class="text-green-900 bg-green-300 px-4 rounded-full inline-block text-sm py-1"
+                  >Disponibile</span
+                >
+              {:else if selectedCar.status === "on_break"}
+                <span
+                  class="text-yellow-900 bg-yellow-200 px-4rounded-full inline-block text-sm py-1"
+                  >Pausa</span
+                >
+              {:else}
+                <span
+                  class="text-red-900 bg-red-200 px-4 rounded-full inline-block text-sm py-1"
+                  >Non disponibile</span
+                >
+              {/if}
+            </p>
+            <button
+              on:click={() => {
+                action = "edit";
+                car_id = selectedCar._id;
+                new_car = {
+                  name: selectedCar.name,
+                  brand: selectedCar.meta.brand,
+                  model: selectedCar.meta.model,
+                  kilometers: selectedCar.meta.kilometers,
+                  plate_number: selectedCar.meta.plate_number,
+                };
+                show_form = true;
+              }}
+              class="mt-4 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+            >
+              Modifica
+            </button>
+            <button
+              on:click={() => (selectedCar = null)}
+              class="mt-2 block bg-sky-600 hover:bg-sky-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+            >
+              Chiudi
+            </button>
+          </div>
           <h2 class="text-2xl font-bold mb-4">
-            Stato mezzo {selectedCar.name}
+            Checklist mezzo {selectedCar.name}
           </h2>
-          <p><strong>Targa:</strong> {selectedCar.meta.plate_number}</p>
-          <p><strong>Marca:</strong> {selectedCar.meta.brand}</p>
-          <p><strong>Modello:</strong> {selectedCar.meta.model}</p>
-          <p><strong>Chilometri:</strong> {selectedCar.meta.kilometers}</p>
-          <p>
-            <strong>Livello carburante:</strong>
-            {selectedCar.meta.carbon_level || "0"}%
-          </p>
-          <p>
-            <strong>Driver:</strong>
-            {selectedCar.user
-              ? `${selectedCar.user.first_name} ${selectedCar.user.last_name}`
-              : "Nessun driver"}
-          </p>
-          <p>
-            <strong>Status:</strong>
-            {#if selectedCar.status === "free"}
-              <span
-                class="text-green-900 bg-green-300 px-4 rounded-full inline-block text-sm py-1"
-                >Disponibile</span
-              >
-            {:else if selectedCar.status === "on_break"}
-              <span
-                class="text-yellow-900 bg-yellow-200 px-4rounded-full inline-block text-sm py-1"
-                >Pausa</span
-              >
-            {:else}
-              <span
-                class="text-red-900 bg-red-200 px-4 rounded-full inline-block text-sm py-1"
-                >Non disponibile</span
-              >
-            {/if}
-          </p>
-          <button
-            on:click={() => {
-              action = "edit";
-              car_id = selectedCar._id;
-              new_car = {
-                name: selectedCar.name,
-                brand: selectedCar.meta.brand,
-                model: selectedCar.meta.model,
-                kilometers: selectedCar.meta.kilometers,
-                plate_number: selectedCar.meta.plate_number,
-              };
-              show_form = true;
-            }}
-            class="mt-4 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
-          >
-            Modifica
-          </button>
-          <button
-            on:click={() => (selectedCar = null)}
-            class="mt-2 block bg-sky-600 hover:bg-sky-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
-          >
-            Chiudi
-          </button>
-        </div>
-        <h2 class="text-2xl font-bold mb-4">
-          Checklist mezzo {selectedCar.name}
-        </h2>
-        <table class="border-collapse overflow-hidden">
-          <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
-            <tr>
-              <th
-                class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                >Autista</th
-              >
-              {#each Object.keys(checklist_verifier) as key}
+          <table class="border-collapse overflow-hidden">
+            <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
+              <tr>
                 <th
                   class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                  >{key}</th
-                >
-              {/each}
-              <th
-                class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                >PDF Link</th
-              >
-            </tr>
-          </thead>
-          <tbody>
-            {#each car_checklists as run}
-              <tr class="bg-gray-50 border-b border-l">
-                <td class="py-3 px-4 border-r border-inherit"
-                  >{run.user.first_name} {run.user.last_name}</td
+                  >Autista</th
                 >
                 {#each Object.keys(checklist_verifier) as key}
-                  <td class="py-3 px-4 border-r border-inherit"
-                    >{selectedCar.meta[checklist_verifier[key]]}</td
+                  <th
+                    class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                    >{key}</th
                   >
                 {/each}
-                <td class="py-3 px-4 border-r border-inherit">
-                  <a
-                    href={import.meta.env.VITE_API_URL +
-                      "/api/checklist/" +
-                      run._id +
-                      "/pdf"}
-                    target="_blank"
-                    class="bg-blue-500 flex gap-4 items-center justify-center hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                    ><span> 📥 </span> <span>Scarica PDF</span>
-                  </a>
-                </td></tr
-              >
-            {/each}
-          </tbody>
-        </table>
+                <th
+                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                  >PDF Link</th
+                >
+              </tr>
+            </thead>
+            <tbody>
+              {#each car_checklists as run}
+                <tr class="bg-gray-50 border-b border-l">
+                  <td class="py-3 px-4 border-r border-inherit"
+                    >{run.user.first_name} {run.user.last_name}</td
+                  >
+                  {#each Object.keys(checklist_verifier) as key}
+                    <td class="py-3 px-4 border-r border-inherit"
+                      >{selectedCar.meta[checklist_verifier[key]]}</td
+                    >
+                  {/each}
+                  <td class="py-3 px-4 border-r border-inherit">
+                    <a
+                      href={import.meta.env.VITE_API_URL +
+                        "/api/checklist/" +
+                        run._id +
+                        "/pdf"}
+                      target="_blank"
+                      class="bg-blue-500 flex gap-4 items-center justify-center hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                      ><span> 📥 </span> <span>Scarica PDF</span>
+                    </a>
+                  </td></tr
+                >
+              {/each}
+            </tbody>
+          </table>
 
-        <button
-          class="mt-4 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
-          on:click={() => navigate("/car-checklists")}
-        >
-          Vedi tutte le checklist
-        </button>
-        <h2 class="text-2xl font-bold mb-4 mt-8">
-          Checklist Materiale infermieristico mezzo {selectedCar.name}
-        </h2>
-        <table class="border-collapse overflow-hidden">
-          <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
-            <tr>
-              <th
-                class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                >Autista</th
-              >
-              {#each Object.keys(checklist_verifier) as key}
+          <button
+            class="mt-4 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+            on:click={() => navigate("/car-checklists")}
+          >
+            Vedi tutte le checklist
+          </button>
+          <h2 class="text-2xl font-bold mb-4 mt-8">
+            Checklist Materiale infermieristico mezzo {selectedCar.name}
+          </h2>
+          <table class="border-collapse overflow-hidden">
+            <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
+              <tr>
                 <th
                   class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                  >{key}</th
-                >
-              {/each}
-              <th
-                class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                >PDF Link</th
-              >
-            </tr>
-          </thead>
-          <tbody>
-            {#each material_checklists as run}
-              <tr class="bg-gray-50 border-b border-l">
-                <td class="py-3 px-4 border-r border-inherit"
-                  >{run.user.first_name} {run.user.last_name}</td
+                  >Autista</th
                 >
                 {#each Object.keys(checklist_verifier) as key}
-                  <td class="py-3 px-4 border-r border-inherit"
-                    >{selectedCar.meta[checklist_verifier[key]]}</td
+                  <th
+                    class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                    >{key}</th
                   >
                 {/each}
-                <td class="py-3 px-4 border-r border-inherit">
-                  <a
-                    href={import.meta.env.VITE_API_URL +
-                      "/api/checklist/" +
-                      run._id +
-                      "/pdf"}
-                    target="_blank"
-                    class="bg-blue-500 flex gap-4 items-center justify-center hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                    ><span> 📥 </span> <span>Scarica PDF</span>
-                  </a>
-                </td></tr
-              >
-            {/each}
-          </tbody>
-        </table>
-        <button
-          class="mt-4 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
-          on:click={() => navigate("/material-checklists")}
-        >
-          Vedi tutte le checklist
-        </button>
-      {/if}
+                <th
+                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                  >PDF Link</th
+                >
+              </tr>
+            </thead>
+            <tbody>
+              {#each material_checklists as run}
+                <tr class="bg-gray-50 border-b border-l">
+                  <td class="py-3 px-4 border-r border-inherit"
+                    >{run.user.first_name} {run.user.last_name}</td
+                  >
+                  {#each Object.keys(checklist_verifier) as key}
+                    <td class="py-3 px-4 border-r border-inherit"
+                      >{selectedCar.meta[checklist_verifier[key]]}</td
+                    >
+                  {/each}
+                  <td class="py-3 px-4 border-r border-inherit">
+                    <a
+                      href={import.meta.env.VITE_API_URL +
+                        "/api/checklist/" +
+                        run._id +
+                        "/pdf"}
+                      target="_blank"
+                      class="bg-blue-500 flex gap-4 items-center justify-center hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                      ><span> 📥 </span> <span>Scarica PDF</span>
+                    </a>
+                  </td></tr
+                >
+              {/each}
+            </tbody>
+          </table>
+          <button
+            class="mt-4 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+            on:click={() => navigate("/material-checklists")}
+          >
+            Vedi tutte le checklist
+          </button>
+        {/if}
+      </div>
     </div>
   </div>
 {/if}
