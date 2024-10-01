@@ -1,6 +1,7 @@
 <script>
   // @ts-nocheck
 
+  import { DateInput } from "date-picker-svelte";
   import L from "leaflet";
   import "leaflet/dist/leaflet.css";
   import { onDestroy, onMount } from "svelte";
@@ -183,6 +184,7 @@
     ricevuta: "",
     viaggio: "",
   };
+  let date = new Date();
 
   let options = {
     servizio: [
@@ -243,6 +245,29 @@
       })
       .catch((error) => {
         console.error("Error:", error);
+      });
+  };
+
+  const getRunsByDate = async () => {
+    loading = true;
+    fetch(
+      import.meta.env.VITE_API_URL + "/api/runs?date=" + date.toISOString(),
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        runs = data.runs;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      })
+      .finally(() => {
+        loading = false;
       });
   };
 
@@ -367,7 +392,7 @@
   <LoadingList />
 {:else}
   <div class="container mx-auto py-6 px-3">
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex justify-between items-center mb-4">
       <h1 class="text-3xl font-bold">Corse</h1>
       <button
         on:click={newRunToggle}
@@ -378,6 +403,15 @@
       </button>
     </div>
 
+    <div class="mb-8 flex items-center gap-4">
+      <DateInput bind:value={date} format="dd/MM/yyyy" />
+      <button
+        on:click={getRunsByDate}
+        class="bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+      >
+        Scegli data
+      </button>
+    </div>
     <!-- Table Container with Overflow for Responsiveness -->
     <div class="overflow-x-auto">
       <table

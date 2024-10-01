@@ -30,7 +30,7 @@ const listRuns = async (request, reply) => {
     const startDate = new Date(date);
     const endDate = new Date(date);
     endDate.setDate(endDate.getDate() + 1);
-    query.created_at = { $gte: startDate, $lt: endDate };
+    q.created_at = { $gte: startDate, $lt: endDate };
   }
   try {
     const runs = await Run.find({

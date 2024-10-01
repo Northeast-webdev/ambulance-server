@@ -44,7 +44,7 @@
     try {
       const response = await fetch(
         import.meta.env.VITE_API_URL +
-          "/api/car-checklist/?date=" +
+          "/api/car-checklist?date=" +
           car_check_date.toISOString().split("T")[0] +
           "&car=" +
           selectedCar._id,
@@ -67,7 +67,7 @@
     try {
       const response = await fetch(
         import.meta.env.VITE_API_URL +
-          "/api/material-checklist/?date=" +
+          "/api/material-checklist?date=" +
           material_date.toISOString().split("T")[0] +
           "&car=" +
           selectedCar._id,
@@ -394,7 +394,7 @@
               on:click={handleSearchCarChecklists}
               class="bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
             >
-              Cerca
+              Scegli data
             </button>
           </div>
           <table class="border-collapse overflow-hidden">
@@ -465,7 +465,7 @@
               on:click={handleSearchMaterialChecklists}
               class="bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
             >
-              Cerca
+              Scegli data
             </button>
           </div>
           <table class="border-collapse overflow-hidden">
