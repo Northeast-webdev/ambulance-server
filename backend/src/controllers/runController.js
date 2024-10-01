@@ -24,13 +24,19 @@ const createRun = async (request, reply) => {
 };
 
 const listRuns = async (request, reply) => {
-  const { page = 1, limit = 10, query, date } = request.query;
+  const { page = 1, limit = 10, query, date, updated_date } = request.query;
   const q = {};
   if (date) {
     const startDate = new Date(date);
     const endDate = new Date(date);
     endDate.setDate(endDate.getDate() + 1);
     q.created_at = { $gte: startDate, $lt: endDate };
+  }
+  if (updated_date) {
+    const startDate = new Date(updated_date);
+    const endDate = new Date(updated_date);
+    endDate.setDate(endDate.getDate() + 1);
+    q.updated_at = { $gte: startDate, $lt: endDate };
   }
   try {
     const runs = await Run.find({
