@@ -21,12 +21,26 @@
   let driver_id = "";
   let drivers = [];
   let socket;
+  let currentTime = new Date();
+  let currentTimeTimeout;
   $: showMap && getMapInfo();
 
   $: showFinalPopup &&
     setTimeout(() => {
       getMapInfo();
     }, 1000);
+
+  onMount(() => {
+    const recursiveTimeout = () => {
+      currentTime = new Date();
+      setTimeout(recursiveTimeout, 1000);
+    };
+    currentTimeTimeout = setTimeout(recursiveTimeout, 1000);
+  });
+
+  onDestroy(() => {
+    if (currentTimeTimeout) clearTimeout(currentTimeTimeout);
+  });
 
   onMount(() => {
     socket = new WebSocket(import.meta.env.VITE_WS_URL + "/api/runs/admin");
@@ -359,6 +373,37 @@
     }
   }
 
+  async function pingDriver(run) {
+    try {
+      const response = await fetch(
+        import.meta.env.VITE_API_URL + "/api/runs/" + run._id,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ notification_sent: true, car: run.car._id }),
+        }
+      );
+      const data = await response.json();
+      console.log("Driver pinged:", data);
+      runs = runs.map((r) => {
+        if (r._id === data.run._id) {
+          return {
+            ...r,
+            notification_sent: true,
+            notification_time: new Date(),
+            updated_at: data.run.updated_at,
+          };
+        }
+        return r;
+      });
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
   async function newRun() {
     try {
       const { geometry, end_geometry, ...newR } = new_run;
@@ -518,7 +563,7 @@
                     {:else if run.car && run.status !== "cancelled"}
                       <p class="text-gray-800 cursor-pointer">
                         Mezzo assegnato: <span class="hover:underline"
-                          >{run.car.meta.plate_number} - {run.car.user
+                          >{run.car.name} - {run.car.user
                             ? `${run.car.user.first_name} ${
                                 run.car.user.last_name
                               }`
@@ -536,6 +581,28 @@
                       <p class="text-gray-800 cursor-pointer py-2 px-6">
                         Corsa annullata
                       </p>
+                    {/if}
+                    {#if run.status === "pending" && run.car}
+                      <button
+                        disabled={currentTime.getTime() <
+                          new Date(run.updated_at).getTime() + 30000}
+                        on:click={() =>
+                          currentTime.getTime() <
+                          new Date(run.updated_at).getTime() + 30000
+                            ? null
+                            : pingDriver(run)}
+                        class="bg-lime-700 hover:bg-lime-800 disabled:bg-gray-600 transition text-white font-bold py-2 px-6 rounded-lg"
+                      >
+                        {currentTime.getTime() <
+                        new Date(run.updated_at).getTime() + 30000
+                          ? Math.floor(
+                              (new Date(run.updated_at).getTime() +
+                                30000 -
+                                currentTime.getTime()) /
+                                1000
+                            )
+                          : "Notifica autista"}
+                      </button>
                     {/if}
                   </div>
                 </td>

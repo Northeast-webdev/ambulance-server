@@ -334,7 +334,7 @@
               {#if userType === "driver"}
                 <td class="py-3 px-4 border-r">
                   {#if user.car}
-                    <span class="font-bold"> {user.car.meta.plate_number}</span>
+                    <span class="font-bold"> {user.car.last_name}</span>
                   {:else}
                     <span class="text-gray-500">-</span>
                   {/if}

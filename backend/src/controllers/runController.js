@@ -89,11 +89,11 @@ const updateRun = async (request, reply) => {
       { _id: request.params.id },
       updates,
       {
-        returnDocument: "after",
+        returnDocument: "before",
       }
     );
     const existingCar = await Car.findOne({ _id: result.car });
-    if (existingCar && status !== "completed") {
+    if (existingCar && status !== "completed" && result.status !== "pending") {
       await Car.findOneAndUpdate(
         { _id: existingCar._id.toString() },
         { status: "busy" },
@@ -104,7 +104,7 @@ const updateRun = async (request, reply) => {
     }
     console.log("Existing car:", existingCar);
     console.log("Status:", status);
-    if (existingCar && status === "completed") {
+    if ((existingCar && status === "completed") || updates.car === null) {
       await Car.findOneAndUpdate(
         { _id: existingCar._id.toString() },
         { status: "free" },
