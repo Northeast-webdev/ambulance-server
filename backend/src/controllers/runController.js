@@ -46,7 +46,7 @@ const listRuns = async (request, reply) => {
       })
       .skip((page - 1) * limit)
       .limit(limit)
-      .sort({ created_at: -1 })
+      .sort({ created_at: 1 })
       .exec();
     return { runs, page, limit };
   } catch (err) {

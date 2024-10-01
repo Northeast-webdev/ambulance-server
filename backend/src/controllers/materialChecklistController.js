@@ -44,7 +44,7 @@ const listMaterialChecklists = async (request, reply) => {
       .populate("car", "name _id meta")
       .skip((page - 1) * limit)
       .limit(limit)
-      .sort({ created_at: -1 })
+      .sort({ created_at: 1 })
       .exec();
     return { checklists, page, limit };
   } catch (err) {
