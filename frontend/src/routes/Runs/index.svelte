@@ -552,7 +552,7 @@
 {#if showPopup || show_form || showFinalPopup}
   <div
     transition:fade={{ duration: 300 }}
-    class="fixed inset-0 z-40 flex items-center flex-col gap-10 justify-center p-4 mb-8 bg-white transition-opacity duration-500"
+    class="fixed inset-0 overflow-hidden z-40 flex items-center flex-col gap-10 justify-center p-4 bg-white transition-opacity duration-500"
   >
     <div class="flex max-w-screen-lg w-full mx-auto pt-32">
       <div class="flex items-center">
