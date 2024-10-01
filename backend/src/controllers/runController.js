@@ -95,7 +95,7 @@ const updateRun = async (request, reply) => {
     const existingCar = await Car.findOne({ _id: result.car });
     if (existingCar && status !== "completed") {
       await Car.findOneAndUpdate(
-        { _id: existingCar._id },
+        { _id: existingCar._id.toString() },
         { status: "busy" },
         {
           returnDocument: "after",
@@ -106,7 +106,7 @@ const updateRun = async (request, reply) => {
     console.log("Status:", status);
     if (existingCar && status === "completed") {
       await Car.findOneAndUpdate(
-        { _id: existingCar._id },
+        { _id: existingCar._id.toString() },
         { status: "free" },
         {
           returnDocument: "after",
