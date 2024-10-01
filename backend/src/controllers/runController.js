@@ -24,10 +24,18 @@ const createRun = async (request, reply) => {
 };
 
 const listRuns = async (request, reply) => {
-  const { page = 1, limit = 10, query } = request.query;
+  const { page = 1, limit = 10, query, date } = request.query;
+  const q = {};
+  if (date) {
+    const startDate = new Date(date);
+    const endDate = new Date(date);
+    endDate.setDate(endDate.getDate() + 1);
+    query.created_at = { $gte: startDate, $lt: endDate };
+  }
   try {
     const runs = await Run.find({
       ...query,
+      ...q,
     })
       .populate({
         path: "car",

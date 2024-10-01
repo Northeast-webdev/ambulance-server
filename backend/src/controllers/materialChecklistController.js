@@ -29,9 +29,17 @@ const createMaterialChecklist = async (request, reply) => {
 };
 
 const listMaterialChecklists = async (request, reply) => {
-  const { page = 1, limit = 10 } = request.query;
+  const { page = 1, limit = 10, date, car } = request.query;
+  const query = {};
+  if (date) {
+    const startDate = new Date(date);
+    const endDate = new Date(date);
+    endDate.setDate(endDate.getDate() + 1);
+    query.created_at = { $gte: startDate, $lt: endDate };
+  }
+  if (car) query.car = car;
   try {
-    const checklists = await MaterialChecklist.find()
+    const checklists = await MaterialChecklist.find(query)
       .populate("user", "first_name last_name _id")
       .populate("car", "name _id meta")
       .skip((page - 1) * limit)

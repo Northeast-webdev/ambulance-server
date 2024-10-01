@@ -527,6 +527,11 @@ cssesc@^3.0.0:
   resolved "https://registry.yarnpkg.com/cssesc/-/cssesc-3.0.0.tgz#37741919903b868565e1c09ea747445cd18983ee"
   integrity sha512-/Tb/JcjK111nNScGob5MNtsntNM1aCNUDipB/TkwZFhyDrrE47SOx/18wF2bbjgc3ZzCSKW1T5nt5EbFoAz/Vg==
 
+date-picker-svelte@^2.13.0:
+  version "2.13.0"
+  resolved "https://registry.yarnpkg.com/date-picker-svelte/-/date-picker-svelte-2.13.0.tgz#28366cd09aa52547597742a2cb3f50c4a17a6679"
+  integrity sha512-A0MMma1uv+/sL8MwgGuEPv/UJnhR6CmWg5aR8XhYeAX/I8+RQmQh+jpwIL0Z3/g4CGo9OhNZn+VicHpvnNCCtA==
+
 debug@^4.3.4, debug@^4.3.6:
   version "4.3.7"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.7.tgz#87945b4151a011d76d95a198d7111c865c360a52"

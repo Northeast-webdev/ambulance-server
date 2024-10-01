@@ -1,5 +1,6 @@
 <script>
   // @ts-nocheck
+  import { DateInput } from "date-picker-svelte";
   import { onMount } from "svelte";
   import { navigate } from "svelte-navigator";
   import { fade } from "svelte/transition";
@@ -36,6 +37,54 @@
   let material_checklists = [];
   let car_checklists = [];
   let selectedCar = null;
+  let car_check_date = new Date();
+  let material_date = new Date();
+
+  const handleSearchCarChecklists = async () => {
+    try {
+      const response = await fetch(
+        import.meta.env.VITE_API_URL +
+          "/api/car-checklist/?date=" +
+          car_check_date.toISOString().split("T")[0] +
+          "&car=" +
+          selectedCar._id,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      const data = await response.json();
+      console.log("data: ", data);
+      car_checklists = data.checklists;
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const handleSearchMaterialChecklists = async () => {
+    try {
+      const response = await fetch(
+        import.meta.env.VITE_API_URL +
+          "/api/material-checklist/?date=" +
+          material_date.toISOString().split("T")[0] +
+          "&car=" +
+          selectedCar._id,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      const data = await response.json();
+      console.log("data: ", data);
+      material_checklists = data.checklists;
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
 
   const getCars = async () => {
     loading = true;
@@ -339,6 +388,15 @@
           <h2 class="text-2xl font-bold mb-4">
             Checklist mezzo {selectedCar.name}
           </h2>
+          <div class="mb-4 flex items-center gap-4">
+            <DateInput bind:value={car_check_date} format="dd/MM/yyyy" />
+            <button
+              on:click={handleSearchCarChecklists}
+              class="bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+            >
+              Cerca
+            </button>
+          </div>
           <table class="border-collapse overflow-hidden">
             <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
               <tr>
@@ -355,6 +413,10 @@
                 <th
                   class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
                   >PDF Link</th
+                >
+                <th
+                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                  >Data</th
                 >
               </tr>
             </thead>
@@ -379,8 +441,11 @@
                       class="bg-blue-500 flex gap-4 items-center justify-center hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                       ><span> 📥 </span> <span>Scarica PDF</span>
                     </a>
-                  </td></tr
-                >
+                  </td>
+                  <td class="py-3 px-4 border-r border-inherit">
+                    {new Date(run.created_at).toLocaleDateString("it-IT")}
+                  </td>
+                </tr>
               {/each}
             </tbody>
           </table>
@@ -394,6 +459,15 @@
           <h2 class="text-2xl font-bold mb-4 mt-8">
             Checklist Materiale infermieristico mezzo {selectedCar.name}
           </h2>
+          <div class="mb-4 flex items-center gap-4">
+            <DateInput bind:value={material_date} format="dd/MM/yyyy" />
+            <button
+              on:click={handleSearchMaterialChecklists}
+              class="bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+            >
+              Cerca
+            </button>
+          </div>
           <table class="border-collapse overflow-hidden">
             <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
               <tr>
@@ -410,6 +484,10 @@
                 <th
                   class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
                   >PDF Link</th
+                >
+                <th
+                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                  >Data</th
                 >
               </tr>
             </thead>
@@ -434,8 +512,11 @@
                       class="bg-blue-500 flex gap-4 items-center justify-center hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                       ><span> 📥 </span> <span>Scarica PDF</span>
                     </a>
-                  </td></tr
-                >
+                  </td>
+                  <td class="py-3 px-4 border-r border-inherit">
+                    {new Date(run.created_at).toLocaleDateString("it-IT")}
+                  </td>
+                </tr>
               {/each}
             </tbody>
           </table>
