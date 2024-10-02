@@ -477,7 +477,7 @@
         <tbody>
           {#each runs as run}
             <tr
-              class="{run.status === 'cancelled'
+              class="{run.status === 'refused'
                 ? 'bg-red-200 border-red-300'
                 : run.status === 'ongoing'
                   ? 'bg-amber-200 border-amber-300'
@@ -510,7 +510,7 @@
             {#if run.visibleInfo}
               <tr
                 transition:fly={{ x: 40, duration: 300 }}
-                class={run.status === "cancelled"
+                class={run.status === "refused"
                   ? "bg-red-200"
                   : run.status === "ongoing"
                     ? "bg-amber-200"
@@ -530,7 +530,7 @@
                       <div
                         title="Annullata"
                         class="bg-red-400 w-4 h-4 rounded-full {run.status ===
-                        'cancelled'
+                        'refused'
                           ? 'ring-4 ring-red-600'
                           : ''}"
                       ></div>
@@ -560,7 +560,7 @@
                       <p class="text-gray-800 cursor-pointer py-2 px-6">
                         Corsa completata
                       </p>
-                    {:else if run.car && run.status !== "cancelled"}
+                    {:else if run.car && run.status !== "refused"}
                       <p class="text-gray-800 cursor-pointer">
                         Mezzo assegnato: <span class="hover:underline"
                           >{run.car.name} - {run.car.user
@@ -570,7 +570,7 @@
                             : "Nessun driver"}</span
                         >
                       </p>
-                    {:else if run.status !== "cancelled"}
+                    {:else if run.status !== "refused"}
                       <button
                         on:click={() => openPopup(run)}
                         class="bg-lime-500 hover:bg-lime-600 transition text-white font-bold py-2 px-6 rounded-lg"
@@ -578,9 +578,12 @@
                         Assegna corsa
                       </button>
                     {:else}
-                      <p class="text-gray-800 cursor-pointer py-2 px-6">
-                        Corsa annullata
-                      </p>
+                      <button
+                        on:click={() => openPopup(run)}
+                        class="bg-lime-500 hover:bg-lime-600 transition text-white font-bold py-2 px-6 rounded-lg"
+                      >
+                        Riassegna corsa
+                      </button>
                     {/if}
                     {#if run.status === "pending" && run.car}
                       <button

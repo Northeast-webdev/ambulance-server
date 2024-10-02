@@ -206,6 +206,7 @@ const websocketHandler = (socket, req) => {
           {
             notification_sent: true,
             car: null,
+            status: "refused",
           },
           {
             returnDocument: "after",
