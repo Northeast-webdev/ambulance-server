@@ -89,6 +89,7 @@
   let map;
   let socket;
   let driverMarkers = new Map(); // Map to store markers by driver ID
+  let fullScreen = false;
 
   $: drivers && drivers.length && getMarkers();
 
@@ -442,9 +443,20 @@
 
 <!-- HTML Layout -->
 <div class="min-h-screen p-6">
-  <div class="container mx-auto py-6 px-3">
-    <h1 class="text-3xl font-bold mb-6">Mappa</h1>
-
+  <div
+    class="{fullScreen
+      ? 'max-w-full'
+      : 'container'} mx-auto py-6 transition-[max-width]"
+  >
+    <div class="flex mb-4 justify-between items-center">
+      <h1 class="text-3xl font-bold mb-6">Mappa</h1>
+      <button
+        on:click={() => (fullScreen = !fullScreen)}
+        class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
+      >
+        Full screen toggle
+      </button>
+    </div>
     <!-- Search Bar -->
     <div class="mb-4">
       <input
