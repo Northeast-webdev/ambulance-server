@@ -55,6 +55,13 @@
       const id = data.documentKey._id;
       const status = data.updateDescription.updatedFields.status;
       const car = data.updateDescription.updatedFields.car;
+      const raw = localStorage.getItem("run_pinged");
+      if (raw) {
+        const run_pinged = JSON.parse(raw);
+        if (run_pinged.run === id) {
+          localStorage.removeItem("run_pinged");
+        }
+      }
       runs = runs.map((run) => {
         if (run._id === id) {
           run.status = status || run.status;
@@ -374,6 +381,26 @@
   }
 
   async function pingDriver(run) {
+    const raw = localStorage.getItem("run_pinged");
+    if (!raw) {
+      localStorage.setItem(
+        "run_pinged",
+        JSON.stringify({ run: run._id, count: 1 })
+      );
+    }
+    const run_pinged = JSON.parse(raw);
+    if (run_pinged.count >= 5) {
+      alert("Autista pingato troppe volte");
+      return;
+    }
+
+    localStorage.setItem(
+      "run_pinged",
+      JSON.stringify({
+        run: run._id,
+        count: parseInt(run_pinged.count) + 1,
+      })
+    );
     try {
       const response = await fetch(
         import.meta.env.VITE_API_URL + "/api/runs/" + run._id,
