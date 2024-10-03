@@ -280,6 +280,32 @@
         ...selectedCar.damages[side].slice(index + 1),
       ];
   };
+
+  const handlePoints = async () => {
+    try {
+      const response = await fetch(
+        import.meta.env.VITE_API_URL + "/api/cars/" + selectedCar._id,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            damages: selectedCar.damages,
+          }),
+        }
+      );
+      const data = await response.json();
+      console.log("data: ", data);
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
 </script>
 
 {#if loading}
@@ -444,7 +470,7 @@
                 {/each}
 
                 <button
-                  on:click={handleSearchCarChecklists}
+                  on:click={handlePoints}
                   class="bg-lime-600 w-full hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
                 >
                   Salva punto
