@@ -4,7 +4,7 @@
   import { onMount } from "svelte";
   import { navigate } from "svelte-navigator";
   import { fade } from "svelte/transition";
-  import vanImage from "../../assets/van.png";
+  import vanImage from "../../assets/van.webp";
   import vanBack from "../../assets/van/back.png";
   import vanFront from "../../assets/van/front.png";
   import vanLeft from "../../assets/van/left.png";
@@ -62,6 +62,24 @@
   let car_check_date = new Date();
   let material_date = new Date();
   let pointsLoading = false;
+
+  // Helper function to get part names based on color index
+  const getPartName = (index) => {
+    switch (index) {
+      case 0:
+        return "Strisciata"; // Yellow
+      case 1:
+        return "Ammaccatura"; // Blue
+      case 2:
+        return "Pezzo mancante"; // Green
+      case 3:
+        return "Rottura"; // Light Blue
+      case 4:
+        return "Altro"; // Pink
+      default:
+        return "";
+    }
+  };
 
   const handleSearchCarChecklists = async () => {
     try {
@@ -283,6 +301,7 @@
   };
 
   const handlePoints = async () => {
+    if (!selectedCar.damages) return;
     try {
       pointsLoading = true;
       const response = await fetch(
@@ -358,7 +377,7 @@
               <img
                 src={vanImage}
                 alt={car.meta.brand}
-                class="w-full h-36 object-contain"
+                class="w-full h-32 my-4 object-contain"
               />
               <p class="text-gray-700 text-xl font-bold mb-2">
                 {car.user
@@ -393,7 +412,7 @@
         class="{loadingCar ? 'h-screen' : ''} mx-auto px-4"
       >
         {#if selectedCar}
-          <div class="flex my-8 justify-between">
+          <div class="flex mb-8 pt-14 justify-between">
             <div class="bg-white">
               <h2 class="text-2xl font-bold mb-4">
                 Stato mezzo {selectedCar.name}
@@ -496,6 +515,18 @@
                   >
                     {VAN_TRANSLATIONS[side]}
                   </button>
+                {/each}
+              </div>
+
+              <div class="flex flex-wrap items-start gap-2 flex-col">
+                {#each COLORS as color, index}
+                  <div class="flex items-center my-1">
+                    <div
+                      class="w-5 h-5 rounded-sm mr-1"
+                      style="background-color: {color};"
+                    ></div>
+                    <span class="text-sm">{getPartName(index)}</span>
+                  </div>
                 {/each}
               </div>
             </div>
