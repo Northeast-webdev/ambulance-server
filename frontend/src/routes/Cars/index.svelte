@@ -61,6 +61,7 @@
   let selectedCar = null;
   let car_check_date = new Date();
   let material_date = new Date();
+  let pointsLoading = false;
 
   const handleSearchCarChecklists = async () => {
     try {
@@ -283,6 +284,7 @@
 
   const handlePoints = async () => {
     try {
+      pointsLoading = true;
       const response = await fetch(
         import.meta.env.VITE_API_URL + "/api/cars/" + selectedCar._id,
         {
@@ -301,9 +303,13 @@
       if (data.error) {
         alert(data.error);
         return;
+      } else {
+        alert("Punti aggiornati con successo!");
       }
     } catch (error) {
       console.error("Error:", error);
+    } finally {
+      pointsLoading = false;
     }
   };
 </script>
@@ -384,7 +390,7 @@
       </div>
       <div
         id="selected-car"
-        class={loadingCar ? "h-screen" : "max-w-5xl mx-auto"}
+        class="{loadingCar ? 'h-screen' : ''} mx-auto px-4"
       >
         {#if selectedCar}
           <div class="flex my-8 justify-between">
@@ -470,8 +476,11 @@
                 {/each}
 
                 <button
+                  disabled={pointsLoading}
                   on:click={handlePoints}
-                  class="bg-lime-600 w-full hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+                  class="{pointsLoading
+                    ? 'bg-gray-600'
+                    : 'bg-lime-600 hover:bg-lime-800'} w-full text-white font-bold py-2 px-4 rounded-lg transition duration-200"
                 >
                   Salva punto
                 </button>
