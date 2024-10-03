@@ -5,7 +5,29 @@
   import { navigate } from "svelte-navigator";
   import { fade } from "svelte/transition";
   import vanImage from "../../assets/van.png";
+  import vanBack from "../../assets/van/back.png";
+  import vanFront from "../../assets/van/front.png";
+  import vanLeft from "../../assets/van/left.png";
+  import vanRight from "../../assets/van/right.png";
   import LoadingList from "../../components/LoadingList.svelte";
+
+  let selectedSide = "front"; // Default to 'front'
+  const COLORS = ["#FBBF24", "#3B82F6", "#22C55E", "#ADD8E6", "#FFC0CB"];
+
+  const VAN_IMAGES = {
+    front: vanFront,
+    back: vanBack,
+    left: vanLeft,
+    right: vanRight,
+  };
+
+  const VAN_TRANSLATIONS = {
+    front: "Fronte",
+    back: "Retro",
+    left: "Sinistra",
+    right: "Destra",
+  };
+
   let cars = [];
   let drivers = [];
   let show_form = false;
@@ -246,6 +268,18 @@
         .scrollIntoView({ behavior: "smooth" });
     }, 100);
   }
+
+  // Toggle point color when clicked
+  const togglePointColor = (side, index) => {
+    const confirmRemoval = window.confirm(
+      "Sei sicuro di voler rimuovere questo punto?"
+    );
+    if (confirmRemoval)
+      selectedCar.damages[side] = [
+        ...selectedCar.damages[side].slice(0, index),
+        ...selectedCar.damages[side].slice(index + 1),
+      ];
+  };
 </script>
 
 {#if loading}
@@ -322,68 +356,114 @@
           </button>
         {/each}
       </div>
-      <div id="selected-car" class={loadingCar ? "h-screen" : ""}>
+      <div
+        id="selected-car"
+        class={loadingCar ? "h-screen" : "max-w-5xl mx-auto"}
+      >
         {#if selectedCar}
-          <div class="mt-6 pt-8 bg-white mb-8">
-            <h2 class="text-2xl font-bold mb-4">
-              Stato mezzo {selectedCar.name}
-            </h2>
-            <p><strong>Targa:</strong> {selectedCar.meta.plate_number}</p>
-            <p><strong>Marca:</strong> {selectedCar.meta.brand}</p>
-            <p><strong>Modello:</strong> {selectedCar.meta.model}</p>
-            <p><strong>Chilometri:</strong> {selectedCar.meta.kilometers}</p>
-            <p>
-              <strong>Livello carburante:</strong>
-              {selectedCar.meta.carbon_level || "0"}%
-            </p>
-            <p>
-              <strong>Driver:</strong>
-              {selectedCar.user
-                ? `${selectedCar.user.first_name} ${selectedCar.user.last_name}`
-                : "Nessun driver"}
-            </p>
-            <p>
-              <strong>Status:</strong>
-              {#if selectedCar.status === "free"}
-                <span
-                  class="text-green-900 bg-green-300 px-4 rounded-full inline-block text-sm py-1"
-                  >Disponibile</span
+          <div class="flex my-8 justify-between">
+            <div class="bg-white">
+              <h2 class="text-2xl font-bold mb-4">
+                Stato mezzo {selectedCar.name}
+              </h2>
+              <p><strong>Targa:</strong> {selectedCar.meta.plate_number}</p>
+              <p><strong>Marca:</strong> {selectedCar.meta.brand}</p>
+              <p><strong>Modello:</strong> {selectedCar.meta.model}</p>
+              <p><strong>Chilometri:</strong> {selectedCar.meta.kilometers}</p>
+              <p>
+                <strong>Livello carburante:</strong>
+                {selectedCar.meta.carbon_level || "0"}%
+              </p>
+              <p>
+                <strong>Driver:</strong>
+                {selectedCar.user
+                  ? `${selectedCar.user.first_name} ${selectedCar.user.last_name}`
+                  : "Nessun driver"}
+              </p>
+              <p>
+                <strong>Status:</strong>
+                {#if selectedCar.status === "free"}
+                  <span
+                    class="text-green-900 bg-green-300 px-4 rounded-full inline-block text-sm py-1"
+                    >Disponibile</span
+                  >
+                {:else if selectedCar.status === "on_break"}
+                  <span
+                    class="text-yellow-900 bg-yellow-200 px-4rounded-full inline-block text-sm py-1"
+                    >Pausa</span
+                  >
+                {:else}
+                  <span
+                    class="text-red-900 bg-red-200 px-4 rounded-full inline-block text-sm py-1"
+                    >Non disponibile</span
+                  >
+                {/if}
+              </p>
+              <button
+                on:click={() => {
+                  action = "edit";
+                  car_id = selectedCar._id;
+                  new_car = {
+                    name: selectedCar.name,
+                    brand: selectedCar.meta.brand,
+                    model: selectedCar.meta.model,
+                    kilometers: selectedCar.meta.kilometers,
+                    plate_number: selectedCar.meta.plate_number,
+                  };
+                  show_form = true;
+                }}
+                class="mt-4 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+              >
+                Modifica
+              </button>
+              <button
+                on:click={() => (selectedCar = null)}
+                class="mt-2 block bg-sky-600 hover:bg-sky-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+              >
+                Chiudi
+              </button>
+            </div>
+
+            <!-- Car Damage Points Display -->
+            <div class="van-diagram-container">
+              <!-- Car Image with Points -->
+              <div class="relative mx-auto w-[375px]">
+                <img
+                  src={VAN_IMAGES[selectedSide]}
+                  alt="Van Side"
+                  class="van-image"
+                />
+                {#each selectedCar.damages[selectedSide] as { x, y, colorIndex }, index}
+                  <button
+                    class="point"
+                    style="left: {x}px; top: {y}px; background-color: {COLORS[
+                      colorIndex
+                    ]}"
+                    on:click={() => togglePointColor(selectedSide, index)}
+                  />
+                {/each}
+
+                <button
+                  on:click={handleSearchCarChecklists}
+                  class="bg-lime-600 w-full hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
                 >
-              {:else if selectedCar.status === "on_break"}
-                <span
-                  class="text-yellow-900 bg-yellow-200 px-4rounded-full inline-block text-sm py-1"
-                  >Pausa</span
-                >
-              {:else}
-                <span
-                  class="text-red-900 bg-red-200 px-4 rounded-full inline-block text-sm py-1"
-                  >Non disponibile</span
-                >
-              {/if}
-            </p>
-            <button
-              on:click={() => {
-                action = "edit";
-                car_id = selectedCar._id;
-                new_car = {
-                  name: selectedCar.name,
-                  brand: selectedCar.meta.brand,
-                  model: selectedCar.meta.model,
-                  kilometers: selectedCar.meta.kilometers,
-                  plate_number: selectedCar.meta.plate_number,
-                };
-                show_form = true;
-              }}
-              class="mt-4 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
-            >
-              Modifica
-            </button>
-            <button
-              on:click={() => (selectedCar = null)}
-              class="mt-2 block bg-sky-600 hover:bg-sky-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
-            >
-              Chiudi
-            </button>
+                  Salva punto
+                </button>
+              </div>
+
+              <!-- Buttons to Switch Van Sides -->
+              <div class="button-container">
+                {#each Object.keys(VAN_TRANSLATIONS) as side}
+                  <button
+                    class="side-button"
+                    class:selected={selectedSide === side}
+                    on:click={() => (selectedSide = side)}
+                  >
+                    {VAN_TRANSLATIONS[side]}
+                  </button>
+                {/each}
+              </div>
+            </div>
           </div>
           <h2 class="text-2xl font-bold mb-4">
             Checklist mezzo {selectedCar.name}
@@ -397,7 +477,7 @@
               Scegli data
             </button>
           </div>
-          <table class="border-collapse overflow-hidden">
+          <table class="border-collapse overflow-hidden w-full">
             <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
               <tr>
                 <th
@@ -468,7 +548,7 @@
               Scegli data
             </button>
           </div>
-          <table class="border-collapse overflow-hidden">
+          <table class="border-collapse overflow-hidden w-full">
             <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
               <tr>
                 <th
@@ -627,3 +707,42 @@
     </div>
   </div>
 {/if}
+
+<style>
+  .van-diagram-container {
+    @apply flex gap-4 items-center;
+  }
+  .van-image {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 1;
+    object-fit: contain;
+  }
+  .point {
+    position: absolute;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    border: 2px solid black;
+    cursor: pointer;
+    opacity: 0.8;
+  }
+  .button-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .side-button {
+    padding: 1rem;
+    background-color: #22c55e;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .side-button.selected {
+    background-color: #3b82f6;
+  }
+</style>

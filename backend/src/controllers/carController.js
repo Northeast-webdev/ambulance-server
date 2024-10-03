@@ -8,7 +8,17 @@ const { MaterialChecklist } = require("../schema/materialChecklist.schema");
 
 const createCar = async (request, reply) => {
   const { meta, name } = request.body;
-  const car = new Car({ meta, name });
+  const car = new Car({
+    meta,
+    name,
+    damages: {
+      // Initialize damages with default values
+      front: [],
+      back: [],
+      left: [],
+      right: [],
+    },
+  });
   try {
     await car.save();
     reply.send(car);
@@ -44,14 +54,17 @@ const getCar = async (request, reply) => {
 };
 
 const updateCar = async (request, reply) => {
-  const { meta, status, user, last_location, shift_start, name } = request.body;
+  const { meta, status, user, last_location, shift_start, name, damages } =
+    request.body;
   const updates = {};
   const carWithUser = await Car.findOne({ user });
+
   if (user && user !== null && carWithUser) {
     return reply
       .code(400)
       .send({ error: "This user has already been assigned" });
   }
+
   // if some fields are missing, do not update them
   if (meta) updates.meta = meta;
   if (status) updates.status = status;
@@ -59,6 +72,7 @@ const updateCar = async (request, reply) => {
   if (last_location) updates.last_location = last_location;
   if (shift_start) updates.shift_start = shift_start;
   if (name) updates.name = name;
+  if (damages) updates.damages = damages; // Update damages if provided
 
   updates.updated_at = new Date().toISOString();
 

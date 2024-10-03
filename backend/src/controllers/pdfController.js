@@ -189,11 +189,9 @@ const printMaterialChecklist = async (request) => {
 
   // Fetch checklist from database or request body
   const checklistId = request.checklistId; // Assuming you're passing the checklist ID as a query param
-  const materialChecklist = await MaterialChecklist.findById(
-    checklistId
-  )
-  .populate("user")
-  .populate("car");
+  const materialChecklist = await MaterialChecklist.findById(checklistId)
+    .populate("user")
+    .populate("car");
   const checklist = materialChecklist.checklist; // Checklist object
   const filename =
     "checklist_inf-" +
@@ -203,20 +201,20 @@ const printMaterialChecklist = async (request) => {
   const logo = fs
     .readFileSync(`${process.cwd()}/backend/img/logo.png`)
     .toString("base64");
-    const labels = {
-      guanti: 'Guanti',
-      maschera: 'Maschera',
-      camice: 'Camice',
-      cappello: 'Cappello',
-      copriscarpe: 'Copriscarpe',
-      visiera: 'Visiera',
-      occhiali: 'Occhiali',
-      respiratore: 'Respiratore',
-      grembiule: 'Grembiule',
-      cuffia: 'Cuffia',
-      divise: 'Divise',
-      termometro: 'Termometro',
-    };
+  const labels = {
+    guanti: "Guanti",
+    maschera: "Maschera",
+    camice: "Camice",
+    cappello: "Cappello",
+    copriscarpe: "Copriscarpe",
+    visiera: "Visiera",
+    occhiali: "Occhiali",
+    respiratore: "Respiratore",
+    grembiule: "Grembiule",
+    cuffia: "Cuffia",
+    divise: "Divise",
+    termometro: "Termometro",
+  };
   // Generate table rows based on the checklist object
   const checklistRows = Object.entries(checklist)
     .map(([key, value]) => {
@@ -274,7 +272,9 @@ const printMaterialChecklist = async (request) => {
         <tr>
           <td>Autista</td>
           <td>
-          ${materialChecklist.user.first_name} ${materialChecklist.user.last_name}
+          ${materialChecklist.user.first_name} ${
+    materialChecklist.user.last_name
+  }
          </td>
         </tr>
         <tr>

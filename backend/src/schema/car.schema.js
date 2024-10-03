@@ -14,6 +14,16 @@ const carSchema = new Schema({
     latitude: { type: Number, default: 44.42580512807064 },
     longitude: { type: Number, default: 8.850582457670813 },
   },
+  damages: {
+    type: Object,
+    required: true,
+    default: {
+      front: [],
+      back: [],
+      left: [],
+      right: [],
+    },
+  },
 });
 const Car = mongoose.model("Car", carSchema);
 
