@@ -10,6 +10,7 @@
   import vanLeft from "../../assets/van/left.png";
   import vanRight from "../../assets/van/right.png";
   import LoadingList from "../../components/LoadingList.svelte";
+  import { user } from "../../stores";
 
   let selectedSide = "front"; // Default to 'front'
   const COLORS = ["#FBBF24", "#3B82F6", "#22C55E", "#ADD8E6", "#FFC0CB"];
@@ -476,60 +477,62 @@
             </div>
 
             <!-- Car Damage Points Display -->
-            <div class="van-diagram-container">
-              <!-- Car Image with Points -->
-              <div class="relative mx-auto w-[375px]">
-                <img
-                  src={VAN_IMAGES[selectedSide]}
-                  alt="Van Side"
-                  class="van-image"
-                />
-                {#each selectedCar.damages[selectedSide] as { x, y, colorIndex }, index}
-                  <button
-                    class="point"
-                    style="left: {x}px; top: {y}px; background-color: {COLORS[
-                      colorIndex
-                    ]}"
-                    on:click={() => togglePointColor(selectedSide, index)}
+            {#if $user.role === "administrator"}
+              <div class="van-diagram-container">
+                <!-- Car Image with Points -->
+                <div class="relative mx-auto w-[375px]">
+                  <img
+                    src={VAN_IMAGES[selectedSide]}
+                    alt="Van Side"
+                    class="van-image"
                   />
-                {/each}
+                  {#each selectedCar.damages[selectedSide] as { x, y, colorIndex }, index}
+                    <button
+                      class="point"
+                      style="left: {x}px; top: {y}px; background-color: {COLORS[
+                        colorIndex
+                      ]}"
+                      on:click={() => togglePointColor(selectedSide, index)}
+                    />
+                  {/each}
 
-                <button
-                  disabled={pointsLoading}
-                  on:click={handlePoints}
-                  class="{pointsLoading
-                    ? 'bg-gray-600'
-                    : 'bg-lime-600 hover:bg-lime-800'} w-full text-white font-bold py-2 px-4 rounded-lg transition duration-200"
-                >
-                  Salva punto
-                </button>
-              </div>
-
-              <!-- Buttons to Switch Van Sides -->
-              <div class="button-container">
-                {#each Object.keys(VAN_TRANSLATIONS) as side}
                   <button
-                    class="side-button"
-                    class:selected={selectedSide === side}
-                    on:click={() => (selectedSide = side)}
+                    disabled={pointsLoading}
+                    on:click={handlePoints}
+                    class="{pointsLoading
+                      ? 'bg-gray-600'
+                      : 'bg-lime-600 hover:bg-lime-800'} w-full text-white font-bold py-2 px-4 rounded-lg transition duration-200"
                   >
-                    {VAN_TRANSLATIONS[side]}
+                    Salva punto
                   </button>
-                {/each}
-              </div>
+                </div>
 
-              <div class="flex flex-wrap items-start gap-2 flex-col">
-                {#each COLORS as color, index}
-                  <div class="flex items-center my-1">
-                    <div
-                      class="w-5 h-5 rounded-sm mr-1"
-                      style="background-color: {color};"
-                    ></div>
-                    <span class="text-sm">{getPartName(index)}</span>
-                  </div>
-                {/each}
+                <!-- Buttons to Switch Van Sides -->
+                <div class="button-container">
+                  {#each Object.keys(VAN_TRANSLATIONS) as side}
+                    <button
+                      class="side-button"
+                      class:selected={selectedSide === side}
+                      on:click={() => (selectedSide = side)}
+                    >
+                      {VAN_TRANSLATIONS[side]}
+                    </button>
+                  {/each}
+                </div>
+
+                <div class="flex flex-wrap items-start gap-2 flex-col">
+                  {#each COLORS as color, index}
+                    <div class="flex items-center my-1">
+                      <div
+                        class="w-5 h-5 rounded-sm mr-1"
+                        style="background-color: {color};"
+                      ></div>
+                      <span class="text-sm">{getPartName(index)}</span>
+                    </div>
+                  {/each}
+                </div>
               </div>
-            </div>
+            {/if}
           </div>
           <h2 class="text-2xl font-bold mb-4">
             Checklist mezzo {selectedCar.name}
