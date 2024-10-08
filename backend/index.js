@@ -7,8 +7,6 @@ const runRoutes = require("./src/controllers/runController");
 const fastifyStatic = require("@fastify/static");
 const carChecklistRoutes = require("./src/controllers/carChecklistController");
 const materialChecklistRoutes = require("./src/controllers/materialChecklistController");
-const { readdirSync } = require("fs");
-const path = require("path");
 
 fastify.register(require("@fastify/websocket"));
 // Serve static files from the frontend/dist folder
@@ -35,18 +33,6 @@ carRoutes();
 runRoutes();
 carChecklistRoutes();
 materialChecklistRoutes();
-
-// Define a route to return all filenames in the folder
-fastify.get("/filenames", async (request, reply) => {
-  try {
-    // Read the directory contents
-    const files = readdirSync(path.join(__dirname, "backend/pdf"));
-    reply.send({ files });
-  } catch (error) {
-    fastify.log.error(error);
-    reply.status(500).send({ error: "Unable to read the directory" });
-  }
-});
 
 // Start the server
 const start = async () => {
