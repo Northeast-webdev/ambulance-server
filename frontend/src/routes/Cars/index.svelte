@@ -394,12 +394,17 @@
                   >
                 {:else if car.status === "on_break"}
                   <span
-                    class="text-yellow-900 bg-yellow-200 px-4rounded-full inline-block text-sm py-1"
+                    class="text-yellow-900 bg-yellow-300 px-4rounded-full inline-block text-sm py-1"
                     >Pausa</span
+                  >
+                {:else if car.status === "garage"}
+                  <span
+                    class="text-gray-900 bg-gray-300 px-4rounded-full inline-block text-sm py-1"
+                    >Al deposito</span
                   >
                 {:else}
                   <span
-                    class="text-red-900 bg-red-200 px-4 rounded-full inline-block text-sm py-1"
+                    class="text-red-900 bg-red-300 px-4 rounded-full inline-block text-sm py-1"
                     >Non disponibile</span
                   >
                 {/if}
@@ -723,26 +728,6 @@
                       >{driver.first_name} {driver.last_name}</option
                     >
                   {/each}
-                </select>
-              </div>
-            {:else if key === "Status"}
-              <div>
-                <label
-                  for="field-{key}"
-                  class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  {key} <span class="text-red-500">*</span>
-                </label>
-                <select
-                  required
-                  id="field-{key}"
-                  class="block w-full border bg-white valid:border-green-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-600 transition-all"
-                  bind:value={new_car[meta_verifier[key]]}
-                >
-                  <option value="">Seleziona</option>
-                  <option value="free">Disponibile</option>
-                  <option value="on_break">Pausa</option>
-                  <option value="busy">Non disponibile</option>
                 </select>
               </div>
             {:else}
