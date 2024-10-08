@@ -446,8 +446,13 @@
                   >
                 {:else if selectedCar.status === "on_break"}
                   <span
-                    class="text-yellow-900 bg-yellow-200 px-4rounded-full inline-block text-sm py-1"
+                    class="text-yellow-900 bg-yellow-200 px-4 rounded-full inline-block text-sm py-1"
                     >Pausa</span
+                  >
+                {:else if selectedCar.status === "garage"}
+                  <span
+                    class="text-gray-900 bg-gray-300 px-4 rounded-full inline-block text-sm py-1"
+                    >Al deposito</span
                   >
                 {:else}
                   <span
