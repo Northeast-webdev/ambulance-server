@@ -395,7 +395,7 @@
       );
     }
     const run_pinged = JSON.parse(raw);
-    if (run_pinged.count >= 5) {
+    if (run_pinged && run_pinged.count >= 5) {
       alert("Autista pingato troppe volte");
       return;
     }
