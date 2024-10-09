@@ -24,7 +24,7 @@ const createRun = async (request, reply) => {
 };
 
 const listRuns = async (request, reply) => {
-  const { page = 1, limit = 10, query, date, updated_date } = request.query;
+  const { page = 1, limit = 100, query, date, updated_date } = request.query;
   const q = {};
   if (date) {
     const startDate = new Date(date);
