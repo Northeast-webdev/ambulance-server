@@ -61,7 +61,7 @@
       const raw = localStorage.getItem("run_pinged");
       if (raw) {
         const run_pinged = JSON.parse(raw);
-        if (run_pinged.run === id) {
+        if (run_pinged && run_pinged.run === id) {
           localStorage.removeItem("run_pinged");
         }
       }
