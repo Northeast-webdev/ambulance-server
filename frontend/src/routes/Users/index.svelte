@@ -445,11 +445,7 @@
                 >
                   <option value="">Seleziona</option>
                   {#each cars as car}
-                    <option value={car._id}
-                      >{car.meta.brand}
-                      {car.meta.model}
-                      {car.meta.plate_number}</option
-                    >
+                    <option value={car._id}>{car.name}</option>
                   {/each}
                 </select>
               {:else if key !== "Mezzo"}
