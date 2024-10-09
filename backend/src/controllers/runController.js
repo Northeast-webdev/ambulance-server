@@ -95,9 +95,13 @@ const updateRun = async (request, reply) => {
       { _id: request.params.id },
       updates,
       {
-        returnDocument: "before",
+        returnDocument: "after",
       }
     );
+    if (!result.car || !car) {
+      reply.send({ run: result });
+      return;
+    }
     const existingCar = await Car.findOne({ _id: result.car.toString() });
     if (existingCar && status !== "completed" && result.status !== "pending") {
       await Car.findOneAndUpdate(
@@ -118,10 +122,6 @@ const updateRun = async (request, reply) => {
           returnDocument: "after",
         }
       );
-    }
-    if (!result.car || !car) {
-      reply.send({ run: result });
-      return;
     }
     const assignedUserId = existingCar.user.toString();
 
