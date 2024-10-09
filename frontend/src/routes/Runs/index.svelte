@@ -28,6 +28,7 @@
     setTimeout(() => {
       getMapInfo();
     }, 1000);
+
   $: showFinalPopup &&
     setTimeout(() => {
       getMapInfo();
@@ -386,10 +387,12 @@
         });
       }
       showPopup = false;
+      map = null;
     } catch (error) {
       console.error("Error:", error);
     } finally {
       showPopup = false;
+      map = null;
       showFinalPopup = true;
       await getRuns();
     }
