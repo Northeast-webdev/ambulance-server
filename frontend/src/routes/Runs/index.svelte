@@ -64,23 +64,25 @@
       const status = data.updateDescription.updatedFields.status;
       const car = data.updateDescription.updatedFields.car;
       const raw = localStorage.getItem("run_pinged");
-      if (raw) {
+      if (raw && status) {
         const run_pinged = JSON.parse(raw);
         if (run_pinged && run_pinged.run === id) {
           localStorage.removeItem("run_pinged");
         }
       }
-      runs = runs.map((run) => {
-        if (run._id === id) {
-          run.status = status || run.status;
-          run.car = car
-            ? cars.find((c) => c._id === car) || run.car
-            : car === null
-              ? null
-              : run.car;
-        }
-        return run;
-      });
+      if (car || status) {
+        runs = runs.map((run) => {
+          if (run._id === id) {
+            run.status = status || run.status;
+            run.car = car
+              ? cars.find((c) => c._id === car) || run.car
+              : car === null
+                ? null
+                : run.car;
+          }
+          return run;
+        });
+      }
     };
 
     socket.onclose = () => {
@@ -375,12 +377,14 @@
         }
       );
       const data = await response.json();
-      runs = runs.map((run) => {
-        if (run._id === data.run._id) {
-          return data.run;
-        }
-        return run;
-      });
+      if (data.run) {
+        runs = runs.map((run) => {
+          if (run._id === data.run._id) {
+            return data.run;
+          }
+          return run;
+        });
+      }
       showPopup = false;
     } catch (error) {
       console.error("Error:", error);
@@ -392,15 +396,18 @@
   }
 
   async function pingDriver(run) {
-    const raw = localStorage.getItem("run_pinged");
-    if (!raw) {
+    const exists_ping = localStorage.getItem("run_pinged");
+    console.log(exists_ping);
+    if (!exists_ping) {
       localStorage.setItem(
         "run_pinged",
         JSON.stringify({ run: run._id, count: 1 })
       );
     }
+    const raw = localStorage.getItem("run_pinged");
+    if (!raw) return;
     const run_pinged = JSON.parse(raw);
-    if (run_pinged && run_pinged.count >= 5) {
+    if (run_pinged.count >= 5) {
       alert("Autista pingato troppe volte");
       return;
     }
@@ -409,7 +416,7 @@
       "run_pinged",
       JSON.stringify({
         run: run._id,
-        count: parseInt(run_pinged.count) + 1,
+        count: run._id === run_pinged.run ? parseInt(run_pinged.count) + 1 : 1,
       })
     );
     try {
@@ -425,9 +432,9 @@
         }
       );
       const data = await response.json();
-      console.log("Driver pinged:", data);
       runs = runs.map((r) => {
         if (r._id === data.run._id) {
+          console.log("Driver pinged:", data);
           return {
             ...r,
             notification_sent: true,
@@ -645,6 +652,10 @@
                           : "Notifica autista"}
                       </button>
                     {/if}
+                    <p>
+                      {currentTime.getTime()}
+                      {new Date(run.updated_at).getTime() + 30000}
+                    </p>
                   </div>
                 </td>
               </tr>

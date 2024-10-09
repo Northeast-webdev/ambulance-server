@@ -120,7 +120,8 @@ const updateRun = async (request, reply) => {
       );
     }
     if (!result.car || !car) {
-      return reply.send({ run: result });
+      reply.send({ run: result });
+      return;
     }
     const assignedUserId = existingCar.user.toString();
 
