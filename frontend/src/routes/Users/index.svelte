@@ -277,9 +277,6 @@
         <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
           <tr>
             <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-              >Username</th
-            >
-            <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
               >Nome</th
             >
             <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
@@ -327,7 +324,6 @@
                 ? 'bg-white'
                 : 'bg-gray-100'} border-b border-l"
             >
-              <td class="py-3 px-4 border-r">{user.username}</td>
               <td class="py-3 px-4 border-r">{user.first_name}</td>
               <td class="py-3 px-4 border-r">{user.last_name}</td>
               <td class="py-3 px-4 border-r">{user.email}</td>
