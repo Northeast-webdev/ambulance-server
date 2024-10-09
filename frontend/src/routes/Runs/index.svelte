@@ -652,10 +652,6 @@
                           : "Notifica autista"}
                       </button>
                     {/if}
-                    <p>
-                      {currentTime.getTime()}
-                      {new Date(run.updated_at).getTime() + 30000}
-                    </p>
                   </div>
                 </td>
               </tr>
