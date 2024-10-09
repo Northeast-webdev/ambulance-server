@@ -139,6 +139,7 @@ const updateRun = async (request, reply) => {
     }
     reply.send({ run: result });
   } catch (error) {
+    console.error(error);
     reply.code(500).send(error);
   }
 };
