@@ -33,7 +33,7 @@
         <img
           src={logo}
           alt="logo"
-          class="w-10 h-10 object-contain rounded-full bg-white p-1"
+          class="w-14 h-14 object-contain rounded-full bg-white p-1"
         />
       </div>
 

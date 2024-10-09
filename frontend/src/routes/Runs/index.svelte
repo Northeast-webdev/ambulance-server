@@ -13,8 +13,9 @@
   let showPopup = false;
   let showFinalPopup = false;
   let loading = false;
-  let showMap = false;
+  let showMap = true;
   let cars = [];
+  let freeCars = [];
   let selected_car = null;
   let selected_run = null;
   let map;
@@ -23,8 +24,10 @@
   let socket;
   let currentTime = new Date();
   let currentTimeTimeout;
-  $: showMap && getMapInfo();
-
+  $: showPopup &&
+    setTimeout(() => {
+      getMapInfo();
+    }, 1000);
   $: showFinalPopup &&
     setTimeout(() => {
       getMapInfo();
@@ -135,10 +138,12 @@
         className: "custom-marker", // Custom CSS class for styling
         html: `<div style="font-size: ${driver.name.length > 4 ? "10px" : "12px"}" class="marker-circle ${
           driver.status === "free"
-            ? "bg-green-500 text-green-100"
+            ? "bg-green-500 text-green-100 z-30"
             : driver.status === "busy"
-              ? "bg-amber-500 text-amber-100"
-              : "bg-red-500 text-red-100"
+              ? "bg-amber-500 text-amber-100 z-20"
+              : driver.status === "garage"
+                ? "bg-gray-500 text-gray-100 z-20"
+                : "bg-red-500 text-red-100 z-10"
         }">${driver.name}</div>`, // Inner HTML to show the ID
         iconSize: [20, 20], // Size of the marker
       });
@@ -246,6 +251,7 @@
       .then((response) => response.json())
       .then((data) => {
         cars = data.cars;
+        freeCars = data.cars.filter((x) => x.status === "free");
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -344,7 +350,7 @@
           place.geometry.location.lng()
         );
       });
-    }, 2000);
+    }, 1000);
   }
 
   async function updateRun() {
@@ -651,7 +657,7 @@
     transition:fade={{ duration: 300 }}
     class="fixed inset-0 overflow-hidden z-40 flex items-center flex-col gap-10 justify-center p-4 bg-white transition-opacity duration-500"
   >
-    <div class="flex max-w-screen-lg w-full mx-auto pt-32">
+    <div class="flex max-w-screen-lg w-full mx-auto pt-32 relative">
       <div class="flex items-center">
         <!-- Step 1 -->
         <div
@@ -701,18 +707,24 @@
           </div>
         </div>
       </div>
+
+      <button
+        class="absolute text-3xl top-32 mt-2 right-6 text-gray-600 hover:text-gray-800"
+        on:click={() => {
+          show_form = false;
+          showPopup ? (showPopup = false) : null;
+          map = null;
+          showFinalPopup ? (showFinalPopup = false) : null;
+        }}
+        aria-label="Close form"
+      >
+        ✕
+      </button>
     </div>
     <div class="max-w-screen-lg w-full overflow-y-auto">
       {#if show_form}
         <!-- Form Modal -->
         <div class="z-50 transform transition-all duration-500">
-          <button
-            class="absolute text-3xl top-0 mt-2 right-6 text-gray-600 hover:text-gray-800"
-            on:click={() => (show_form = false)}
-            aria-label="Close form"
-          >
-            ✕
-          </button>
           <h2 class="text-3xl font-bold mb-6">Nuova Corsa</h2>
           <form
             on:submit|preventDefault={() => {
@@ -797,14 +809,7 @@
       {/if}
       {#if showPopup}
         <!-- Form Modal -->
-        <div class="max-h-[80vh] z-50 transform transition-all duration-500">
-          <button
-            class="absolute text-3xl top-0 mt-2 right-6 text-gray-600 hover:text-gray-800"
-            on:click={() => (showPopup = false)}
-            aria-label="Close form"
-          >
-            ✕
-          </button>
+        <div class="z-50 transform transition-all duration-500">
           <h2 class="text-3xl font-bold mb-6">Assegnazione a mezzo</h2>
           <p class="text-gray-700 mb-6">
             Vuoi assegnare già da ora la corsa ad un mezzo?
@@ -855,13 +860,12 @@
               </tr>
             </thead>
             <tbody>
-              {#each cars as car}
+              {#each freeCars as car}
                 <tr
                   class="border-b cursor-pointer {selected_car === car._id
                     ? 'bg-lime-100'
                     : 'bg-gray-50'}"
                   on:click={() => {
-                    // if (car.status === "busy") return;
                     selected_car === car._id
                       ? (selected_car = null)
                       : (selected_car = car._id);
@@ -877,7 +881,29 @@
                   <td class="py-3 px-4 border-r">{car.name}</td>
                   <td class="py-3 px-4 border-r">{car.meta.model}</td>
                   <td class="py-3 px-4 border-r">{car.meta.brand}</td>
-                  <td class="py-3 px-4 border-r uppercase">{car.status}</td>
+                  <td class="py-3 px-4 border-r font-bold">
+                    {#if car.status === "free"}
+                      <span
+                        class="text-green-900 bg-green-300 px-4 rounded-full inline-block text-sm py-1"
+                        >Disponibile</span
+                      >
+                    {:else if car.status === "on_break"}
+                      <span
+                        class="text-yellow-900 bg-yellow-200 px-4 rounded-full inline-block text-sm py-1"
+                        >Pausa</span
+                      >
+                    {:else if car.status === "garage"}
+                      <span
+                        class="text-gray-900 bg-gray-300 px-4 rounded-full inline-block text-sm py-1"
+                        >Al deposito</span
+                      >
+                    {:else}
+                      <span
+                        class="text-red-900 bg-red-200 px-4 rounded-full inline-block text-sm py-1"
+                        >Non disponibile</span
+                      >
+                    {/if}
+                  </td>
                   <td class="py-3 px-4"
                     >{car.user
                       ? `${car.user.first_name} ${car.user.last_name}`

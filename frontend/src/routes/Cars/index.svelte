@@ -4,17 +4,18 @@
   import { onMount } from "svelte";
   import { navigate } from "svelte-navigator";
   import { fade } from "svelte/transition";
-  import vanImage from "../../assets/van.webp";
+  // van images
+  import van from "../../assets/van.webp";
   import vanBack from "../../assets/van/back.png";
   import vanFront from "../../assets/van/front.png";
   import vanLeft from "../../assets/van/left.png";
   import vanRight from "../../assets/van/right.png";
+
   import LoadingList from "../../components/LoadingList.svelte";
   import { user } from "../../stores";
 
   let selectedSide = "front"; // Default to 'front'
   const COLORS = ["#FBBF24", "#3B82F6", "#22C55E", "#ADD8E6", "#FFC0CB"];
-
   const VAN_IMAGES = {
     front: vanFront,
     back: vanBack,
@@ -332,6 +333,14 @@
       pointsLoading = false;
     }
   };
+
+  const gallery = Object.values(
+    import.meta.glob("@assets/mezzo/*.{png,jpg,jpeg,PNG,JPEG}", {
+      eager: true,
+      query: "?url",
+      import: "default",
+    })
+  );
 </script>
 
 {#if loading}
@@ -376,9 +385,11 @@
                 {car.name}
               </h3>
               <img
-                src={vanImage}
+                src={gallery.find((x) => x.includes(car.name)) || van}
                 alt={car.meta.brand}
-                class="w-full h-32 my-4 object-contain"
+                class="w-full {gallery.find((x) => x.includes(car.name))
+                  ? 'h-32'
+                  : 'h-24'} my-4 object-contain"
               />
               <p class="text-gray-700 text-xl font-bold mb-2">
                 {car.user
