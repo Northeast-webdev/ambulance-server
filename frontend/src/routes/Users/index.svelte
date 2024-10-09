@@ -186,7 +186,7 @@
 
   async function getDrivers() {
     userType = "driver";
-    fetch(import.meta.env.VITE_API_URL + "/api/users?type=driver", {
+    fetch(import.meta.env.VITE_API_URL + "/api/users?type=driver&limit=50", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
