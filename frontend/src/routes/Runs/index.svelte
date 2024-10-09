@@ -371,7 +371,7 @@
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify({ notification_sent: true, car: selected_car }),
+          body: JSON.stringify({ car: selected_car }),
         }
       );
       const data = await response.json();
@@ -871,7 +871,9 @@
                     ? 'bg-lime-100'
                     : 'bg-gray-50'}"
                   on:click={() => {
-                    selected_car = car._id;
+                    selected_car === car._id
+                      ? (selected_car = null)
+                      : (selected_car = car._id);
                   }}
                 >
                   <td class="border-r text-center">

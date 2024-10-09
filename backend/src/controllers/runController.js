@@ -98,7 +98,7 @@ const updateRun = async (request, reply) => {
         returnDocument: "before",
       }
     );
-    const existingCar = await Car.findOne({ _id: result.car });
+    const existingCar = await Car.findOne({ _id: result.car.toString() });
     if (existingCar && status !== "completed" && result.status !== "pending") {
       await Car.findOneAndUpdate(
         { _id: existingCar._id.toString() },
