@@ -91,6 +91,7 @@ const listRuns = async (request, reply) => {
           model: "User",
         },
       })
+      .populate("patient")
       .skip((page - 1) * limit)
       .limit(limit)
       .sort({ created_at: 1 })

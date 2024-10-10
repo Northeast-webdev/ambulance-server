@@ -26,6 +26,7 @@
   let currentTimeTimeout;
   let additionalRuns = [];
   let additionalRunsMeta = {
+    Data: "data",
     Ora: "ora",
     Partenza: "partenza",
     Arrivo: "arrivo",
@@ -47,6 +48,7 @@
             ora: "",
             partenza: "",
             arrivo: "",
+            data: new Date().toISOString().split("T")[0],
           }
       );
     setTimeout(() => {
@@ -541,6 +543,7 @@
               partenza: run.partenza,
               arrivo: run.arrivo,
               ora: run.ora,
+              data: run.data,
             },
           })),
           patient: paziente,
@@ -629,7 +632,9 @@
                         run.visibleInfo = !run.visibleInfo;
                       }}
                     >
-                      {run.meta[meta_verifier[key]]}
+                      {run.meta[meta_verifier[key]] ||
+                        run.patient.name ||
+                        "Nessun paziente"}
                     </button>
                   </td>
                 {/if}
