@@ -1,6 +1,7 @@
 // controllers/carChecklistController.js
 
 const { fastify } = require("../init");
+const { Car } = require("../schema/car.schema");
 const { CarChecklist } = require("../schema/carChecklist.schema");
 const { User } = require("../schema/user.schema");
 const { printCarChecklist, findPDF } = require("./pdfController");
@@ -9,11 +10,18 @@ const createCarChecklist = async (request, reply) => {
   const { car, checklist, user } = request.body;
   const carChecklist = new CarChecklist({ car, checklist, user });
   const userExists = await User.findOne({ _id: user });
+  const carExists = await Car.findOne({ _id: car });
   try {
     await carChecklist.save();
     if (userExists) {
       await User.updateOne(
         { _id: user },
+        { $push: { car_checklists: carChecklist._id } }
+      );
+    }
+    if (carExists) {
+      await Car.updateOne(
+        { _id: car },
         { $push: { car_checklists: carChecklist._id } }
       );
     }

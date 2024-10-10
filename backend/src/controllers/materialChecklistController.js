@@ -1,6 +1,7 @@
 // controllers/materialChecklistController.js
 
 const { fastify } = require("../init");
+const { Car } = require("../schema/car.schema");
 const { MaterialChecklist } = require("../schema/materialChecklist.schema");
 const { User } = require("../schema/user.schema");
 const { printMaterialChecklist } = require("./pdfController");
@@ -9,11 +10,18 @@ const createMaterialChecklist = async (request, reply) => {
   const { checklist, user, car } = request.body;
   const materialChecklist = new MaterialChecklist({ checklist, user, car });
   const userExists = await User.findOne({ _id: user });
+  const carExists = await Car.findOne({ _id: car });
   try {
     await materialChecklist.save();
     if (userExists) {
       await User.updateOne(
         { _id: user },
+        { $push: { material_checklists: materialChecklist._id } }
+      );
+    }
+    if (carExists) {
+      await Car.updateOne(
+        { _id: car },
         { $push: { material_checklists: materialChecklist._id } }
       );
     }

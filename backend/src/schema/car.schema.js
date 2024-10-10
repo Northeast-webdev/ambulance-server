@@ -24,6 +24,10 @@ const carSchema = new Schema({
       right: [],
     },
   },
+  material_checklists: [
+    { type: Schema.Types.ObjectId, ref: "MaterialChecklist" },
+  ],
+  car_checklists: [{ type: Schema.Types.ObjectId, ref: "CarChecklist" }],
 });
 const Car = mongoose.model("Car", carSchema);
 

@@ -49,6 +49,9 @@
       if (data.role === "meccanico" || data.role === "direzione") {
         navigate("/garage", { replace: true });
       }
+      if (data.role === "mappatore") {
+        navigate("/", { replace: true });
+      }
       $user = data;
     } catch (error) {
       console.error(error);

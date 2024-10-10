@@ -474,23 +474,25 @@
                   >
                 {/if}
               </p>
-              <button
-                on:click={() => {
-                  action = "edit";
-                  car_id = selectedCar._id;
-                  new_car = {
-                    name: selectedCar.name,
-                    brand: selectedCar.meta.brand,
-                    model: selectedCar.meta.model,
-                    kilometers: selectedCar.meta.kilometers,
-                    plate_number: selectedCar.meta.plate_number,
-                  };
-                  show_form = true;
-                }}
-                class="mt-4 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
-              >
-                Modifica
-              </button>
+              {#if $user.role !== "direzione"}
+                <button
+                  on:click={() => {
+                    action = "edit";
+                    car_id = selectedCar._id;
+                    new_car = {
+                      name: selectedCar.name,
+                      brand: selectedCar.meta.brand,
+                      model: selectedCar.meta.model,
+                      kilometers: selectedCar.meta.kilometers,
+                      plate_number: selectedCar.meta.plate_number,
+                    };
+                    show_form = true;
+                  }}
+                  class="mt-4 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+                >
+                  Modifica
+                </button>
+              {/if}
               <button
                 on:click={() => (selectedCar = null)}
                 class="mt-2 block bg-sky-600 hover:bg-sky-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
