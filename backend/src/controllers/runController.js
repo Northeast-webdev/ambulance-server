@@ -3,13 +3,12 @@
 const { fastify } = require("../init");
 const { Car } = require("../schema/car.schema");
 const { Run } = require("../schema/run.schema");
-const { User } = require("../schema/user.schema");
 require("dotenv").config();
 // Store WebSocket connections per user
 const userConnections = new Map();
 
 const createRun = async (request, reply) => {
-  const { meta, status, geometry } = request.body;
+  const { meta, status, geometry, additionalRuns } = request.body;
   const run = new Run({
     meta,
     status,
@@ -17,6 +16,16 @@ const createRun = async (request, reply) => {
   });
   try {
     await run.save();
+    if (additionalRuns && additionalRuns.length) {
+      for await (let additionalRun of additionalRuns) {
+        const newRun = new Run({
+          meta: additionalRun.meta,
+          status: "pending",
+          geometry: additionalRun.geometry,
+        });
+        await newRun.save();
+      }
+    }
     reply.send({ run: run });
   } catch (err) {
     reply.code(500).send({ error: err });
