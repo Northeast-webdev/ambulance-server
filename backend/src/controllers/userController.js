@@ -28,9 +28,19 @@ const getUser = async (request, reply) => {
       _id: request.params.id,
     })
       .select("-password -__v")
-      .populate("car", "-created_at -updated_at")
-      .populate("material_checklists")
-      .populate("car_checklists")
+      .populate({
+        path: "car",
+        populate: [
+          {
+            path: "car_checklists",
+            model: "CarChecklist",
+          },
+          {
+            path: "material_checklists",
+            model: "MaterialChecklist",
+          },
+        ],
+      })
       .exec();
     return user;
   } catch (err) {
