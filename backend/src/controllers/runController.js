@@ -31,9 +31,7 @@ const createRun = async (request, reply) => {
       for (let i = 0; i < words.length; i++) {
         words[i] = words[i][0].toUpperCase() + words[i].substr(1).toLowerCase();
       }
-
-      words.join(" ");
-      const newPatient = new Patient({ name: words });
+      const newPatient = new Patient({ name: words.join(" ") });
       await newPatient.save();
       await Patient.updateOne(
         { _id: newPatient._id },
