@@ -160,11 +160,11 @@ const updateRun = async (request, reply) => {
       .populate("car")
       .populate("patient");
 
-    if (!result.car || !car) {
+    if (!result.car?._id || !car) {
       reply.send({ run: result });
       return;
     }
-    const existingCar = await Car.findOne({ _id: result.car.toString() });
+    const existingCar = await Car.findOne({ _id: result.car._id.toString() });
     if (existingCar && status !== "completed" && result.status !== "pending") {
       await Car.findOneAndUpdate(
         { _id: existingCar._id.toString() },
