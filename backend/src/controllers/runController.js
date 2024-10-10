@@ -120,6 +120,7 @@ const getRun = async (request, reply) => {
       _id: request.params.id,
     })
       .populate("car")
+      .populate("patient")
       .exec();
     return run;
   } catch (err) {
