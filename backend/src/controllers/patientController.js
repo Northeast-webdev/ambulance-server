@@ -33,7 +33,7 @@ const listPatients = async (request, reply) => {
           },
         },
       })
-      .sort({ created_at: 1 })
+      .sort({ created_at: -1 })
       .exec();
     return { patients, page, limit };
   } catch (err) {

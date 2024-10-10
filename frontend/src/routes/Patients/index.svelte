@@ -35,7 +35,7 @@
 {:else}
   <div class="container mx-auto py-6 px-3">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold">Materiali Checklist</h1>
+      <h1 class="text-3xl font-bold">Pazienti</h1>
     </div>
 
     <!-- Table Container with Overflow for Responsiveness -->
