@@ -24,6 +24,12 @@
   let socket;
   let currentTime = new Date();
   let currentTimeTimeout;
+  let additionalRuns = [];
+  let additionalRunsMeta = {
+    Ora: "ora",
+    Partenza: "partenza",
+    Arrivo: "arrivo",
+  };
   $: showPopup &&
     setTimeout(() => {
       getMapInfo();
@@ -33,6 +39,19 @@
     setTimeout(() => {
       getMapInfo();
     }, 1000);
+  $: (() => {
+    // input is not actually used but present as a statement
+    if (new_run.viaggio > 1)
+      additionalRuns = Array.from({ length: new_run.viaggio - 1 }).map(
+        (x, i) =>
+          additionalRuns[i] || {
+            ora: "",
+            partenza: "",
+            arrivo: "",
+          }
+      );
+    console.log(additionalRuns);
+  })();
 
   onMount(() => {
     const recursiveTimeout = () => {
@@ -176,6 +195,7 @@
   }
 
   let meta_verifier = {
+    Data: "date",
     "C/S/B": "csb",
     Ora: "ora",
     Paziente: "paziente",
@@ -200,9 +220,10 @@
     Arrivo: "autocomplete",
     "N. Richiesta": "text",
     Ricevuta: "text",
-    Viaggi: "text",
+    Viaggi: "number",
     Tel: "tel",
     "Note particolari": "textarea",
+    Data: "date",
   };
 
   let new_run = {
@@ -216,7 +237,8 @@
     arrivo: "",
     n_richiesta: "",
     ricevuta: "",
-    viaggio: "",
+    viaggio: "1",
+    date: new Date().toISOString().split("T")[0],
   };
   let date = new Date();
 
@@ -751,22 +773,16 @@
           >
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {#each Object.keys(meta_verifier) as key}
-                <div
-                  class={types[key] === "textarea"
-                    ? "md:col-span-2 lg:col-span-4"
-                    : ""}
-                >
-                  <label
-                    for="field-{key}"
-                    class="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    {key}
-                    <span
-                      class="text-red-500 {types[key] === 'textarea'
-                        ? 'hidden'
-                        : ''}">*</span
+                <div>
+                  {#if types[key] !== "textarea"}
+                    <label
+                      for="field-{key}"
+                      class="block text-sm font-medium text-gray-700 mb-1"
                     >
-                  </label>
+                      {key}
+                      <span class="text-red-500">*</span>
+                    </label>
+                  {/if}
                   {#if types[key] === "select"}
                     <select
                       required
@@ -780,12 +796,6 @@
                       {/each}
                       <!-- Add your options here -->
                     </select>
-                  {:else if types[key] === "textarea"}
-                    <textarea
-                      id="field-{key}"
-                      class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
-                      bind:value={new_run[meta_verifier[key]]}
-                    ></textarea>
                   {:else if types[key] === "autocomplete"}
                     <input
                       type={types[key]}
@@ -797,7 +807,20 @@
                       on:input={(e) =>
                         (new_run[meta_verifier[key]] = e.target.value)}
                     />
-                  {:else}
+                  {:else if types[key] === "number"}
+                    <input
+                      type={types[key]}
+                      min="1"
+                      max="10"
+                      step="1"
+                      required
+                      id="field-{key}"
+                      class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
+                      value={new_run[meta_verifier[key]]}
+                      on:input={(e) =>
+                        (new_run[meta_verifier[key]] = e.target.value)}
+                    />
+                  {:else if types[key] !== "textarea"}
                     <input
                       type={types[key]}
                       required
@@ -810,6 +833,60 @@
                   {/if}
                 </div>
               {/each}
+              {#if new_run.viaggio > 1}
+                {#each Array.from({ length: new_run.viaggio - 1 }) as _, i}
+                  <div
+                    class="md:col-span-2 lg:col-span-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                  >
+                    {#each Object.keys(additionalRunsMeta) as key}
+                      <div
+                        class={types[key] === "textarea"
+                          ? "md:col-span-2 lg:col-span-4"
+                          : ""}
+                      >
+                        <label
+                          for="field-{key}"
+                          class="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                          {key}
+                          <span
+                            class="text-red-500 {types[key] === 'textarea'
+                              ? 'hidden'
+                              : ''}">*</span
+                          >
+                        </label>
+                        {#if additionalRuns[i]}
+                          <input
+                            type={types[key]}
+                            required
+                            id="field-{key}"
+                            class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
+                            value={additionalRuns[i][additionalRunsMeta[key]]}
+                            on:input={(e) =>
+                              (additionalRuns[i] = {
+                                ...additionalRuns[i],
+                                [additionalRunsMeta[key]]: e.target.value,
+                              })}
+                          />
+                        {/if}
+                      </div>
+                    {/each}
+                  </div>
+                {/each}
+              {/if}
+              <div class="md:col-span-2 lg:col-span-4">
+                <label
+                  for="field-note_particolari"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Note particolari
+                </label>
+                <textarea
+                  id="field-note_particolari"
+                  class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
+                  bind:value={new_run["note_particolari"]}
+                ></textarea>
+              </div>
             </div>
             <div class="flex gap-4 justify-end mt-4">
               <button

@@ -2,19 +2,30 @@
 
 const { fastify } = require("../init");
 const { Car } = require("../schema/car.schema");
+const { Patient } = require("../schema/patient.schema");
 const { Run } = require("../schema/run.schema");
 require("dotenv").config();
 // Store WebSocket connections per user
 const userConnections = new Map();
 
 const createRun = async (request, reply) => {
-  const { meta, status, geometry, additionalRuns } = request.body;
+  const { meta, status, geometry, additionalRuns, patient: pat } = request.body;
   const run = new Run({
     meta,
     status,
     geometry,
   });
   try {
+    const patient = await Patient.find({
+      name: { $regex: pat || "", $options: "i" },
+    });
+    if (patient.length) {
+      await Patient.updateOne(
+        { _id: patient[0]._id },
+        { $push: { runs: run._id } }
+      );
+      run.patient = patient[0]._id;
+    }
     await run.save();
     if (additionalRuns && additionalRuns.length) {
       for await (let additionalRun of additionalRuns) {

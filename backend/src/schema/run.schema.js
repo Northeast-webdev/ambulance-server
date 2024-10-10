@@ -10,6 +10,7 @@ const runSchema = new Schema({
     longitude: { type: Number, required: true },
   },
   notification_sent: { type: Boolean, default: false },
+  patient: { type: Schema.Types.ObjectId, ref: "Patient" },
   status: { type: String, default: "pending" },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
