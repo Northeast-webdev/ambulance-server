@@ -26,7 +26,7 @@
   let currentTimeTimeout;
   let additionalRuns = [];
   let additionalRunsMeta = {
-    Data: "data",
+    Data: "date",
     Ora: "ora",
     Partenza: "partenza",
     Arrivo: "arrivo",
@@ -48,7 +48,7 @@
             ora: "",
             partenza: "",
             arrivo: "",
-            data: new Date().toISOString().split("T")[0],
+            date: new Date().toISOString().split("T")[0],
           }
       );
     setTimeout(() => {

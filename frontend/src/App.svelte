@@ -11,6 +11,7 @@
   import Login from "./routes/Login/index.svelte";
   import Map from "./routes/Map/index.svelte";
   import MaterialChecklists from "./routes/MaterialChecklists/index.svelte";
+  import Patients from "./routes/Patients/index.svelte";
   import Runs from "./routes/Runs/index.svelte";
   import Users from "./routes/Users/index.svelte";
   import { token, user } from "./stores";
@@ -87,6 +88,9 @@
       <Header />
       <PrivateRoute path="/">
         <Map />
+      </PrivateRoute>
+      <PrivateRoute path="/pazienti">
+        <Patients />
       </PrivateRoute>
       <PrivateRoute path="/users">
         <Users />

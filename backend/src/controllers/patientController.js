@@ -26,8 +26,11 @@ const listPatients = async (request, reply) => {
       .populate({
         path: "runs",
         populate: {
-          path: "user",
-          model: "User",
+          path: "car",
+          populate: {
+            path: "user",
+            model: "User",
+          },
         },
       })
       .sort({ created_at: 1 })

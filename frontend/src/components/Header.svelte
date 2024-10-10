@@ -8,6 +8,7 @@
 
   const navigate = useNavigate();
   const links = [
+    { name: "Pazienti", path: "/pazienti" },
     { name: "Utenti", path: "/users" },
     { name: "Mappa", path: "/" },
     { name: "Corse", path: "/runs" },
