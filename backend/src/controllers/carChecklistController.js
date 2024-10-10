@@ -3,7 +3,6 @@
 const { fastify } = require("../init");
 const { CarChecklist } = require("../schema/carChecklist.schema");
 const { User } = require("../schema/user.schema");
-const { Car } = require("../schema/car.schema");
 const { printCarChecklist, findPDF } = require("./pdfController");
 
 const createCarChecklist = async (request, reply) => {

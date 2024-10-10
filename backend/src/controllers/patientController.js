@@ -1,0 +1,111 @@
+// controllers/patientController.js
+
+const { fastify } = require("../init");
+const { Patient } = require("../schema/patient.schema");
+
+const createPatient = async (request, reply) => {
+  const { name } = request.body;
+  const patient = new Patient({ name });
+  try {
+    await patient.save();
+    reply.send(patient);
+  } catch (err) {
+    console.log(err);
+    reply.code(500).send({ error: err });
+  }
+};
+
+const listPatients = async (request, reply) => {
+  const { page = 1, limit = 10, q } = request.query;
+  try {
+    const patients = await Patient.find({
+      name: { $regex: q || "", $options: "i" },
+    })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .sort({ created_at: 1 })
+      .exec();
+    return { patients, page, limit };
+  } catch (err) {
+    reply.code(500).send({ error: err });
+  }
+};
+
+const getPatient = async (request, reply) => {
+  try {
+    const patient = await Patient.findOne({
+      _id: request.params.id,
+    }).exec();
+    return patient;
+  } catch (err) {
+    reply.code(500).send({ error: err });
+  }
+};
+
+const updatePatient = async (request, reply) => {
+  const { name } = request.body;
+  try {
+    const patient = await Patient.findOneAndUpdate(
+      { _id: request.params.id },
+      { name },
+      { new: true }
+    ).exec();
+    return patient;
+  } catch (err) {
+    reply.code(500).send({ error: err });
+  }
+};
+
+const deletePatient = async (request, reply) => {
+  try {
+    await Patient.deleteOne({ _id: request.params.id }).exec();
+    return { message: "Patient deleted" };
+  } catch (err) {
+    reply.code(500).send({ error: err });
+  }
+};
+
+const getRunsForPatient = async (request, reply) => {
+  const { id } = request.params;
+  try {
+    const patient = await Patient.findOne({ _id: id }).populate("runs").exec();
+    return patient.runs;
+  } catch (err) {
+    reply.code(500).send({ error: err });
+  }
+};
+
+const addRunToPatient = async (request, reply) => {
+  const { id } = request.params;
+  const { run } = request.body;
+  try {
+    const patient = Patient.updateOne({ _id: id }, { $push: { runs: run } });
+    return patient;
+  } catch (err) {
+    reply.code(500).send({ error: err });
+  }
+};
+
+const removeRunFromPatient = async (request, reply) => {
+  const { id } = request.params;
+  const { run } = request.body;
+  try {
+    const patient = Patient.updateOne({ _id: id }, { $pull: { runs: run } });
+    return patient;
+  } catch (err) {
+    reply.code(500).send({ error: err });
+  }
+};
+
+const patientRoutes = () => {
+  fastify.post("/api/patient", createPatient);
+  fastify.get("/api/patient", listPatients);
+  fastify.get("/api/patient/:id", getPatient);
+  fastify.put("/api/patient/:id", updatePatient);
+  fastify.delete("/api/patient/:id", deletePatient);
+  fastify.get("/api/patient/:id/runs", getRunsForPatient);
+  fastify.post("/api/patient/:id/run", addRunToPatient);
+  fastify.delete("/api/patient/:id/run", removeRunFromPatient);
+};
+
+module.exports = patientRoutes;
