@@ -71,6 +71,7 @@ const listRuns = async (request, reply) => {
     patient,
     date,
     updated_date,
+    car,
     status,
   } = request.query;
   const q = {};
@@ -91,6 +92,9 @@ const listRuns = async (request, reply) => {
   }
   if (status) {
     q.status = status;
+  }
+  if (car) {
+    q.car = car;
   }
   try {
     const runs = await Run.find({
