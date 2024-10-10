@@ -65,7 +65,7 @@ const createRun = async (request, reply) => {
 };
 
 const listRuns = async (request, reply) => {
-  const { page = 1, limit = 100, query, date, updated_date } = request.query;
+  const { page = 1, limit = 100, patient, date, updated_date } = request.query;
   const q = {};
   if (date) {
     const startDate = new Date(date);
@@ -79,9 +79,11 @@ const listRuns = async (request, reply) => {
     endDate.setDate(endDate.getDate() + 1);
     q.updated_at = { $gte: startDate, $lt: endDate };
   }
+  if (patient) {
+    q.patient = patient;
+  }
   try {
     const runs = await Run.find({
-      ...query,
       ...q,
     })
       .populate({

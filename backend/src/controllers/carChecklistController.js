@@ -53,7 +53,7 @@ const listCarChecklists = async (request, reply) => {
       .populate("user", "first_name last_name _id")
       .skip((page - 1) * limit)
       .limit(limit)
-      .sort({ created_at: 1 })
+      .sort({ created_at: -1 })
       .exec();
     return { checklists, page, limit };
   } catch (err) {

@@ -25,6 +25,7 @@
   let currentTime = new Date();
   let currentTimeTimeout;
   let additionalRuns = [];
+  let query = {};
   let additionalRunsMeta = {
     Data: "date",
     Ora: "ora",
@@ -40,6 +41,19 @@
     setTimeout(() => {
       getMapInfo();
     }, 1000);
+
+  $: (() => {
+    if (date.toLocaleDateString() !== new Date().toLocaleDateString()) {
+      window.history.replaceState(
+        {},
+        "",
+        window.location.pathname + `?date=${date.getTime()}`
+      );
+    } else {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  })();
+
   $: (() => {
     if (new_run.viaggio > 1)
       additionalRuns = Array.from({ length: new_run.viaggio - 1 }).map(
@@ -307,6 +321,18 @@
   };
 
   const getRuns = async () => {
+    // get query params and set initial variables to url params
+    const urlParams = new URLSearchParams(window.location.search);
+    const dateParam = urlParams.get("date");
+    if (dateParam) {
+      query.date = new Date(dateParam);
+    }
+    const patient = urlParams.get("patient");
+    if (patient) {
+      query.patient = patient;
+    }
+    console.log(query);
+
     loading = true;
     fetch(import.meta.env.VITE_API_URL + "/api/runs", {
       method: "GET",
@@ -623,6 +649,10 @@
                 {#if key !== "Titolo" && key !== "Paziente" && key !== "Note particolari"}
                   <td class="py-3 px-4 border-r border-inherit"
                     >{run.meta[meta_verifier[key]]}</td
+                  >
+                {:else if key === "Data"}
+                  <td class="py-3 px-4 border-r border-inherit"
+                    >{run.meta[meta_verifier[key]] ?? run.created_at}</td
                   >
                 {:else if key === "Paziente"}
                   <td class="py-3 px-4 border-r border-inherit">
