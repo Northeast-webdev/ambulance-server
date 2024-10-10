@@ -44,7 +44,7 @@
       return;
     }
     loading = true;
-    getDrivers();
+    getUsers(userType);
     getCars();
     loading = false;
   });
@@ -95,11 +95,7 @@
         alert(data.error);
         return;
       }
-      if (userType === "driver") {
-        await getDrivers();
-      } else {
-        await getOperators();
-      }
+      await getUsers(userType);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -125,11 +121,8 @@
           alert(data.error);
           return;
         }
-        if (userType === "driver") {
-          await getDrivers();
-        } else {
-          await getOperators();
-        }
+
+        await getUsers(userType);
         new_user = {
           username: "",
           password: "",
@@ -162,11 +155,7 @@
           alert(data.error);
           return;
         }
-        if (userType === "driver") {
-          await getDrivers();
-        } else {
-          await getOperators();
-        }
+        await getUsers(userType);
         new_user = {
           username: "",
           password: "",
@@ -184,27 +173,9 @@
     }
   }
 
-  async function getDrivers() {
-    userType = "driver";
-    fetch(import.meta.env.VITE_API_URL + "/api/users?type=driver&limit=50", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        users = data.users;
-        console.log("users: ", users);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  }
-
-  async function getOperators() {
-    userType = "operator";
-    fetch(import.meta.env.VITE_API_URL + "/api/users?type=operator", {
+  async function getUsers(type) {
+    userType = type;
+    fetch(import.meta.env.VITE_API_URL + "/api/users?type=" + type, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -235,10 +206,18 @@
   <div class=" mb-6 shadow-lg">
     <div class="container mx-auto p-4 flex gap-4">
       <button
+        class="{userType === 'administrator'
+          ? 'bg-emerald-200  text-emerald-700'
+          : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
+        on:click={() => getUsers("administrator")}
+      >
+        <span>Admin</span>
+      </button>
+      <button
         class="{userType === 'driver'
           ? 'bg-emerald-200 text-emerald-700'
           : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
-        on:click={getDrivers}
+        on:click={() => getUsers("driver")}
       >
         <span>Driver</span>
       </button>
@@ -246,7 +225,7 @@
         class="{userType === 'operator'
           ? 'bg-emerald-200  text-emerald-700'
           : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
-        on:click={getOperators}
+        on:click={() => getUsers("operator")}
       >
         <span>Operator</span>
       </button>

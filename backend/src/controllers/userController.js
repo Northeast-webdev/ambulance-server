@@ -7,9 +7,6 @@ require("dotenv").config();
 
 const listUsers = async (request, reply) => {
   const { page = 1, limit = 10, type } = request.query;
-  if (type && type !== "driver" && type !== "operator") {
-    return reply.code(400).send({ error: "Invalid user type" });
-  }
   const query = type ? { role: type } : {};
   try {
     const users = await User.find(query)
