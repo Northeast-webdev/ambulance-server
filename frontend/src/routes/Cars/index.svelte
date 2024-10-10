@@ -357,13 +357,15 @@
             : "mezzo"}
         </p>
       </div>
-      <button
-        on:click={newCarToggle}
-        class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-md"
-      >
-        <span class="text-2xl">+</span>
-        <span>Aggiungi mezzo</span>
-      </button>
+      {#if $user.role !== "meccanico" && $user.role !== "direzione"}
+        <button
+          on:click={newCarToggle}
+          class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-md"
+        >
+          <span class="text-2xl">+</span>
+          <span>Aggiungi mezzo</span>
+        </button>
+      {/if}
     </div>
 
     <!-- Table Container with Overflow for Responsiveness -->
@@ -555,147 +557,152 @@
               </div>
             {/if}
           </div>
-          <h2 class="text-2xl font-bold mb-4">
-            Checklist mezzo {selectedCar.name}
-          </h2>
-          <div class="mb-4 flex items-center gap-4">
-            <DateInput bind:value={car_check_date} format="dd/MM/yyyy" />
-            <button
-              on:click={handleSearchCarChecklists}
-              class="bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
-            >
-              Scegli data
-            </button>
-          </div>
-          <table class="border-collapse overflow-hidden w-full">
-            <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
-              <tr>
-                <th
-                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                  >Autista</th
-                >
-                {#each Object.keys(checklist_verifier) as key}
-                  <th
-                    class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                    >{key}</th
-                  >
-                {/each}
-                <th
-                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                  >PDF Link</th
-                >
-                <th
-                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                  >Data</th
-                >
-              </tr>
-            </thead>
-            <tbody>
-              {#each car_checklists as run}
-                <tr class="bg-gray-50 border-b border-l">
-                  <td class="py-3 px-4 border-r border-inherit"
-                    >{run.user.first_name} {run.user.last_name}</td
-                  >
-                  {#each Object.keys(checklist_verifier) as key}
-                    <td class="py-3 px-4 border-r border-inherit"
-                      >{selectedCar.meta[checklist_verifier[key]]}</td
-                    >
-                  {/each}
-                  <td class="py-3 px-4 border-r border-inherit">
-                    <a
-                      href={import.meta.env.VITE_API_URL +
-                        "/api/checklist/" +
-                        run._id +
-                        "/pdf"}
-                      target="_blank"
-                      class="bg-blue-500 flex gap-4 items-center justify-center hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                      ><span> 📥 </span> <span>Scarica PDF</span>
-                    </a>
-                  </td>
-                  <td class="py-3 px-4 border-r border-inherit">
-                    {new Date(run.created_at).toLocaleDateString("it-IT")}
-                  </td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
 
-          <button
-            class="mt-4 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
-            on:click={() => navigate("/car-checklists")}
-          >
-            Vedi tutte le checklist
-          </button>
-          <h2 class="text-2xl font-bold mb-4 mt-8">
-            Checklist Materiale infermieristico mezzo {selectedCar.name}
-          </h2>
-          <div class="mb-4 flex items-center gap-4">
-            <DateInput bind:value={material_date} format="dd/MM/yyyy" />
-            <button
-              on:click={handleSearchMaterialChecklists}
-              class="bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
-            >
-              Scegli data
-            </button>
-          </div>
-          <table class="border-collapse overflow-hidden w-full">
-            <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
-              <tr>
-                <th
-                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                  >Autista</th
-                >
-                {#each Object.keys(checklist_verifier) as key}
+          {#if $user.role !== "direzione"}
+            <h2 class="text-2xl font-bold mb-4">
+              Checklist mezzo {selectedCar.name}
+            </h2>
+            <div class="mb-4 flex items-center gap-4">
+              <DateInput bind:value={car_check_date} format="dd/MM/yyyy" />
+              <button
+                on:click={handleSearchCarChecklists}
+                class="bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+              >
+                Scegli data
+              </button>
+            </div>
+            <table class="border-collapse overflow-hidden w-full">
+              <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
+                <tr>
                   <th
                     class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                    >{key}</th
-                  >
-                {/each}
-                <th
-                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                  >PDF Link</th
-                >
-                <th
-                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                  >Data</th
-                >
-              </tr>
-            </thead>
-            <tbody>
-              {#each material_checklists as run}
-                <tr class="bg-gray-50 border-b border-l">
-                  <td class="py-3 px-4 border-r border-inherit"
-                    >{run.user.first_name} {run.user.last_name}</td
+                    >Autista</th
                   >
                   {#each Object.keys(checklist_verifier) as key}
-                    <td class="py-3 px-4 border-r border-inherit"
-                      >{selectedCar.meta[checklist_verifier[key]]}</td
+                    <th
+                      class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                      >{key}</th
                     >
                   {/each}
-                  <td class="py-3 px-4 border-r border-inherit">
-                    <a
-                      href={import.meta.env.VITE_API_URL +
-                        "/api/checklist/" +
-                        run._id +
-                        "/pdf"}
-                      target="_blank"
-                      class="bg-blue-500 flex gap-4 items-center justify-center hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                      ><span> 📥 </span> <span>Scarica PDF</span>
-                    </a>
-                  </td>
-                  <td class="py-3 px-4 border-r border-inherit">
-                    {new Date(run.created_at).toLocaleDateString("it-IT")}
-                  </td>
+                  <th
+                    class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                    >PDF Link</th
+                  >
+                  <th
+                    class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                    >Data</th
+                  >
                 </tr>
-              {/each}
-            </tbody>
-          </table>
-          <button
-            class="mt-4 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
-            on:click={() => navigate("/material-checklists")}
-          >
-            Vedi tutte le checklist
-          </button>
+              </thead>
+              <tbody>
+                {#each car_checklists as run}
+                  <tr class="bg-gray-50 border-b border-l">
+                    <td class="py-3 px-4 border-r border-inherit"
+                      >{run.user.first_name} {run.user.last_name}</td
+                    >
+                    {#each Object.keys(checklist_verifier) as key}
+                      <td class="py-3 px-4 border-r border-inherit"
+                        >{selectedCar.meta[checklist_verifier[key]]}</td
+                      >
+                    {/each}
+                    <td class="py-3 px-4 border-r border-inherit">
+                      <a
+                        href={import.meta.env.VITE_API_URL +
+                          "/api/checklist/" +
+                          run._id +
+                          "/pdf"}
+                        target="_blank"
+                        class="bg-blue-500 flex gap-4 items-center justify-center hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        ><span> 📥 </span> <span>Scarica PDF</span>
+                      </a>
+                    </td>
+                    <td class="py-3 px-4 border-r border-inherit">
+                      {new Date(run.created_at).toLocaleDateString("it-IT")}
+                    </td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+
+            <button
+              class="mt-4 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+              on:click={() => navigate("/car-checklists")}
+            >
+              Vedi tutte le checklist
+            </button>
+          {/if}
+          {#if $user.role !== "meccanico"}
+            <h2 class="text-2xl font-bold mb-4 mt-8">
+              Checklist Materiale infermieristico mezzo {selectedCar.name}
+            </h2>
+            <div class="mb-4 flex items-center gap-4">
+              <DateInput bind:value={material_date} format="dd/MM/yyyy" />
+              <button
+                on:click={handleSearchMaterialChecklists}
+                class="bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+              >
+                Scegli data
+              </button>
+            </div>
+            <table class="border-collapse overflow-hidden w-full">
+              <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
+                <tr>
+                  <th
+                    class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                    >Autista</th
+                  >
+                  {#each Object.keys(checklist_verifier) as key}
+                    <th
+                      class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                      >{key}</th
+                    >
+                  {/each}
+                  <th
+                    class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                    >PDF Link</th
+                  >
+                  <th
+                    class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                    >Data</th
+                  >
+                </tr>
+              </thead>
+              <tbody>
+                {#each material_checklists as run}
+                  <tr class="bg-gray-50 border-b border-l">
+                    <td class="py-3 px-4 border-r border-inherit"
+                      >{run.user.first_name} {run.user.last_name}</td
+                    >
+                    {#each Object.keys(checklist_verifier) as key}
+                      <td class="py-3 px-4 border-r border-inherit"
+                        >{selectedCar.meta[checklist_verifier[key]]}</td
+                      >
+                    {/each}
+                    <td class="py-3 px-4 border-r border-inherit">
+                      <a
+                        href={import.meta.env.VITE_API_URL +
+                          "/api/checklist/" +
+                          run._id +
+                          "/pdf"}
+                        target="_blank"
+                        class="bg-blue-500 flex gap-4 items-center justify-center hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        ><span> 📥 </span> <span>Scarica PDF</span>
+                      </a>
+                    </td>
+                    <td class="py-3 px-4 border-r border-inherit">
+                      {new Date(run.created_at).toLocaleDateString("it-IT")}
+                    </td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+            <button
+              class="mt-4 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+              on:click={() => navigate("/material-checklists")}
+            >
+              Vedi tutte le checklist
+            </button>
+          {/if}
         {/if}
       </div>
     </div>

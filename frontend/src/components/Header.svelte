@@ -38,19 +38,26 @@
       </div>
 
       <!-- Navigation Links -->
-      <nav class="flex-1 mx-6 space-x-6">
-        {#each links as link}
-          <Link
-            to={link.path}
-            class="text-gray-100 hover:text-gray-50 text-lg font-medium transition duration-200"
-          >
-            {link.name}
-          </Link>
-        {/each}
-      </nav>
+      {#if $user.role === "administrator" || $user.role === "operator"}
+        <nav class="flex-1 mx-6 space-x-6">
+          {#each links as link}
+            <Link
+              to={link.path}
+              class="text-gray-100 hover:text-gray-50 text-lg font-medium transition duration-200"
+            >
+              {link.name}
+            </Link>
+          {/each}
+        </nav>
+      {/if}
 
       <!-- User Information -->
-      <div class="text-gray-50 text-right mx-6">
+      <div
+        class="text-gray-50 {$user.role === 'administrator' ||
+        $user.role === 'operator'
+          ? 'text-right'
+          : 'text-center'} mx-6"
+      >
         <h3 class="font-semibold">
           {`${$user.first_name} ${$user.last_name}`}
         </h3>

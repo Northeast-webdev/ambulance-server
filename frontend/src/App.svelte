@@ -46,6 +46,9 @@
         navigate("/login", { replace: true });
         return;
       }
+      if (data.role === "meccanico" || data.role === "direzione") {
+        navigate("/garage", { replace: true });
+      }
       $user = data;
     } catch (error) {
       console.error(error);

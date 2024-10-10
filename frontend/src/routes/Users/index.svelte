@@ -174,6 +174,7 @@
   }
 
   async function getUsers(type) {
+    console.log(type);
     userType = type;
     fetch(import.meta.env.VITE_API_URL + "/api/users?type=" + type, {
       method: "GET",
@@ -211,7 +212,7 @@
           : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
         on:click={() => getUsers("administrator")}
       >
-        <span>Admin</span>
+        <span>Administrator</span>
       </button>
       <button
         class="{userType === 'driver'
@@ -219,7 +220,7 @@
           : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
         on:click={() => getUsers("driver")}
       >
-        <span>Driver</span>
+        <span>Autista</span>
       </button>
       <button
         class="{userType === 'operator'
@@ -229,14 +230,43 @@
       >
         <span>Operator</span>
       </button>
+      <button
+        class="{userType === 'mappatore'
+          ? 'bg-emerald-200  text-emerald-700'
+          : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
+        on:click={() => getUsers("mappatore")}
+      >
+        <span>Mappatore</span>
+      </button>
+      <button
+        class="{userType === 'meccanico'
+          ? 'bg-emerald-200  text-emerald-700'
+          : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
+        on:click={() => getUsers("meccanico")}
+      >
+        <span>Meccanico</span>
+      </button>
+      <button
+        class="{userType === 'direzione'
+          ? 'bg-emerald-200  text-emerald-700'
+          : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
+        on:click={() => getUsers("direzione")}
+      >
+        <span>Direzione</span>
+      </button>
     </div>
   </div>
   <div class="container mx-auto py-6 px-3">
     <div class="flex justify-between items-center mb-6">
       <div>
-        <h1 class="text-3xl font-bold">Lista dei {userType}</h1>
+        <h1 class="text-3xl font-bold">
+          Lista dei {userType === "driver" ? "autista" : userType}
+        </h1>
         <p class="text-gray-500">
-          {users.filter((x) => x.driver_status === "free").length} disponibile {userType}
+          {users.filter((x) => x.driver_status === "free").length} disponibile {userType ===
+          "driver"
+            ? "autista"
+            : userType}
         </p>
       </div>
       <button
@@ -244,7 +274,7 @@
         class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-md"
       >
         <span class="text-2xl">+</span>
-        <span>Aggiungi {userType}</span>
+        <span>Aggiungi {userType === "driver" ? "autista" : userType}</span>
       </button>
     </div>
 

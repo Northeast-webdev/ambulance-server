@@ -171,7 +171,7 @@ const printCarChecklist = async (request) => {
   await page.setContent(htmlContent);
 
   await page.pdf({
-    path: `${process.cwd()}/backend/pdf/${filename}.pdf`,
+    path: `/var/data/pdf/${filename}.pdf`,
     format: "A4",
     printBackground: true,
   });
@@ -342,7 +342,7 @@ const printMaterialChecklist = async (request) => {
   await page.setContent(htmlContent);
 
   await page.pdf({
-    path: `${process.cwd()}/backend/pdf/${filename}.pdf`,
+    path: `/var/data/pdf/${filename}.pdf`,
     format: "A4",
     printBackground: true,
   });
@@ -364,9 +364,9 @@ const findPDF = async (request, reply) => {
   ).populate("car");
 
   if (carChecklist) {
-    const filePath = `${process.cwd()}/backend/pdf/checklist-${
-      carChecklist.car.name
-    }-${carChecklist.created_at.toISOString().split("T")[0]}.pdf`;
+    const filePath = `/var/data/pdf/checklist-${carChecklist.car.name}-${
+      carChecklist.created_at.toISOString().split("T")[0]
+    }.pdf`;
     const fileStream = fs.readFileSync(filePath);
     // download the PDF
     reply.header("Content-Type", "application/pdf");
@@ -376,7 +376,7 @@ const findPDF = async (request, reply) => {
     );
     reply.send(fileStream);
   } else if (materialChecklist) {
-    const filePath = `${process.cwd()}/backend/pdf/checklist_inf-${
+    const filePath = `/var/data/pdf/checklist_inf-${
       materialChecklist.car.name
     }-${materialChecklist.created_at.toISOString().split("T")[0]}.pdf`;
     const fileStream = fs.readFileSync(filePath);
