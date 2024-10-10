@@ -40,7 +40,6 @@
       getMapInfo();
     }, 1000);
   $: (() => {
-    // input is not actually used but present as a statement
     if (new_run.viaggio > 1)
       additionalRuns = Array.from({ length: new_run.viaggio - 1 }).map(
         (x, i) =>
@@ -50,6 +49,55 @@
             arrivo: "",
           }
       );
+    setTimeout(() => {
+      for (let i = 0; i < new_run.viaggio - 1; i++) {
+        const partenzaInput = document.getElementById(`field-Partenza-${i}`);
+        const arrivoInput = document.getElementById(`field-Arrivo-${i}`);
+        const partenzaAutocomplete = new google.maps.places.Autocomplete(
+          partenzaInput
+        );
+        const arrivoAutocomplete = new google.maps.places.Autocomplete(
+          arrivoInput
+        );
+
+        partenzaAutocomplete.addListener("place_changed", () => {
+          const place = partenzaAutocomplete.getPlace();
+          if (!place.geometry || !place.geometry.location) {
+            console.error("No geometry available for the selected place");
+            return;
+          }
+          additionalRuns[i].partenza = place.formatted_address;
+          additionalRuns[i].geometry = {
+            latitude: place.geometry.location.lat(),
+            longitude: place.geometry.location.lng(),
+          };
+          console.log(
+            "Selected place:",
+            place.formatted_address,
+            place.geometry.location.lat(),
+            place.geometry.location.lng()
+          );
+        });
+        arrivoAutocomplete.addListener("place_changed", () => {
+          const place = arrivoAutocomplete.getPlace();
+          if (!place.geometry || !place.geometry.location) {
+            console.error("No geometry available for the selected place");
+            return;
+          }
+          additionalRuns[i].arrivo = place.formatted_address;
+          additionalRuns[i].end_geometry = {
+            latitude: place.geometry.location.lat(),
+            longitude: place.geometry.location.lng(),
+          };
+          console.log(
+            "Selected place:",
+            place.formatted_address,
+            place.geometry.location.lat(),
+            place.geometry.location.lng()
+          );
+        });
+      }
+    }, 1000);
     console.log(additionalRuns);
   })();
 
@@ -476,7 +524,7 @@
 
   async function newRun() {
     try {
-      const { geometry, end_geometry, ...newR } = new_run;
+      const { geometry, end_geometry, paziente, ...newR } = new_run;
       const response = await fetch(import.meta.env.VITE_API_URL + "/api/runs", {
         method: "POST",
         headers: {
@@ -486,7 +534,18 @@
         body: JSON.stringify({
           meta: newR,
           status: "pending",
+          additionalRuns: additionalRuns.map((run) => ({
+            ...run,
+            meta: {
+              ...newR,
+              partenza: run.partenza,
+              arrivo: run.arrivo,
+              ora: run.ora,
+            },
+          })),
+          patient: paziente,
           geometry: geometry,
+          end_geometry: end_geometry,
         }),
       });
       const data = await response.json();
@@ -845,7 +904,7 @@
                           : ""}
                       >
                         <label
-                          for="field-{key}"
+                          for="field-{key}-{i}"
                           class="block text-sm font-medium text-gray-700 mb-1"
                         >
                           {key}
@@ -859,7 +918,10 @@
                           <input
                             type={types[key]}
                             required
-                            id="field-{key}"
+                            placeholder={key === "Partenza" || key === "Arrivo"
+                              ? "Cerca..."
+                              : ""}
+                            id="field-{key}-{i}"
                             class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
                             value={additionalRuns[i][additionalRunsMeta[key]]}
                             on:input={(e) =>

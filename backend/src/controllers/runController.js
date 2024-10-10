@@ -26,7 +26,14 @@ const createRun = async (request, reply) => {
       );
       run.patient = patient[0]._id;
     } else {
-      const newPatient = new Patient({ name: pat });
+      const words = pat.split(" ");
+
+      for (let i = 0; i < words.length; i++) {
+        words[i] = words[i][0].toUpperCase() + words[i].substr(1).toLowerCase();
+      }
+
+      words.join(" ");
+      const newPatient = new Patient({ name: words });
       await newPatient.save();
       await Patient.updateOne(
         { _id: newPatient._id },
@@ -41,6 +48,7 @@ const createRun = async (request, reply) => {
           meta: additionalRun.meta,
           status: "pending",
           geometry: additionalRun.geometry,
+          end_geometry: additionalRun.end_geometry,
           patient: run.patient,
         });
         await newRun.save();
