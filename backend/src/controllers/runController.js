@@ -151,7 +151,10 @@ const updateRun = async (request, reply) => {
       {
         returnDocument: "after",
       }
-    );
+    )
+      .populate("car")
+      .populate("patient");
+
     if (!result.car || !car) {
       reply.send({ run: result });
       return;
