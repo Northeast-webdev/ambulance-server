@@ -210,7 +210,7 @@
           : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
         on:click={() => getUsers("administrator")}
       >
-        <span>Administrator</span>
+        <span>Amministratore</span>
       </button>
       <button
         class="{userType === 'driver'
@@ -218,7 +218,7 @@
           : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
         on:click={() => getUsers("driver")}
       >
-        <span>Autista</span>
+        <span>Autisti</span>
       </button>
       <button
         class="{userType === 'operator'
@@ -258,13 +258,25 @@
     <div class="flex justify-between items-center mb-6">
       <div>
         <h1 class="text-3xl font-bold">
-          Lista dei {userType === "driver" ? "autista" : userType}
+          Lista {userType === "driver" ||
+          userType === "administrator" ||
+          userType === "operator"
+            ? "degli"
+            : "dei"}
+          {userType === "driver"
+            ? "autisti"
+            : userType === "administrator"
+              ? "amministratori"
+              : userType}
         </h1>
         <p class="text-gray-500">
-          {users.filter((x) => x.driver_status === "free").length} disponibile {userType ===
-          "driver"
-            ? "autista"
-            : userType}
+          {users.filter((x) => x.driver_status === "free").length}
+          {userType === "driver" ? "disponibili" : "disponibile"}
+          {userType === "driver"
+            ? "autisti"
+            : userType === "administrator"
+              ? "amministratore"
+              : userType}
         </p>
       </div>
       <button
@@ -272,7 +284,13 @@
         class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-md"
       >
         <span class="text-2xl">+</span>
-        <span>Aggiungi {userType === "driver" ? "autista" : userType}</span>
+        <span
+          >Aggiungi {userType === "driver"
+            ? "autista"
+            : userType === "administrator"
+              ? "amministratore"
+              : userType}</span
+        >
       </button>
     </div>
 

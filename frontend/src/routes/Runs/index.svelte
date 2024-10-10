@@ -25,12 +25,25 @@
   let currentTime = new Date();
   let currentTimeTimeout;
   let additionalRuns = [];
-  let query = {};
   let additionalRunsMeta = {
     Data: "date",
     Ora: "ora",
     Partenza: "partenza",
     Arrivo: "arrivo",
+  };
+  let meta_verifier = {
+    Ora: "ora",
+    Data: "date",
+    Paziente: "paziente",
+    "C/S/B": "csb",
+    Servizio: "servizio",
+    Tel: "tel",
+    "N. Richiesta": "n_richiesta",
+    Ricevuta: "ricevuta",
+    Viaggi: "viaggio",
+    Partenza: "partenza",
+    Arrivo: "arrivo",
+    "Note particolari": "note_particolari",
   };
   $: showPopup &&
     setTimeout(() => {
@@ -41,69 +54,6 @@
     setTimeout(() => {
       getMapInfo();
     }, 1000);
-
-  $: (() => {
-    if (new_run.viaggio > 1)
-      additionalRuns = Array.from({ length: new_run.viaggio - 1 }).map(
-        (x, i) =>
-          additionalRuns[i] || {
-            ora: "",
-            partenza: "",
-            arrivo: "",
-            date: new Date().toISOString().split("T")[0],
-          }
-      );
-    setTimeout(() => {
-      for (let i = 0; i < new_run.viaggio - 1; i++) {
-        const partenzaInput = document.getElementById(`field-Partenza-${i}`);
-        const arrivoInput = document.getElementById(`field-Arrivo-${i}`);
-        const partenzaAutocomplete = new google.maps.places.Autocomplete(
-          partenzaInput
-        );
-        const arrivoAutocomplete = new google.maps.places.Autocomplete(
-          arrivoInput
-        );
-
-        partenzaAutocomplete.addListener("place_changed", () => {
-          const place = partenzaAutocomplete.getPlace();
-          if (!place.geometry || !place.geometry.location) {
-            console.error("No geometry available for the selected place");
-            return;
-          }
-          additionalRuns[i].partenza = place.formatted_address;
-          additionalRuns[i].geometry = {
-            latitude: place.geometry.location.lat(),
-            longitude: place.geometry.location.lng(),
-          };
-          console.log(
-            "Selected place:",
-            place.formatted_address,
-            place.geometry.location.lat(),
-            place.geometry.location.lng()
-          );
-        });
-        arrivoAutocomplete.addListener("place_changed", () => {
-          const place = arrivoAutocomplete.getPlace();
-          if (!place.geometry || !place.geometry.location) {
-            console.error("No geometry available for the selected place");
-            return;
-          }
-          additionalRuns[i].arrivo = place.formatted_address;
-          additionalRuns[i].end_geometry = {
-            latitude: place.geometry.location.lat(),
-            longitude: place.geometry.location.lng(),
-          };
-          console.log(
-            "Selected place:",
-            place.formatted_address,
-            place.geometry.location.lat(),
-            place.geometry.location.lng()
-          );
-        });
-      }
-    }, 1000);
-    console.log(additionalRuns);
-  })();
 
   onMount(() => {
     const recursiveTimeout = () => {
@@ -246,67 +196,7 @@
     showPopup = true;
   }
 
-  let meta_verifier = {
-    Data: "date",
-    "C/S/B": "csb",
-    Ora: "ora",
-    Paziente: "paziente",
-    Servizio: "servizio",
-    Tel: "tel",
-    "Tipo di servizio": "tipo_di_servizio",
-    Partenza: "partenza",
-    Arrivo: "arrivo",
-    "N. Richiesta": "n_richiesta",
-    Ricevuta: "ricevuta",
-    Viaggi: "viaggio",
-    "Note particolari": "note_particolari",
-  };
-  let types = {
-    Titolo: "text",
-    Ora: "time",
-    Paziente: "text",
-    Servizio: "select",
-    "Tipo di servizio": "text",
-    "C/S/B": "select",
-    Partenza: "autocomplete",
-    Arrivo: "autocomplete",
-    "N. Richiesta": "text",
-    Ricevuta: "text",
-    Viaggi: "number",
-    Tel: "tel",
-    "Note particolari": "textarea",
-    Data: "date",
-  };
-
-  let new_run = {
-    csb: "",
-    ora: "",
-    paziente: "",
-    servizio: "",
-    tel: "",
-    tipo_di_servizio: "",
-    partenza: "",
-    arrivo: "",
-    n_richiesta: "",
-    ricevuta: "",
-    viaggio: "1",
-    date: new Date().toISOString().split("T")[0],
-  };
   let date = new Date();
-
-  let options = {
-    servizio: [
-      { value: "a", text: "A" },
-      { value: "b", text: "B" },
-      { value: "c", text: "C" },
-      { value: "d", text: "D" },
-    ],
-    csb: [
-      { value: "c", text: "C" },
-      { value: "s", text: "S" },
-      { value: "b", text: "B" },
-    ],
-  };
 
   const getRuns = async () => {
     // get query params and set initial variables to url params
@@ -315,6 +205,9 @@
     const patient = urlParams.get("patient");
     const status = urlParams.get("status");
     loading = true;
+    if (dateParam) {
+      date = new Date(dateParam);
+    }
     fetch(
       import.meta.env.VITE_API_URL +
         `/api/runs?patient=${patient || ""}&date=${dateParam || ""}&status=${
@@ -374,13 +267,15 @@
       window.history.replaceState(
         {},
         "",
-        window.location.pathname + `?date=${date.getTime()}`
+        window.location.pathname + `?date=${date.toLocaleDateString()}`
       );
     } else {
       window.history.replaceState({}, "", window.location.pathname);
     }
     fetch(
-      import.meta.env.VITE_API_URL + "/api/runs?date=" + date.toISOString(),
+      import.meta.env.VITE_API_URL +
+        "/api/runs?date=" +
+        date.toLocaleDateString(),
       {
         method: "GET",
         headers: {
@@ -401,59 +296,6 @@
   };
 
   onMount(getRuns);
-
-  function newRunToggle() {
-    show_form = true;
-    setTimeout(() => {
-      const partenzaInput = document.getElementById(
-        "field-Partenza-autocomplete"
-      );
-      const arrivoInput = document.getElementById("field-Arrivo-autocomplete");
-      const partenzaAutocomplete = new google.maps.places.Autocomplete(
-        partenzaInput
-      );
-      const arrivoAutocomplete = new google.maps.places.Autocomplete(
-        arrivoInput
-      );
-
-      partenzaAutocomplete.addListener("place_changed", () => {
-        const place = partenzaAutocomplete.getPlace();
-        if (!place.geometry || !place.geometry.location) {
-          console.error("No geometry available for the selected place");
-          return;
-        }
-        new_run.partenza = place.formatted_address;
-        new_run.geometry = {
-          latitude: place.geometry.location.lat(),
-          longitude: place.geometry.location.lng(),
-        };
-        console.log(
-          "Selected place:",
-          place.formatted_address,
-          place.geometry.location.lat(),
-          place.geometry.location.lng()
-        );
-      });
-      arrivoAutocomplete.addListener("place_changed", () => {
-        const place = arrivoAutocomplete.getPlace();
-        if (!place.geometry || !place.geometry.location) {
-          console.error("No geometry available for the selected place");
-          return;
-        }
-        new_run.arrivo = place.formatted_address;
-        new_run.end_geometry = {
-          latitude: place.geometry.location.lat(),
-          longitude: place.geometry.location.lng(),
-        };
-        console.log(
-          "Selected place:",
-          place.formatted_address,
-          place.geometry.location.lat(),
-          place.geometry.location.lng()
-        );
-      });
-    }, 1000);
-  }
 
   async function updateRun() {
     if (!selected_car) {
@@ -546,41 +388,6 @@
     }
   }
 
-  async function newRun() {
-    try {
-      const { geometry, end_geometry, paziente, ...newR } = new_run;
-      const response = await fetch(import.meta.env.VITE_API_URL + "/api/runs", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          meta: newR,
-          status: "pending",
-          additionalRuns: additionalRuns.map((run) => ({
-            ...run,
-            meta: {
-              ...newR,
-              partenza: run.partenza,
-              arrivo: run.arrivo,
-              ora: run.ora,
-              data: run.data,
-            },
-          })),
-          patient: paziente,
-          geometry: geometry,
-          end_geometry: end_geometry,
-        }),
-      });
-      const data = await response.json();
-      selected_run = data.run._id;
-      runs = [...runs, data.run];
-      show_form = false;
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  }
   function openPopup(run) {
     showPopup = true;
     selected_run = run._id;
@@ -593,13 +400,6 @@
   <div class="container mx-auto py-6 px-3">
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-3xl font-bold">Corse</h1>
-      <button
-        on:click={newRunToggle}
-        class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-md"
-      >
-        <span class="text-2xl">+</span>
-        <span>Aggiungi Corsa</span>
-      </button>
     </div>
 
     <div class="mb-8 flex items-center gap-4">
@@ -788,14 +588,10 @@
       <div class="flex items-center">
         <!-- Step 1 -->
         <div
-          class="flex items-center pr-10 transition {show_form
-            ? 'border-b-2 border-lime-600 '
-            : 'border-b-2 border-gray-300 '}"
+          class="flex items-center pr-10 transition border-b-2 border-gray-300"
         >
           <div
-            class="flex items-end gap-3 transition {show_form
-              ? 'text-lime-600'
-              : 'text-gray-300'} font-semibold"
+            class="flex items-end gap-3 transition text-gray-300 font-semibold"
           >
             <span class="text-4xl">1</span>
             <span class="pb-1 text-xl">Inserisci le informazioni</span>
@@ -838,7 +634,6 @@
       <button
         class="absolute text-3xl top-32 mt-2 right-6 text-gray-600 hover:text-gray-800"
         on:click={() => {
-          show_form = false;
           showPopup ? (showPopup = false) : null;
           map = null;
           showFinalPopup ? (showFinalPopup = false) : null;
@@ -849,149 +644,6 @@
       </button>
     </div>
     <div class="max-w-screen-lg w-full overflow-y-auto">
-      {#if show_form}
-        <!-- Form Modal -->
-        <div class="z-50 transform transition-all duration-500">
-          <h2 class="text-3xl font-bold mb-6">Nuova Corsa</h2>
-          <form
-            on:submit|preventDefault={() => {
-              show_form = false;
-              showPopup = true;
-              newRun();
-            }}
-            class="space-y-6"
-          >
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {#each Object.keys(meta_verifier) as key}
-                <div>
-                  {#if types[key] !== "textarea"}
-                    <label
-                      for="field-{key}"
-                      class="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      {key}
-                      <span class="text-red-500">*</span>
-                    </label>
-                  {/if}
-                  {#if types[key] === "select"}
-                    <select
-                      required
-                      id="field-{key}"
-                      class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 bg-white transition-all"
-                      bind:value={new_run[meta_verifier[key]]}
-                    >
-                      <option value="" disabled>Seleziona</option>
-                      {#each options[meta_verifier[key]] as option}
-                        <option value={option.value}>{option.text}</option>
-                      {/each}
-                      <!-- Add your options here -->
-                    </select>
-                  {:else if types[key] === "autocomplete"}
-                    <input
-                      type={types[key]}
-                      required
-                      id="field-{key}-autocomplete"
-                      placeholder="Cerca..."
-                      class="autocomplete-input block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
-                      value={new_run[meta_verifier[key]]}
-                      on:input={(e) =>
-                        (new_run[meta_verifier[key]] = e.target.value)}
-                    />
-                  {:else if types[key] === "number"}
-                    <input
-                      type={types[key]}
-                      min="1"
-                      max="10"
-                      step="1"
-                      required
-                      id="field-{key}"
-                      class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
-                      value={new_run[meta_verifier[key]]}
-                      on:input={(e) =>
-                        (new_run[meta_verifier[key]] = e.target.value)}
-                    />
-                  {:else if types[key] !== "textarea"}
-                    <input
-                      type={types[key]}
-                      required
-                      id="field-{key}"
-                      class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
-                      value={new_run[meta_verifier[key]]}
-                      on:input={(e) =>
-                        (new_run[meta_verifier[key]] = e.target.value)}
-                    />
-                  {/if}
-                </div>
-              {/each}
-              {#if new_run.viaggio > 1}
-                {#each Array.from({ length: new_run.viaggio - 1 }) as _, i}
-                  <div
-                    class="md:col-span-2 lg:col-span-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-                  >
-                    {#each Object.keys(additionalRunsMeta) as key}
-                      <div
-                        class={types[key] === "textarea"
-                          ? "md:col-span-2 lg:col-span-4"
-                          : ""}
-                      >
-                        <label
-                          for="field-{key}-{i}"
-                          class="block text-sm font-medium text-gray-700 mb-1"
-                        >
-                          {key}
-                          <span
-                            class="text-red-500 {types[key] === 'textarea'
-                              ? 'hidden'
-                              : ''}">*</span
-                          >
-                        </label>
-                        {#if additionalRuns[i]}
-                          <input
-                            type={types[key]}
-                            required
-                            placeholder={key === "Partenza" || key === "Arrivo"
-                              ? "Cerca..."
-                              : ""}
-                            id="field-{key}-{i}"
-                            class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
-                            value={additionalRuns[i][additionalRunsMeta[key]]}
-                            on:input={(e) =>
-                              (additionalRuns[i] = {
-                                ...additionalRuns[i],
-                                [additionalRunsMeta[key]]: e.target.value,
-                              })}
-                          />
-                        {/if}
-                      </div>
-                    {/each}
-                  </div>
-                {/each}
-              {/if}
-              <div class="md:col-span-2 lg:col-span-4">
-                <label
-                  for="field-note_particolari"
-                  class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Note particolari
-                </label>
-                <textarea
-                  id="field-note_particolari"
-                  class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
-                  bind:value={new_run["note_particolari"]}
-                ></textarea>
-              </div>
-            </div>
-            <div class="flex gap-4 justify-end mt-4">
-              <button
-                type="submit"
-                class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
-              >
-                Conferma dettagli
-              </button>
-            </div>
-          </form>
-        </div>
-      {/if}
       {#if showPopup}
         <!-- Form Modal -->
         <div class="z-50 transform transition-all duration-500">

@@ -390,7 +390,7 @@
                 src={gallery.find((x) => x.includes(car.name)) || van}
                 alt={car.meta.brand}
                 class="w-full {gallery.find((x) => x.includes(car.name))
-                  ? 'h-32'
+                  ? 'h-24 object-cover'
                   : 'h-24'} my-4 object-contain"
               />
               <p class="text-gray-700 text-xl font-bold mb-2">

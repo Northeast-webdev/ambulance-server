@@ -62,7 +62,9 @@
         <h3 class="font-semibold">
           {`${$user.first_name} ${$user.last_name}`}
         </h3>
-        <p class="text-sm uppercase tracking-widest">{$user.role}</p>
+        <p class="text-sm uppercase tracking-widest">
+          {$user.role === "administrator" ? "amministratore" : $user.role}
+        </p>
       </div>
 
       <!-- Logout Button -->

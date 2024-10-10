@@ -163,7 +163,7 @@ const updateRun = async (request, reply) => {
       return;
     }
     const existingCar = await Car.findOne({ _id: result.car._id.toString() });
-    if (existingCar && status !== "completed" && result.status !== "pending") {
+    if (existingCar && status === "ongoing") {
       await Car.findOneAndUpdate(
         { _id: existingCar._id.toString() },
         { status: "busy" },
@@ -174,15 +174,6 @@ const updateRun = async (request, reply) => {
     }
     console.log("Existing car:", existingCar);
     console.log("Status:", status);
-    if ((existingCar && status === "completed") || updates.car === null) {
-      await Car.findOneAndUpdate(
-        { _id: existingCar._id.toString() },
-        { status: "free" },
-        {
-          returnDocument: "after",
-        }
-      );
-    }
     const assignedUserId = existingCar.user.toString();
 
     // Send new run to the assigned user via WebSocket
