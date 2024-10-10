@@ -25,16 +25,29 @@ const createRun = async (request, reply) => {
         { $push: { runs: run._id } }
       );
       run.patient = patient[0]._id;
+    } else {
+      const newPatient = new Patient({ name: pat });
+      await newPatient.save();
+      await Patient.updateOne(
+        { _id: newPatient._id },
+        { $push: { runs: run._id } }
+      );
+      run.patient = newPatient._id;
     }
     await run.save();
     if (additionalRuns && additionalRuns.length) {
-      for await (let additionalRun of additionalRuns) {
+      for await (const additionalRun of additionalRuns) {
         const newRun = new Run({
           meta: additionalRun.meta,
           status: "pending",
           geometry: additionalRun.geometry,
+          patient: run.patient,
         });
         await newRun.save();
+        await Patient.updateOne(
+          { _id: run.patient },
+          { $push: { runs: newRun._id } }
+        );
       }
     }
     reply.send({ run: run });
