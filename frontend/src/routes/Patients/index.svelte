@@ -8,7 +8,7 @@
 
   let patients = [];
   let loading = false;
-  let show_form = false;
+  let show_form = true;
   let query = "";
   let meta_verifier = {
     Paziente: "paziente",
@@ -377,7 +377,7 @@
         ✕
       </button>
     </div>
-    <div class="max-w-screen-lg w-full overflow-y-auto">
+    <div class="max-w-screen-xl px-20 w-full overflow-y-auto max-h-[600px]">
       {#if show_form}
         <!-- Form Modal -->
         <div class="z-50 transform transition-all duration-500">
@@ -394,9 +394,12 @@
                 {#if key === "Data"}
                   <div></div>
                 {/if}
-                <div>
+                <div class="relative">
                   {#if key === "Data"}
-                    <span>1</span>
+                    <span
+                      class="absolute block -left-6 top-9 z-10 text-gray-500"
+                      >1</span
+                    >
                   {/if}
                   {#if types[key] !== "textarea"}
                     <label
@@ -458,6 +461,9 @@
                   {/if}
                 </div>
               {/each}
+              <div
+                class="border-t border-gray-300 pt-6 md:col-span-2 lg:col-span-4"
+              ></div>
               {#if new_run.viaggio > 1}
                 {#each Array.from({ length: new_run.viaggio - 1 }) as _, i}
                   <div
@@ -467,10 +473,13 @@
                       <div
                         class={types[key] === "textarea"
                           ? "md:col-span-2 lg:col-span-4"
-                          : ""}
+                          : "relative"}
                       >
                         {#if key === "Data"}
-                          <span>{i + 2}</span>
+                          <span
+                            class="absolute block -left-6 top-9 z-10 text-gray-500"
+                            >{i + 2}</span
+                          >
                         {/if}
                         <label
                           for="field-{key}-{i}"
@@ -505,9 +514,7 @@
                   </div>
                 {/each}
               {/if}
-              <div
-                class="md:col-span-2 lg:col-span-4 border-t border-gray-300 pt-6"
-              >
+              <div class="md:col-span-2 lg:col-span-4">
                 <label
                   for="field-note_particolari"
                   class="block text-sm font-medium text-gray-700 mb-1"
