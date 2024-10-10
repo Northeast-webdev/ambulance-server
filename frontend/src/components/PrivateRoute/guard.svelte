@@ -9,8 +9,6 @@
       state: { from: $location.pathname },
       replace: true,
     });
-  } else {
-    navigate($location.pathname, { replace: true });
   }
 </script>
 

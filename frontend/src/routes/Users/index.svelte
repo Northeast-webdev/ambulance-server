@@ -59,7 +59,6 @@
       .then((response) => response.json())
       .then((data) => {
         cars = data.cars;
-        console.log("cars: ", cars);
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -185,7 +184,6 @@
       .then((response) => response.json())
       .then((data) => {
         users = data.users;
-        console.log("users: ", users);
       })
       .catch((error) => {
         console.error("Error:", error);

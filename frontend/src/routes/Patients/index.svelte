@@ -1,6 +1,7 @@
 <script>
   // frontend/src/routes/Patients/index.svelte
   import { onMount } from "svelte";
+  import { Link } from "svelte-navigator";
   import LoadingList from "../../components/LoadingList.svelte";
 
   let patients = [];
@@ -17,7 +18,6 @@
       .then((response) => response.json())
       .then((data) => {
         patients = data.patients;
-        console.log(patients);
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -49,10 +49,13 @@
               Nome
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              Numero di Corsi
+              Tutti i corsi
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
               Corse completate
+            </th>
+            <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
+              Corse in sospeso
             </th>
           </tr>
         </thead>
@@ -65,16 +68,51 @@
                 </div>
               </td>
               <td class="py-3 px-6 text-left whitespace-nowrap">
-                <div class="flex items-center">
-                  <span class="font-medium">{patient.runs.length}</span>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold">{patient.runs.length}</span>
+                  {#if patient.runs.length > 0}
+                    <span class="font-medium">-</span>
+                    <Link
+                      to={`/runs?patient=${patient._id}`}
+                      class="text-blue-500 font-bold hover:text-blue-700"
+                    >
+                      Dettagli
+                    </Link>
+                  {/if}
                 </div>
               </td>
               <td class="py-3 px-6 text-left whitespace-nowrap">
-                <div class="flex items-center">
-                  <span class="font-medium"
+                <div class="flex items-center gap-2">
+                  <span class="font-bold"
                     >{patient.runs.filter((run) => run.status === "completed")
                       .length}</span
                   >
+                  {#if patient.runs.filter((run) => run.status === "completed").length > 0}
+                    <span class="font-medium">-</span>
+                    <Link
+                      to={`/runs?patient=${patient._id}&status=completed`}
+                      class="text-blue-500 font-bold hover:text-blue-700"
+                    >
+                      Dettagli
+                    </Link>
+                  {/if}
+                </div>
+              </td>
+              <td class="py-3 px-6 text-left whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold"
+                    >{patient.runs.filter((run) => run.status === "pending")
+                      .length}</span
+                  >
+                  {#if patient.runs.filter((run) => run.status === "pending").length > 0}
+                    <span class="font-medium">-</span>
+                    <Link
+                      to={`/runs?patient=${patient._id}&status=pending`}
+                      class="text-blue-500 font-bold hover:text-blue-700"
+                    >
+                      Dettagli
+                    </Link>
+                  {/if}
                 </div>
               </td>
             </tr>

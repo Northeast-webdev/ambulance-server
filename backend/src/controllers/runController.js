@@ -65,7 +65,14 @@ const createRun = async (request, reply) => {
 };
 
 const listRuns = async (request, reply) => {
-  const { page = 1, limit = 100, patient, date, updated_date } = request.query;
+  const {
+    page = 1,
+    limit = 100,
+    patient,
+    date,
+    updated_date,
+    status,
+  } = request.query;
   const q = {};
   if (date) {
     const startDate = new Date(date);
@@ -81,6 +88,9 @@ const listRuns = async (request, reply) => {
   }
   if (patient) {
     q.patient = patient;
+  }
+  if (status) {
+    q.status = status;
   }
   try {
     const runs = await Run.find({

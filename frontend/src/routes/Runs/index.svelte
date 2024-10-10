@@ -43,18 +43,6 @@
     }, 1000);
 
   $: (() => {
-    if (date.toLocaleDateString() !== new Date().toLocaleDateString()) {
-      window.history.replaceState(
-        {},
-        "",
-        window.location.pathname + `?date=${date.getTime()}`
-      );
-    } else {
-      window.history.replaceState({}, "", window.location.pathname);
-    }
-  })();
-
-  $: (() => {
     if (new_run.viaggio > 1)
       additionalRuns = Array.from({ length: new_run.viaggio - 1 }).map(
         (x, i) =>
@@ -324,22 +312,21 @@
     // get query params and set initial variables to url params
     const urlParams = new URLSearchParams(window.location.search);
     const dateParam = urlParams.get("date");
-    if (dateParam) {
-      query.date = new Date(dateParam);
-    }
     const patient = urlParams.get("patient");
-    if (patient) {
-      query.patient = patient;
-    }
-    console.log(query);
-
+    const status = urlParams.get("status");
     loading = true;
-    fetch(import.meta.env.VITE_API_URL + "/api/runs", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
+    fetch(
+      import.meta.env.VITE_API_URL +
+        `/api/runs?patient=${patient || ""}&date=${dateParam || ""}&status=${
+          status || ""
+        }`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    )
       .then((response) => response.json())
       .then((data) => {
         runs = data.runs;
@@ -383,6 +370,15 @@
 
   const getRunsByDate = async () => {
     loading = true;
+    if (date.toLocaleDateString() !== new Date().toLocaleDateString()) {
+      window.history.replaceState(
+        {},
+        "",
+        window.location.pathname + `?date=${date.getTime()}`
+      );
+    } else {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
     fetch(
       import.meta.env.VITE_API_URL + "/api/runs?date=" + date.toISOString(),
       {
