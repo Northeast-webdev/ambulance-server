@@ -23,6 +23,13 @@ const listPatients = async (request, reply) => {
     })
       .skip((page - 1) * limit)
       .limit(limit)
+      .populate({
+        path: "runs",
+        populate: {
+          path: "user",
+          model: "User",
+        },
+      })
       .sort({ created_at: 1 })
       .exec();
     return { patients, page, limit };
