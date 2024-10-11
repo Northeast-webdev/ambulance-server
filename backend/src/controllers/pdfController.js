@@ -79,7 +79,8 @@ const printCarChecklist = async (request) => {
               top: ${point.y}px; 
               left: ${point.x}px; 
               background-color: ${COLORS[point.colorIndex]}; 
-              width: 24px; height: 24px;
+              width: 24px; 
+              height: 24px;
               border-radius: 50%;
               border: 2px solid black;
             "
