@@ -502,7 +502,7 @@
             </div>
 
             <!-- Car Damage Points Display -->
-            {#if $user.role === "administrator"}
+            {#if $user.role === "administrator" || $user.role === "meccanico"}
               <div class="van-diagram-container">
                 <!-- Car Image with Points -->
                 <div class="relative mx-auto w-[375px]">

@@ -11,6 +11,12 @@ const runSchema = new Schema({
   },
   notification_sent: { type: Boolean, default: false },
   patient: { type: Schema.Types.ObjectId, ref: "Patient" },
+  checkpoints: {
+    ongoing: { type: Date, default: null },
+    picked_up: { type: Date, default: null },
+    completed: { type: Date, default: null },
+  },
+  length: { type: Number, default: 0 },
   status: { type: String, default: "pending" },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },

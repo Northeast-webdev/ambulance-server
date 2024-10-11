@@ -3,6 +3,7 @@ const puppeteer = require("puppeteer");
 const fs = require("fs");
 const { CarChecklist } = require("../schema/carChecklist.schema");
 const { MaterialChecklist } = require("../schema/materialChecklist.schema");
+const { Car } = require("../schema/car.schema");
 
 const printCarChecklist = async (request) => {
   const browser = await puppeteer.launch();
@@ -14,6 +15,14 @@ const printCarChecklist = async (request) => {
     .populate("car")
     .populate("user");
   const checklist = carChecklist.checklist; // Checklist object
+  const car = await Car.findById(carChecklist.car._id.toString());
+  const damages = car.damages;
+  const VAN_IMAGES = {
+    front: fs.readFileSync(`${process.cwd()}/backend/img/van/front.png`),
+    back: fs.readFileSync(`${process.cwd()}/backend/img/van/back.png`),
+    left: fs.readFileSync(`${process.cwd()}/backend/img/van/left.png`),
+    right: fs.readFileSync(`${process.cwd()}/backend/img/van/right.png`),
+  };
   const filename =
     "checklist-" +
     carChecklist.car.name +
@@ -58,6 +67,38 @@ const printCarChecklist = async (request) => {
     })
     .join("");
 
+  const COLORS = ["#FBBF24", "#3B82F6", "#22C55E", "#ADD8E6", "#FFC0CB"];
+  // Generate Car Damage Points Display for all damages and sides
+  const damagePoints = Object.entries(damages).map(([side, points]) => {
+    const image = VAN_IMAGES[side];
+    const pointsDisplay = points
+      .map((point) => {
+        return `
+            <div style="position: absolute; top: ${point.y}px; left: ${
+          point.x
+        }px; background-color: ${
+          COLORS[point.colorIndex]
+        }; width: 10px; height: 10px;"></div>
+          `;
+      })
+      .join("");
+    return `
+        <div style="position: relative; width: 375px; margin-bottom: 20px;">
+          <img src="data:image/png;base64,${image.toString(
+            "base64"
+          )}" alt="${side}" 
+          style="
+            width: 100%;
+            height: 100%;
+            aspect-ratio: 1;
+            object-fit: contain;
+          "
+          />
+          ${pointsDisplay}
+        </div>
+      `;
+  });
+
   // Set your HTML content here
   const htmlContent = `
     <html>
@@ -72,6 +113,9 @@ const printCarChecklist = async (request) => {
           <td>${carChecklist.created_at.toISOString().split("T")[0]}</td>
         </tr>
       </table>
+      <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
+      ${damagePoints.join("")}
+      </div>
       <table id="mainTable">
         <thead>
             <tr>

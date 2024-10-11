@@ -134,7 +134,7 @@ const updateRun = async (request, reply) => {
   const { car, title, meta, status, notification_sent, geometry } =
     request.body;
   const updates = {};
-
+  const run = await Run.findOne({ _id: request.params.id });
   // if some fields are missing, do not update them
   if (car) updates.car = car;
   if (car === "") {
@@ -142,7 +142,25 @@ const updateRun = async (request, reply) => {
   }
   if (title) updates.title = title;
   if (meta) updates.meta = meta;
-  if (status) updates.status = status;
+  if (status) {
+    updates.status = status;
+    if (status === "completed") {
+      updates.checkpoints.completed = new Date().toISOString();
+
+      // Calculate the length of the run in seconds
+      updates.length = Math.floor(
+        (new Date(run.checkpoints.completed).getTime() -
+          new Date(run.checkpoints.ongoing).getTime()) /
+          1000
+      );
+    }
+    if (status === "picked_up") {
+      updates.checkpoints.picked_up = new Date().toISOString();
+    }
+    if (status === "ongoing") {
+      updates.checkpoints.ongoing = new Date().toISOString();
+    }
+  }
   if (notification_sent) updates.notification_sent = notification_sent;
   if (geometry) updates.geometry = geometry;
   updates.updated_at = new Date().toISOString();
