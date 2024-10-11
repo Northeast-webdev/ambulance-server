@@ -74,11 +74,16 @@ const printCarChecklist = async (request) => {
     const pointsDisplay = points
       .map((point) => {
         return `
-            <div style="position: absolute; top: ${point.y}px; left: ${
-          point.x
-        }px; background-color: ${
-          COLORS[point.colorIndex]
-        }; width: 10px; height: 10px;"></div>
+            <div style="
+              position: absolute; 
+              top: ${point.y}px; 
+              left: ${point.x}px; 
+              background-color: ${COLORS[point.colorIndex]}; 
+              width: 24px; height: 24px;
+              border-radius: 50%;
+              border: 2px solid black;
+            "
+             ></div>
           `;
       })
       .join("");
@@ -113,9 +118,6 @@ const printCarChecklist = async (request) => {
           <td>${carChecklist.created_at.toISOString().split("T")[0]}</td>
         </tr>
       </table>
-      <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
-      ${damagePoints.join("")}
-      </div>
       <table id="mainTable">
         <thead>
             <tr>
@@ -168,6 +170,10 @@ const printCarChecklist = async (request) => {
             ${checklistRows}
         </tbody>
       </table>
+
+      <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
+      ${damagePoints.join("")}
+      </div>
       <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
         html, body {
