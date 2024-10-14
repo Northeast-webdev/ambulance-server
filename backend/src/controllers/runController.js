@@ -166,17 +166,14 @@ const updateRun = async (request, reply) => {
   updates.updated_at = new Date().toISOString();
 
   try {
-    const result = await Run.findOneAndUpdate(
-      { _id: request.params.id },
-      updates,
-      {
-        returnDocument: "after",
-      }
-    )
+    await Run.updateOne({ _id: request.params.id }, updates, {
+      returnDocument: "after",
+    });
+    const result = await Run.findOne({ _id: request.params.id })
       .populate("car")
-      .populate("patient")
-      .exec();
-
+      .populate("patient");
+    console.log("Status:", status);
+    console.log("Car:", car);
     if (!result.car || !car) {
       reply.send({ run: result });
       return;
@@ -192,7 +189,6 @@ const updateRun = async (request, reply) => {
       );
     }
     console.log("Existing car:", existingCar);
-    console.log("Status:", status);
     const assignedUserId = existingCar.user.toString();
 
     // Send new run to the assigned user via WebSocket
