@@ -226,7 +226,7 @@
           : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
         on:click={() => getUsers("operator")}
       >
-        <span>Operator</span>
+        <span>Coordinatore</span>
       </button>
       <button
         class="{userType === 'mappatore'

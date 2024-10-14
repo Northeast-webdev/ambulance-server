@@ -797,7 +797,7 @@
             on:click={() => (showFinalPopup = false)}
             aria-label="Close form"
           >
-            Torna alla gestione corse
+            Torna alla gestione trasporti
           </button>
         </div>
       {/if}

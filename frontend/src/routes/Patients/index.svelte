@@ -285,16 +285,16 @@
         <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
           <tr>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              Nome
+              Nome paziente
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              Tutti i corsi
+              Tutti i trasporti
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              Corse completate
+              Trasporti completate
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              Corse in sospeso
+              Trasporti in sospeso
             </th>
           </tr>
         </thead>
