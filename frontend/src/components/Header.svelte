@@ -2,11 +2,12 @@
 <script>
   // @ts-nocheck
 
-  import { Link, useNavigate } from "svelte-navigator";
+  import { Link, useLocation, useNavigate } from "svelte-navigator";
   import logo from "../assets/logo.png";
   import { token, user } from "../stores";
 
   const navigate = useNavigate();
+  const location = useLocation();
   const links = [
     { name: "Pazienti", path: "/pazienti" },
     { name: "Utenti", path: "/users" },
@@ -40,15 +41,40 @@
 
       <!-- Navigation Links -->
       {#if $user.role === "administrator" || $user.role === "operator"}
-        <nav class="flex-1 mx-6 space-x-6">
+        <nav class="flex-1 mx-6 space-x-2">
           {#each links as link}
             <Link
               to={link.path}
-              class="text-gray-100 hover:text-gray-50 text-lg font-medium transition duration-200"
+              class="text-gray-100 pl-4 pr-3 py-2 text-center rounded-xl {link.path ===
+              $location.pathname
+                ? 'text-green-700 bg-white'
+                : 'hover:text-gray-50'} text-lg font-medium transition duration-200"
             >
               {link.name}
             </Link>
           {/each}
+        </nav>
+      {/if}
+
+      {#if $user.role === "mappatore"}
+        <nav class="flex-1 mx-6 space-x-6">
+          <Link
+            to="/"
+            class="px-4 py-2 text-center rounded-xl text-green-700 bg-white text-lg font-medium transition duration-200"
+          >
+            Mappa
+          </Link>
+        </nav>
+      {/if}
+
+      {#if $user.role === "meccanico" || $user.role === "direzione"}
+        <nav class="flex-1 mx-6 space-x-6">
+          <Link
+            to="/garage"
+            class="px-4 py-2 text-center rounded-xl text-green-700 bg-white text-lg font-medium transition duration-200"
+          >
+            Garage
+          </Link>
         </nav>
       {/if}
 
@@ -57,7 +83,7 @@
         class="text-gray-50 {$user.role === 'administrator' ||
         $user.role === 'operator'
           ? 'text-right'
-          : 'text-center'} mx-6"
+          : 'text-right flex-1'} mx-6"
       >
         <h3 class="font-semibold">
           {`${$user.first_name} ${$user.last_name}`}
