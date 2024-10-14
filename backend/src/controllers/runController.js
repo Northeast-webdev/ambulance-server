@@ -133,11 +133,10 @@ const getRun = async (request, reply) => {
 const updateRun = async (request, reply) => {
   const { car, title, meta, status, notification_sent, geometry } =
     request.body;
-  const updates = {
-    checkpoints: {},
-  };
+  const updates = {};
   const run = await Run.findOne({ _id: request.params.id });
   // if some fields are missing, do not update them
+  updates.checkpoints = run.checkpoints || {};
   if (car) updates.car = car;
   if (car === "") {
     updates.car = null;
