@@ -270,7 +270,7 @@
       window.history.replaceState(
         {},
         "",
-        window.location.pathname + `?date=${date.toLocaleDateString()}`
+        window.location.pathname + `?date=${date.toISOString().split("T")[0]}`
       );
     } else {
       window.history.replaceState({}, "", window.location.pathname);
@@ -278,7 +278,7 @@
     fetch(
       import.meta.env.VITE_API_URL +
         "/api/runs?date=" +
-        date.toLocaleDateString(),
+        date.toISOString().split("T")[0],
       {
         method: "GET",
         headers: {
@@ -402,7 +402,7 @@
 {:else}
   <div class="container mx-auto py-6 px-3">
     <div class="flex justify-between items-center mb-4">
-      <h1 class="text-3xl font-bold">Corse</h1>
+      <h1 class="text-3xl font-bold">Gestione Trasporti</h1>
     </div>
 
     <div class="mb-8 flex items-center gap-4">

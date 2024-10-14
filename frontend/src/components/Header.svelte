@@ -12,7 +12,7 @@
     { name: "Pazienti", path: "/pazienti" },
     { name: "Utenti", path: "/users" },
     { name: "Mappa", path: "/" },
-    { name: "Corse", path: "/runs" },
+    { name: "Trasporti", path: "/runs" },
     { name: "Garage", path: "/garage" },
     { name: "Mezzi Checklist", path: "/car-checklists" },
     { name: "Materiali Checklist", path: "/material-checklists" },
