@@ -73,7 +73,7 @@
               >
               {#each Object.keys(meta_verifier) as key}
                 <td class="py-3 px-4 border-r border-inherit"
-                  >{run.car.meta[meta_verifier[key]]}</td
+                  >{run.car.meta[meta_verifier[key]] || "-"}</td
                 >
               {/each}
               <td class="py-3 px-4 border-r border-inherit">
