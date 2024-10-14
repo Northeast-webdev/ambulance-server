@@ -176,7 +176,7 @@ const updateRun = async (request, reply) => {
       .populate("car")
       .populate("patient");
 
-    if (!result.car?._id || !car) {
+    if (!result.car || !car) {
       reply.send({ run: result });
       return;
     }

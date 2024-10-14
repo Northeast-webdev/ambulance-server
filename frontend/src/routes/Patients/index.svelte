@@ -8,7 +8,7 @@
 
   let patients = [];
   let loading = false;
-  let show_form = true;
+  let show_form = false;
   let query = "";
   let meta_verifier = {
     Paziente: "paziente",

@@ -132,7 +132,7 @@
       map
     );
 
-    if (new_run.partenza && new_run.arrivo) {
+    if (selected_run.partenza && selected_run.arrivo) {
       const partenzaIcon = L.divIcon({
         className: "custom-marker", // Custom CSS class for styling
         html: `<div class="marker-circle bg-indigo-500 text-indigo-100">A</div>`,
@@ -140,7 +140,7 @@
       });
 
       const partenzaMarker = L.marker(
-        [new_run.geometry.latitude, new_run.geometry.longitude],
+        [selected_run.geometry.latitude, selected_run.geometry.longitude],
         {
           icon: partenzaIcon,
         }
@@ -153,7 +153,10 @@
       });
 
       const arrivoMarker = L.marker(
-        [new_run.end_geometry.latitude, new_run.end_geometry.longitude],
+        [
+          selected_run.end_geometry.latitude,
+          selected_run.end_geometry.longitude,
+        ],
         {
           icon: arrivoIcon,
         }
