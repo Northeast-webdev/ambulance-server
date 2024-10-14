@@ -174,7 +174,8 @@ const updateRun = async (request, reply) => {
       }
     )
       .populate("car")
-      .populate("patient");
+      .populate("patient")
+      .exec();
 
     if (!result.car || !car) {
       reply.send({ run: result });
