@@ -8,7 +8,7 @@ const { printCarChecklist, findPDF } = require("./pdfController");
 
 const createCarChecklist = async (request, reply) => {
   const { car, checklist, user } = request.body;
-  const carChecklist = new CarChecklist({ car, checklist, user });
+  const carChecklist = new CarChecklist({ car, user });
   const userExists = await User.findOne({ _id: user });
   const carExists = await Car.findOne({ _id: car });
   try {
@@ -29,6 +29,7 @@ const createCarChecklist = async (request, reply) => {
     // print the pdf here
     printCarChecklist({
       checklistId: carChecklist._id,
+      checklist,
     });
     reply.send(carChecklist);
   } catch (err) {

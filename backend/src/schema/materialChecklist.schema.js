@@ -2,7 +2,6 @@
 const { Schema, default: mongoose } = require("mongoose");
 
 const materialChecklistSchema = new Schema({
-  checklist: { type: Object, required: true },
   user: { type: Schema.Types.ObjectId, ref: "User" },
   car: { type: Schema.Types.ObjectId, ref: "Car" },
   created_at: { type: Date, default: Date.now },

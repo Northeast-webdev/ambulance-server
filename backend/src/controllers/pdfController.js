@@ -10,11 +10,10 @@ const printCarChecklist = async (request) => {
   const page = await browser.newPage();
 
   // Fetch checklist from database or request body
-  const checklistId = request.checklistId; // Assuming you're passing the checklist ID as a query param
+  const { checklistId, checklist } = request; // Assuming you're passing the checklist ID as a query param
   const carChecklist = await CarChecklist.findById(checklistId)
     .populate("car")
     .populate("user");
-  const checklist = carChecklist.checklist; // Checklist object
   const car = await Car.findById(carChecklist.car._id.toString());
   const damages = car.damages;
   const VAN_IMAGES = {
@@ -176,13 +175,15 @@ const printCarChecklist = async (request) => {
       ${damagePoints.join("")}
       </div>
       <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
-        html, body {
-            box-sizing: border-box;
-        }
-        * {
-            font-family: 'Roboto', sans-serif;
-        }
+      html {
+        font-size: 12px !important;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: white;
+      }
         #headerTable {
             width: 100%;
             max-width: 800px;
@@ -224,6 +225,7 @@ const printCarChecklist = async (request) => {
   await page.pdf({
     path: `/var/data/pdf/${filename}.pdf`,
     format: "A4",
+    scale: 0.8,
     printBackground: true,
   });
   await browser.close();
@@ -237,164 +239,42 @@ const printCarChecklist = async (request) => {
 const printMaterialChecklist = async (request) => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
+  const { checklist, id } = request;
 
   // Fetch checklist from database or request body
-  const checklistId = request.checklistId; // Assuming you're passing the checklist ID as a query param
-  const materialChecklist = await MaterialChecklist.findById(checklistId)
+  const materialChecklist = await MaterialChecklist.findById(id)
     .populate("user")
     .populate("car");
-  const checklist = materialChecklist.checklist; // Checklist object
   const filename =
     "checklist_inf-" +
     materialChecklist.car.name +
     "-" +
     materialChecklist.created_at.toISOString().split("T")[0];
-  const logo = fs
-    .readFileSync(`${process.cwd()}/backend/img/logo.png`)
-    .toString("base64");
-  const labels = {
-    guanti: "Guanti",
-    maschera: "Maschera",
-    camice: "Camice",
-    cappello: "Cappello",
-    copriscarpe: "Copriscarpe",
-    visiera: "Visiera",
-    occhiali: "Occhiali",
-    respiratore: "Respiratore",
-    grembiule: "Grembiule",
-    cuffia: "Cuffia",
-    divise: "Divise",
-    termometro: "Termometro",
-  };
-  // Generate table rows based on the checklist object
-  const checklistRows = Object.entries(checklist)
-    .map(([key, value]) => {
-      const status = value ? "Yes" : "No";
-      return `
-        <tr>
-          <td>${labels[key]}</td>
-          <td>${status}</td>
-        </tr>`;
-    })
-    .join("");
 
-  // Set your HTML content here
-  const htmlContent = `
-    <html>
-    <head>
-        <title>Checklist Materiale infermieristico mezzo ${
-          materialChecklist.car.name
-        }</title> 
-    </head>
-    <body>
-      <table id="headerTable">
-        <tr>
-          <td><img src="data:image/png;base64,${logo}" alt="Logo" /></td>
-          <td><h3>Checklist Materiale infermieristico mezzo ${
-            materialChecklist.car.name
-          }</h3></td>
-          <td>${materialChecklist.created_at.toISOString().split("T")[0]}</td>
-        </tr>
-      </table>
-      <table id="mainTable">
-        <thead>
-            <tr>
-                <th>Item</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td>Nome</td>
-          <td>${materialChecklist.car.name}</td>
-        </tr>
-        <tr>
-          <td>Marca</td>
-          <td>${materialChecklist.car.meta.brand}</td>
-        </tr>
-        <tr>
-          <td>Modello</td>
-          <td>${materialChecklist.car.meta.model}</td>
-        </tr>
-        <tr>
-          <td>Targa</td>
-          <td>${materialChecklist.car.meta.plate_number}</td>
-        </tr>
-        <tr>
-          <td>Autista</td>
-          <td>
-          ${materialChecklist.user.first_name} ${
-    materialChecklist.user.last_name
-  }
-         </td>
-        </tr>
-        <tr>
-          <td>Inizio turno</td>
-          <td>${
-            materialChecklist.car.shift_start.toISOString().split("T")[0] +
-            " " +
-            materialChecklist.car.shift_start
-              .toISOString()
-              .split("T")[1]
-              .split(".")[0]
-          }</td>
-        </tr>
-        <tr>
-          <td>Chilometri</td>
-          <td>${materialChecklist.car.meta.kilometers}</td>
-        </tr>
-            ${checklistRows}
-        </tbody>
-      </table>
-      <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
-        html, body {
-            box-sizing: border-box;
-        }
-        * {
-            font-family: 'Roboto', sans-serif;
-        }
-        #headerTable {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto 20px;
-            border: 0;
-        }
-        #headerTable h3, #headerTable td {
-            margin: 0;
-            text-align: center;
-        }
-        #headerTable img {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-            display: block;
-            margin: 0 auto;
-        }
-        #mainTable {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        #mainTable th, #mainTable td {
-            border: 1px solid black;
-            padding: 8px 4px;
-            text-align: center;
-            font-weight: 500;
-            font-size: 0.8rem;
-        }
-        #mainTable th {
-            background-color: #f2f2f2;
-            font-weight: 600;
-        }
-      </style>
-    </body>
-    </html>
-  `;
-  await page.setContent(htmlContent);
+  // Read both HTML files
+  const htmlContent = fs.readFileSync(
+    `${process.cwd()}/backend/src/html/material_page.html`,
+    "utf-8"
+  );
+
+  let newContent = htmlContent.replace(
+    "</head>",
+    `<script>${
+      checklist
+        ? `const checklist = ${JSON.stringify(checklist)};`
+        : fs.readFileSync(`${process.cwd()}/backend/src/html/test.js`, "utf-8")
+    }</script></head>`
+  );
+
+  await page.setContent(newContent, { waitUntil: "networkidle0" });
 
   await page.pdf({
-    path: `/var/data/pdf/${filename}.pdf`,
+    path:
+      process.env.NODE_ENV === "production"
+        ? `/var/data/pdf/${filename}.pdf`
+        : `${process.cwd()}/backend/pdf/test.pdf`,
     format: "A4",
+    scale: 0.8,
     printBackground: true,
   });
   await browser.close();
