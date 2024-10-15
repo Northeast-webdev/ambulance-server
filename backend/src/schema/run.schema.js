@@ -4,6 +4,7 @@ const { Schema, default: mongoose } = require("mongoose");
 
 const runSchema = new Schema({
   car: { type: Schema.Types.ObjectId, ref: "Car" },
+  user: { type: Schema.Types.ObjectId, ref: "User" },
   meta: { type: Object, required: true, default: {} },
   geometry: {
     latitude: { type: Number, required: true },

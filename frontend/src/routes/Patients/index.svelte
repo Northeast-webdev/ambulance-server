@@ -2,7 +2,6 @@
   // frontend/src/routes/Patients/index.svelte
   // @ts-nocheck
   import { onMount } from "svelte";
-  import { Link } from "svelte-navigator";
   import { fade } from "svelte/transition";
   import LoadingList from "../../components/LoadingList.svelte";
 
@@ -10,6 +9,8 @@
   let loading = false;
   let show_form = false;
   let query = "";
+  let action = "add";
+  let selected_run = null;
   let meta_verifier = {
     Paziente: "paziente",
     "C/S/B": "csb",
@@ -77,36 +78,57 @@
   };
 
   async function newRun() {
-    try {
-      const { geometry, end_geometry, paziente, ...newR } = new_run;
-      await fetch(import.meta.env.VITE_API_URL + "/api/runs", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          meta: newR,
-          status: "pending",
-          additionalRuns: additionalRuns.map((run) => ({
-            ...run,
-            meta: {
-              ...newR,
-              partenza: run.partenza,
-              arrivo: run.arrivo,
-              ora: run.ora,
-              data: run.data,
+    if (action === "add") {
+      try {
+        const { geometry, end_geometry, paziente, ...newR } = new_run;
+        await fetch(import.meta.env.VITE_API_URL + "/api/runs", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            meta: newR,
+            status: "pending",
+            additionalRuns: additionalRuns.map((run) => ({
+              ...run,
+              meta: {
+                ...newR,
+                partenza: run.partenza,
+                arrivo: run.arrivo,
+                ora: run.ora,
+                data: run.data,
+              },
+            })),
+            patient: paziente,
+            geometry: geometry,
+            end_geometry: end_geometry,
+          }),
+        });
+        show_form = false;
+        getPatients();
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    } else {
+      try {
+        const { geometry, end_geometry, paziente, ...newR } = new_run;
+        await fetch(
+          import.meta.env.VITE_API_URL + "/api/runs/" + selected_run,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-          })),
-          patient: paziente,
-          geometry: geometry,
-          end_geometry: end_geometry,
-        }),
-      });
-      show_form = false;
-      getPatients();
-    } catch (error) {
-      console.error("Error:", error);
+            body: JSON.stringify({ meta: newR, geometry }),
+          }
+        );
+        show_form = false;
+        getPatients();
+      } catch (error) {
+        console.error("Error:", error);
+      }
     }
   }
 
@@ -191,8 +213,9 @@
       });
   };
 
-  function newRunToggle() {
+  function newRunToggle(a) {
     show_form = true;
+    action = a;
     setTimeout(() => {
       const partenzaInput = document.getElementById(
         "field-Partenza-autocomplete"
@@ -255,7 +278,7 @@
       <h1 class="text-3xl font-bold">Pazienti</h1>
 
       <button
-        on:click={newRunToggle}
+        on:click={() => newRunToggle("add")}
         class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-md"
       >
         <span class="text-2xl">+</span>
@@ -285,16 +308,28 @@
         <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
           <tr>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              Nome paziente
+              Paziente
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              Tutti i trasporti
+              C/S/B
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              Trasporti completate
+              Tipo di servizio
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              Trasporti in sospeso
+              Tel
+            </th>
+            <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
+              N. Richiesta
+            </th>
+            <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
+              Ricevuta
+            </th>
+            <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
+              N. Viaggi
+            </th>
+            <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
+              N. Viaggi eseguiti
             </th>
           </tr>
         </thead>
@@ -303,21 +338,52 @@
             <tr class="border-b border-gray-200">
               <td class="py-3 px-6 text-left whitespace-nowrap">
                 <div class="flex items-center">
-                  <span class="font-medium">{patient.name}</span>
+                  <button
+                    class="font-bold underline text-green-700"
+                    on:click={() =>
+                      (patient.visibleInfo = !patient.visibleInfo)}
+                    >{patient.name}</button
+                  >
+                </div>
+              </td>
+              <td class="py-3 px-6 text-left whitespace-nowrap">
+                <div class="flex items-center">
+                  <span class="font-medium"
+                    >{patient.runs[0]?.meta?.csb || "-"}</span
+                  >
+                </div>
+              </td>
+              <td class="py-3 px-6 text-left whitespace-nowrap">
+                <div class="flex items-center">
+                  <span class="font-medium"
+                    >{patient.runs[0]?.meta?.tipo_di_servizio || "-"}</span
+                  >
+                </div>
+              </td>
+              <td class="py-3 px-6 text-left whitespace-nowrap">
+                <div class="flex items-center">
+                  <span class="font-medium"
+                    >{patient.runs[0]?.meta?.tel || "-"}</span
+                  >
+                </div>
+              </td>
+              <td class="py-3 px-6 text-left whitespace-nowrap">
+                <div class="flex items-center">
+                  <span class="font-medium"
+                    >{patient.runs[0]?.meta?.n_richiesta || "-"}</span
+                  >
+                </div>
+              </td>
+              <td class="py-3 px-6 text-left whitespace-nowrap">
+                <div class="flex items-center">
+                  <span class="font-medium"
+                    >{patient.runs[0]?.meta?.ricevuta || "-"}</span
+                  >
                 </div>
               </td>
               <td class="py-3 px-6 text-left whitespace-nowrap">
                 <div class="flex items-center gap-2">
                   <span class="font-bold">{patient.runs.length}</span>
-                  {#if patient.runs.length > 0}
-                    <span class="font-medium">-</span>
-                    <Link
-                      to={`/runs?patient=${patient._id}`}
-                      class="text-blue-500 font-bold hover:text-blue-700"
-                    >
-                      Dettagli
-                    </Link>
-                  {/if}
                 </div>
               </td>
               <td class="py-3 px-6 text-left whitespace-nowrap">
@@ -326,35 +392,109 @@
                     >{patient.runs.filter((run) => run.status === "completed")
                       .length}</span
                   >
-                  {#if patient.runs.filter((run) => run.status === "completed").length > 0}
-                    <span class="font-medium">-</span>
-                    <Link
-                      to={`/runs?patient=${patient._id}&status=completed`}
-                      class="text-blue-500 font-bold hover:text-blue-700"
-                    >
-                      Dettagli
-                    </Link>
-                  {/if}
-                </div>
-              </td>
-              <td class="py-3 px-6 text-left whitespace-nowrap">
-                <div class="flex items-center gap-2">
-                  <span class="font-bold"
-                    >{patient.runs.filter((run) => run.status === "pending")
-                      .length}</span
-                  >
-                  {#if patient.runs.filter((run) => run.status === "pending").length > 0}
-                    <span class="font-medium">-</span>
-                    <Link
-                      to={`/runs?patient=${patient._id}&status=pending`}
-                      class="text-blue-500 font-bold hover:text-blue-700"
-                    >
-                      Dettagli
-                    </Link>
-                  {/if}
                 </div>
               </td>
             </tr>
+            {#if patient.visibleInfo}
+              <tr
+                transition:fade={{ duration: 300 }}
+                class="border-b border-gray-200 bg-green-100"
+              >
+                <td class="py-3 px-6" colspan="8">
+                  <table class="border-collapse w-full">
+                    <thead class="bg-green-300">
+                      <tr>
+                        <th
+                          class="text-left uppercase font-semibold text-sm py-2 px-4"
+                          >N</th
+                        >
+                        <th
+                          class="text-left uppercase font-semibold text-sm py-2 px-4"
+                          >Data</th
+                        >
+                        <th
+                          class="text-left uppercase font-semibold text-sm py-2 px-4"
+                          >Ora</th
+                        >
+                        <th
+                          class="text-left uppercase font-semibold text-sm py-2 px-4"
+                          >Partenza</th
+                        >
+                        <th
+                          class="text-left uppercase font-semibold text-sm py-2 px-4"
+                          >Arrivo</th
+                        >
+                        <th
+                          class="text-left uppercase font-semibold text-sm py-2 px-4"
+                          >Status trasporto</th
+                        >
+                        <th
+                          class="text-left uppercase font-semibold text-sm py-2 px-4"
+                          >Azioni</th
+                        >
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {#each patient.runs as run, index}
+                        <tr class="border border-green-300">
+                          <td class="py-2 px-4">{index + 1}</td>
+                          <td class="py-2 px-4 border-l border-green-300"
+                            >{run.meta.date}</td
+                          >
+                          <td class="py-2 px-4 border-l border-green-300"
+                            >{run.meta.ora}</td
+                          >
+                          <td class="py-2 px-4 border-l border-green-300"
+                            >{run.meta.partenza}</td
+                          >
+                          <td class="py-2 px-4 border-l border-green-300"
+                            >{run.meta.arrivo}</td
+                          >
+                          <td class="py-2 px-4 border-l border-green-300"
+                            >{run.status === "refused"
+                              ? "Annullata"
+                              : run.status === "ongoing"
+                                ? "In corso"
+                                : run.status === "picked_up"
+                                  ? "Paziente preso"
+                                  : run.status === "completed"
+                                    ? "Paziente consegnato"
+                                    : "In attesa"}</td
+                          >
+                          <td class="py-2 px-4 border-l border-green-300">
+                            {#if run.status === "pending" || run.status === "refused"}
+                              <button
+                                on:click={() => {
+                                  selected_run = run._id;
+                                  new_run = {
+                                    csb: run.meta.csb,
+                                    ora: run.meta.ora,
+                                    paziente: patient.name,
+                                    servizio: run.meta.servizio,
+                                    tel: run.meta.tel,
+                                    tipo_di_servizio: run.meta.tipo_di_servizio,
+                                    partenza: run.meta.partenza,
+                                    arrivo: run.meta.arrivo,
+                                    n_richiesta: run.meta.n_richiesta,
+                                    ricevuta: run.meta.ricevuta,
+                                    viaggio: "1",
+                                    date: run.meta.date,
+                                  };
+                                  newRunToggle("edit");
+                                }}
+                                class="border-amber-600 border hover:bg-amber-600 text-amber-600 hover:text-amber-100 font-bold py-1 px-4 rounded-lg transition duration-200"
+                              >
+                                <span>Modifica</span>
+                              </button>
+                            {/if}
+                          </td>
+                        </tr>
+                      {/each}
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            {/if}
           {/each}
         </tbody>
       </table>
@@ -371,7 +511,23 @@
     <div class="flex max-w-screen-lg w-full mx-auto pt-32 relative">
       <button
         class="absolute text-3xl top-32 mt-2 right-6 text-gray-600 hover:text-gray-800"
-        on:click={() => (show_form = false)}
+        on:click={() => {
+          show_form = false;
+          new_run = {
+            csb: "",
+            ora: "",
+            paziente: "",
+            servizio: "",
+            tel: "",
+            tipo_di_servizio: "",
+            partenza: "",
+            arrivo: "",
+            n_richiesta: "",
+            ricevuta: "",
+            viaggio: "1",
+            date: new Date().toISOString().split("T")[0],
+          };
+        }}
         aria-label="Close form"
       >
         ✕
@@ -381,7 +537,9 @@
       {#if show_form}
         <!-- Form Modal -->
         <div class="z-50 transform transition-all duration-500">
-          <h2 class="text-3xl font-bold mb-6">Aggiungi paziente</h2>
+          <h2 class="text-3xl font-bold mb-6">
+            {action === "add" ? "Aggiungi paziente" : "Modifica trasporti"}
+          </h2>
           <form
             on:submit|preventDefault={() => {
               show_form = false;
@@ -440,18 +598,30 @@
                       min="1"
                       max="10"
                       step="1"
+                      disabled={action === "add"
+                        ? false
+                        : key === "Paziente" || key === "Viaggi"
+                          ? true
+                          : false}
                       autocomplete="off"
                       required
                       id="field-{key}"
                       class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
                       value={new_run[meta_verifier[key]]}
-                      on:input={(e) =>
-                        (new_run[meta_verifier[key]] = e.target.value)}
+                      on:input={(e) => {
+                        if (action === "edit" && key === "Viaggi") return;
+                        new_run[meta_verifier[key]] = e.target.value;
+                      }}
                     />
                   {:else if types[key] !== "textarea"}
                     <input
                       type={types[key]}
                       required
+                      disabled={action === "add"
+                        ? false
+                        : key === "Paziente" || key === "Viaggi"
+                          ? true
+                          : false}
                       id="field-{key}"
                       class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
                       value={new_run[meta_verifier[key]]}

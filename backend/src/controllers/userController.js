@@ -12,7 +12,7 @@ const listUsers = async (request, reply) => {
     const users = await User.find(query)
       .skip((page - 1) * limit)
       .limit(limit)
-      .sort({ created_at: 1 })
+      .sort({ created_at: -1 })
       .select("-password")
       .populate("car")
       .exec();
