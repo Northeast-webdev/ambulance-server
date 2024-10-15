@@ -321,6 +321,7 @@ const websocketWatcher = (socket, req) => {
 
   changeStream.on("change", (change) => {
     // Broadcast the change event to the connected WebSocket client
+    console.log("change for run");
     socket.send(JSON.stringify(change));
   });
 
