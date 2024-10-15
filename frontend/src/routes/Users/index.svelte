@@ -50,7 +50,7 @@
   });
 
   async function getCars() {
-    fetch(import.meta.env.VITE_API_URL + "/api/cars", {
+    fetch(import.meta.env.VITE_API_URL + "/api/cars?limit=50", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -175,7 +175,7 @@
   async function getUsers(type) {
     console.log(type);
     userType = type;
-    fetch(import.meta.env.VITE_API_URL + "/api/users?type=" + type, {
+    fetch(import.meta.env.VITE_API_URL + "/api/users?limit=50&type=" + type, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,

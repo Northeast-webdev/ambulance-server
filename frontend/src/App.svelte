@@ -13,6 +13,7 @@
   import MaterialChecklists from "./routes/MaterialChecklists/index.svelte";
   import Patients from "./routes/Patients/index.svelte";
   import Runs from "./routes/Runs/index.svelte";
+  import Stats from "./routes/Stats/index.svelte";
   import Users from "./routes/Users/index.svelte";
   import { token, user } from "./stores";
 
@@ -38,7 +39,6 @@
         }
       );
       const data = await response.json();
-      console.log(data);
       if (data.error) {
         localStorage.removeItem("token");
         localStorage.removeItem("id");
@@ -106,6 +106,9 @@
       </PrivateRoute>
       <PrivateRoute path="material-checklists">
         <MaterialChecklists />
+      </PrivateRoute>
+      <PrivateRoute path="/stats">
+        <Stats />
       </PrivateRoute>
       <Route path="login">
         <Login />

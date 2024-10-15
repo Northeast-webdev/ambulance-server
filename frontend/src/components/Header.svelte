@@ -16,6 +16,7 @@
     { name: "Garage", path: "/garage" },
     { name: "Mezzi Checklist", path: "/car-checklists" },
     { name: "Materiali Checklist", path: "/material-checklists" },
+    { name: "Stats", path: "/stats" },
   ];
   function handleLogout() {
     token.set(null);

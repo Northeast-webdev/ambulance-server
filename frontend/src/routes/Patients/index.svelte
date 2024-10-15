@@ -47,7 +47,6 @@
     paziente: "",
     servizio: "",
     tel: "",
-    tipo_di_servizio: "",
     partenza: "",
     arrivo: "",
     n_richiesta: "",
@@ -55,13 +54,13 @@
     viaggio: "1",
     date: new Date().toISOString().split("T")[0],
   };
-
   let options = {
     servizio: [
-      { value: "a", text: "A" },
-      { value: "b", text: "B" },
-      { value: "c", text: "C" },
-      { value: "d", text: "D" },
+      { value: "Ordinario", text: "Ordinario" },
+      { value: "Ospedaliero", text: "Ospedaliero" },
+      { value: "Dialisi", text: "Dialisi" },
+      { value: "Oblazione", text: "Oblazione" },
+      { value: "Servizio navetta comune", text: "Servizio navetta comune" },
     ],
     csb: [
       { value: "c", text: "C" },
@@ -356,7 +355,7 @@
               <td class="py-3 px-6 text-left whitespace-nowrap">
                 <div class="flex items-center">
                   <span class="font-medium"
-                    >{patient.runs[0]?.meta?.tipo_di_servizio || "-"}</span
+                    >{patient.runs[0]?.meta?.servizio || "-"}</span
                   >
                 </div>
               </td>
@@ -472,7 +471,6 @@
                                     paziente: patient.name,
                                     servizio: run.meta.servizio,
                                     tel: run.meta.tel,
-                                    tipo_di_servizio: run.meta.tipo_di_servizio,
                                     partenza: run.meta.partenza,
                                     arrivo: run.meta.arrivo,
                                     n_richiesta: run.meta.n_richiesta,
@@ -508,31 +506,6 @@
     transition:fade={{ duration: 300 }}
     class="fixed inset-0 overflow-hidden z-40 flex items-center flex-col gap-10 justify-center p-4 bg-white transition-opacity duration-500"
   >
-    <div class="flex max-w-screen-lg w-full mx-auto pt-32 relative">
-      <button
-        class="absolute text-3xl top-32 mt-2 right-6 text-gray-600 hover:text-gray-800"
-        on:click={() => {
-          show_form = false;
-          new_run = {
-            csb: "",
-            ora: "",
-            paziente: "",
-            servizio: "",
-            tel: "",
-            tipo_di_servizio: "",
-            partenza: "",
-            arrivo: "",
-            n_richiesta: "",
-            ricevuta: "",
-            viaggio: "1",
-            date: new Date().toISOString().split("T")[0],
-          };
-        }}
-        aria-label="Close form"
-      >
-        ✕
-      </button>
-    </div>
     <div class="max-w-screen-xl px-20 w-full overflow-y-auto max-h-[600px]">
       {#if show_form}
         <!-- Form Modal -->
@@ -596,7 +569,7 @@
                     <input
                       type={types[key]}
                       min="1"
-                      max="10"
+                      max="50"
                       step="1"
                       disabled={action === "add"
                         ? false
@@ -698,8 +671,32 @@
                 ></textarea>
               </div>
             </div>
-            <div class="flex gap-4 justify-end mt-4">
+            <div class="flex gap-4 justify-between mt-4">
               <button
+                class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200"
+                type="button"
+                on:click={() => {
+                  show_form = false;
+                  new_run = {
+                    csb: "",
+                    ora: "",
+                    paziente: "",
+                    servizio: "",
+                    tel: "",
+                    partenza: "",
+                    arrivo: "",
+                    n_richiesta: "",
+                    ricevuta: "",
+                    viaggio: "1",
+                    date: new Date().toISOString().split("T")[0],
+                  };
+                }}
+                aria-label="Close form"
+              >
+                Annulla
+              </button>
+              <button
+                aria-label="Submit form"
                 type="submit"
                 class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
               >

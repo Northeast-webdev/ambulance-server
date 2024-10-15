@@ -30,3 +30,7 @@
 input.svelte-1vabmef {
   @apply text-center font-bold text-green-700 border-green-700 border rounded-lg py-[0.45rem] !important;
 }
+
+.stats input.svelte-1vabmef {
+  @apply text-center font-bold text-green-700 border-green-700 border rounded-lg py-1 !important;
+}

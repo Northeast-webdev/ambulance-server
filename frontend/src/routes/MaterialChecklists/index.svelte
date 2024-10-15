@@ -1,9 +1,11 @@
 <script>
+  import { DateInput } from "date-picker-svelte";
   import { onMount } from "svelte";
   import LoadingList from "../../components/LoadingList.svelte";
 
   let checklists = [];
   let loading = false;
+  let date = new Date();
   let meta_verifier = {
     Marca: "brand",
     Modello: "model",
@@ -33,6 +35,32 @@
       });
   };
 
+  const getChecklistsByDate = async () => {
+    loading = true;
+    fetch(
+      import.meta.env.VITE_API_URL +
+        "/api/material-checklist?date=" +
+        date.toISOString().split("T")[0],
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        checklists = data.checklists;
+        console.log(checklists);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      })
+      .finally(() => {
+        loading = false;
+      });
+  };
+
   onMount(getChecklists);
 </script>
 
@@ -42,6 +70,16 @@
   <div class="container mx-auto py-6 px-3">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold">Materiali Checklist</h1>
+    </div>
+
+    <div class="mb-8 flex items-center gap-4">
+      <DateInput bind:value={date} format="dd/MM/yyyy" />
+      <button
+        on:click={getChecklistsByDate}
+        class="bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+      >
+        Scegli data
+      </button>
     </div>
 
     <!-- Table Container with Overflow for Responsiveness -->
@@ -54,12 +92,18 @@
             <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
               >Autista</th
             >
+            <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+              >Mezzo</th
+            >
             {#each Object.keys(meta_verifier) as key}
               <th
                 class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
                 >{key}</th
               >
             {/each}
+            <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+              >Data</th
+            >
             <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
               >PDF Link</th
             >
@@ -71,11 +115,17 @@
               <td class="py-3 px-4 border-r border-inherit"
                 >{run.user.first_name} {run.user.last_name}</td
               >
+              <td class="py-3 px-4 border-r border-inherit">
+                {run.car.name}
+              </td>
               {#each Object.keys(meta_verifier) as key}
                 <td class="py-3 px-4 border-r border-inherit"
                   >{run.car.meta[meta_verifier[key]] || "-"}</td
                 >
               {/each}
+              <td class="py-3 px-4 border-r border-inherit">
+                {new Date(run.created_at).toLocaleDateString("it-IT")}
+              </td>
               <td class="py-3 px-4 border-r border-inherit">
                 <a
                   href={import.meta.env.VITE_API_URL +
