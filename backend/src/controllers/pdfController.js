@@ -151,12 +151,9 @@ const printCarChecklist = async (request) => {
         <tr>
           <td>Inizio turno</td>
           <td>${
-            carChecklist.car.shift_start.toISOString().split("T")[0] +
+            carChecklist.car.shift_start.toLocaleDateString("it-IT") +
             " " +
-            carChecklist.car.shift_start
-              .toISOString()
-              .split("T")[1]
-              .split(".")[0]
+            carChecklist.car.shift_start.toLocaleTimeString("it-IT")
           }</td>
         </tr>
         <tr>
@@ -187,7 +184,7 @@ const printCarChecklist = async (request) => {
         margin: 10mm;
       }
       html {
-        font-size: 14px !important;
+        font-size: 20px !important;
       }
       body {
         font-family: Arial, sans-serif;
@@ -215,13 +212,13 @@ const printCarChecklist = async (request) => {
         #mainTable {
             width: 100%;
             border-collapse: collapse;
+        page-break-after: always;
         }
         #mainTable th, #mainTable td {
             border: 1px solid black;
             padding: 8px 4px;
             text-align: center;
             font-weight: 500;
-            font-size: 0.8rem;
         }
         #mainTable th {
             background-color: #f2f2f2;
@@ -236,6 +233,7 @@ const printCarChecklist = async (request) => {
   await page.pdf({
     path: `/var/data/pdf/${filename}.pdf`,
     format: "A4",
+    scale: 0.8,
     printBackground: true,
   });
   await browser.close();
