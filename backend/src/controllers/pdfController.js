@@ -57,7 +57,7 @@ const printCarChecklist = async (request) => {
   // Generate table rows based on the checklist object
   const checklistRows = Object.entries(checklist)
     .map(([key, value]) => {
-      const status = value ? "Si" : "No";
+      const status = value ? "✔" : "✘";
       return `
         <tr>
           <td>${labels[key]}</td>
@@ -111,11 +111,11 @@ const printCarChecklist = async (request) => {
         <title>Checklist Mezzo ${carChecklist.car.name}</title> 
     </head>
     <body>
-      <table id="headerTable">
+      <table class="headerTable">
         <tr>
           <td><img src="data:image/png;base64,${logo}" alt="Logo" /></td>
           <td><h3>Checklist Mezzo ${carChecklist.car.name}</h3></td>
-          <td>${carChecklist.created_at.toISOString().split("T")[0]}</td>
+          <td>${carChecklist.created_at.toLocaleDateString("it-IT")}</td>
         </tr>
       </table>
       <table id="mainTable">
@@ -161,22 +161,33 @@ const printCarChecklist = async (request) => {
         </tr>
         <tr>
           <td>Chilometri</td>
-          <td>${carChecklist.car.meta.kilometers}</td>
+          <td>${carChecklist.car.meta.kilometers}km</td>
         </tr>
         <tr>
           <td>Livello carburante</td>
-          <td>${carChecklist.car.meta.carbon_level}</td>
+          <td>${carChecklist.car.meta.carbon_level}%</td>
         </tr>
             ${checklistRows}
         </tbody>
       </table>
 
+      <table class="headerTable" style="margin-bottom: 30px">
+        <tr>
+          <td><img src="data:image/png;base64,${logo}" alt="Logo" /></td>
+          <td><h3>Punti di danno</h3></td>
+          <td>${carChecklist.created_at.toLocaleDateString("it-IT")}</td>
+        </tr>
+      </table>
       <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
       ${damagePoints.join("")}
       </div>
       <style>
+      @page {
+        size: A4;
+        margin: 10mm;
+      }
       html {
-        font-size: 12px !important;
+        font-size: 14px !important;
       }
       body {
         font-family: Arial, sans-serif;
@@ -184,17 +195,17 @@ const printCarChecklist = async (request) => {
         padding: 0;
         background-color: white;
       }
-        #headerTable {
+        .headerTable {
             width: 100%;
             max-width: 800px;
             margin: 0 auto 20px;
             border: 0;
         }
-        #headerTable h3, #headerTable td {
+        .headerTable h3, .headerTable td {
             margin: 0;
             text-align: center;
         }
-        #headerTable img {
+        .headerTable img {
             width: 40px;
             height: 40px;
             object-fit: contain;
@@ -225,7 +236,6 @@ const printCarChecklist = async (request) => {
   await page.pdf({
     path: `/var/data/pdf/${filename}.pdf`,
     format: "A4",
-    scale: 0.8,
     printBackground: true,
   });
   await browser.close();
