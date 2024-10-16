@@ -538,7 +538,13 @@
                       class="block text-sm font-medium text-gray-700 mb-1"
                     >
                       {key}
-                      <span class="text-red-500">*</span>
+                      <span
+                        class="text-red-500 {key === 'Arrivo' ||
+                        key === 'Partenza' ||
+                        key === 'Ora'
+                          ? 'hidden'
+                          : ''}">*</span
+                      >
                     </label>
                   {/if}
                   {#if types[key] === "select"}
@@ -557,7 +563,6 @@
                   {:else if types[key] === "autocomplete"}
                     <input
                       type={types[key]}
-                      required
                       id="field-{key}-autocomplete"
                       placeholder="Cerca..."
                       class="autocomplete-input block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
@@ -589,7 +594,7 @@
                   {:else if types[key] !== "textarea"}
                     <input
                       type={types[key]}
-                      required
+                      required={types[key] !== "time"}
                       disabled={action === "add"
                         ? false
                         : key === "Paziente" || key === "Viaggi"

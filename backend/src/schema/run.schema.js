@@ -7,8 +7,8 @@ const runSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: "User" },
   meta: { type: Object, required: true, default: {} },
   geometry: {
-    latitude: { type: Number, required: true },
-    longitude: { type: Number, required: true },
+    latitude: { type: Number, default: 0 },
+    longitude: { type: Number, default: 0 },
   },
   notification_sent: { type: Boolean, default: false },
   patient: { type: Schema.Types.ObjectId, ref: "Patient" },
