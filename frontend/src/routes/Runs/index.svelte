@@ -93,6 +93,18 @@
         }
       }
       if (car || status) {
+        const found_run = runs.find((x) => x._id === id);
+        console.log(found_run);
+        if (found_run.car) {
+          freeCars = cars
+            .map((c) => {
+              if (c._id === found_run.car._id) {
+                c.status = status === "completed" ? "free" : "busy";
+              }
+              return c;
+            })
+            .filter((x) => x.status === "free");
+        }
         runs = runs.map((run) => {
           if (run._id === id) {
             run.status = status || run.status;

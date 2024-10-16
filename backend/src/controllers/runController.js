@@ -265,6 +265,7 @@ const websocketHandler = (socket, req) => {
           { _id: data.run_id },
           {
             status: "ongoing",
+            "checkpoints.ongoing": new Date().toISOString(),
             notification_sent: true,
           },
           {
