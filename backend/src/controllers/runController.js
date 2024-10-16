@@ -261,11 +261,20 @@ const websocketHandler = (socket, req) => {
         break;
       case "accept_run":
         // Implement run acceptance logic here
-        await Run.findOneAndUpdate(
+        const x = await Run.findOneAndUpdate(
           { _id: data.run_id },
           {
             status: "ongoing",
             notification_sent: true,
+          },
+          {
+            returnDocument: "after",
+          }
+        );
+        await Car.findOneAndUpdate(
+          { _id: x.car.toString() },
+          {
+            status: "busy",
           },
           {
             returnDocument: "after",
