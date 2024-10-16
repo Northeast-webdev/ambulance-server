@@ -47,7 +47,7 @@
     </div>
     <div class="flex-1">
       <Chart
-        backgroundColor="#52225833"
+        backgroundColor="#52225866"
         borderColor="#522258"
         label="Trasporti al giorno (mezzi)"
         userList={cars}
@@ -58,7 +58,7 @@
   <div class="flex justify-center items-center gap-14">
     <div class="flex-1">
       <Chart
-        backgroundColor="#34792833"
+        backgroundColor="#34792866"
         borderColor="#347928"
         userList={users}
         isAverageLength
@@ -67,7 +67,7 @@
     </div>
     <div class="flex-1">
       <Chart
-        backgroundColor="#FCCD2A33"
+        backgroundColor="#FCCD2A66"
         borderColor="#FCCD2A"
         userList={users}
         isAveragePickup

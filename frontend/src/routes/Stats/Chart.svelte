@@ -13,7 +13,7 @@
   let selected_user;
   export let label = "Trasporti";
   export let borderColor = "#60A5FA";
-  export let backgroundColor = "#60A5FA33";
+  export let backgroundColor = "#60A5FA66";
   export let userList = [];
   export let isCar = false;
   export let isAveragePickup = false;
@@ -40,7 +40,6 @@
     ];
 
     const date = new Date(chartLabels[dateString]);
-    console.log(date, chartLabels[dateString]);
     const dayNumber = date.getDay(); // Get the day of the week as a number (0-6)
     return daysOfWeek[dayNumber]; // Return the name of the day
   }
@@ -53,9 +52,8 @@
       let runDate = new Date(run.updated_at).toDateString();
       let ongoingTime = new Date(run.checkpoints.ongoing).getTime(); // Convert to Unix timestamp
       let pickedUpTime = new Date(run.checkpoints.picked_up).getTime(); // Convert to Unix timestamp
-
       if (!isNaN(ongoingTime) && !isNaN(pickedUpTime)) {
-        let pickupDuration = (pickedUpTime - ongoingTime) / 1000; // Difference in seconds
+        let pickupDuration = Math.round((pickedUpTime - ongoingTime) / 1000); // Difference in seconds
 
         if (!runData[runDate]) {
           runData[runDate] = { total: 0, count: 0 }; // Initialize
@@ -70,8 +68,8 @@
     chartLabels = Object.keys(runData);
     chartCounts = chartLabels.map((label) => {
       let { total, count } = runData[label];
-      let avgTimeInSeconds = total / count; // Calculate average in seconds
-      return formatTime(avgTimeInSeconds); // Format time to MM:SS
+      let avgTimeInSeconds = Math.round(total / count); // Calculate average in seconds
+      return avgTimeInSeconds; // Format time to MM:SS
     });
   }
 
@@ -99,8 +97,8 @@
     chartLabels = Object.keys(runData);
     chartCounts = chartLabels.map((label) => {
       let { total, count } = runData[label];
-      let avgTimeInSeconds = total / count; // Calculate average in seconds
-      return formatTime(avgTimeInSeconds); // Format time to MM:SS
+      let avgTimeInSeconds = Math.round(total / count); // Calculate average in seconds
+      return avgTimeInSeconds; // Format time to MM:SS
     });
   }
 
@@ -130,19 +128,36 @@
             {
               label: label,
               data: chartCounts,
+              animation: {
+                duration: 1000,
+              },
               borderColor: borderColor,
               backgroundColor: backgroundColor,
+              pointBorderWidth: 4,
+              borderWidth: 2,
+              pointBackgroundColor: borderColor,
               fill: true,
             },
           ],
         },
         options: {
           responsive: true,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (item) => {
+                  return isAverageLength || isAveragePickup
+                    ? ` ${label}: ${formatTime(item.formattedValue)}`
+                    : ` ${label}: ${item.formattedValue}`;
+                },
+              },
+            },
+          },
           scales: {
             y: {
               beginAtZero: true,
               ticks: {
-                callback: function (value) {
+                callback: (value) => {
                   // Convert raw values back to MM:SS for y-axis labels
                   return isAverageLength || isAveragePickup
                     ? formatTime(value)
