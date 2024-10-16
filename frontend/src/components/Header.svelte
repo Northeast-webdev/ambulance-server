@@ -14,8 +14,8 @@
     { name: "Mappa", path: "/" },
     { name: "Trasporti", path: "/runs" },
     { name: "Garage", path: "/garage" },
-    { name: "Mezzi Checklist", path: "/car-checklists" },
-    { name: "Materiali Checklist", path: "/material-checklists" },
+    // { name: "Mezzi Checklist", path: "/car-checklists" },
+    // { name: "Materiali Checklist", path: "/material-checklists" },
     { name: "Stats", path: "/stats" },
   ];
   function handleLogout() {
@@ -28,7 +28,7 @@
 
 {#if $token}
   <header
-    class="bg-gradient-to-l from-green-600 to-green-900 shadow-lg shadow-gray-300 relative z-50"
+    class="bg-gradient-to-l from-green-600 to-green-900 shadow-lg shadow-gray-300 sticky top-0 z-50"
   >
     <div class="container py-4 px-3 mx-auto flex justify-between items-center">
       <!-- Logo -->

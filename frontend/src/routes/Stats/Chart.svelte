@@ -28,12 +28,29 @@
     return `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
   }
 
+  function getDayName(dateString) {
+    const daysOfWeek = [
+      "Domenica",
+      "Lunedì",
+      "Martedì",
+      "Mercoledì",
+      "Giovedì",
+      "Venerdì",
+      "Sabato",
+    ];
+
+    const date = new Date(chartLabels[dateString]);
+    console.log(date, chartLabels[dateString]);
+    const dayNumber = date.getDay(); // Get the day of the week as a number (0-6)
+    return daysOfWeek[dayNumber]; // Return the name of the day
+  }
+
   // Process data for average pickup times
   function processAveragePickup() {
     runData = {}; // Reset runData
 
     runs.forEach((run) => {
-      let runDate = new Date(run.meta.date).toLocaleDateString("it-IT");
+      let runDate = new Date(run.updated_at).toDateString();
       let ongoingTime = new Date(run.checkpoints.ongoing).getTime(); // Convert to Unix timestamp
       let pickedUpTime = new Date(run.checkpoints.picked_up).getTime(); // Convert to Unix timestamp
 
@@ -62,7 +79,7 @@
     runData = {}; // Reset runData
 
     runs.forEach((run) => {
-      let runDate = new Date(run.meta.date).toLocaleDateString("it-IT");
+      let runDate = new Date(run.updated_at).toDateString();
       let ongoingTime = new Date(run.checkpoints.ongoing).getTime(); // Convert to Unix timestamp
       let pickedUpTime = new Date(run.checkpoints.completed).getTime(); // Convert to Unix timestamp
 
@@ -91,7 +108,7 @@
   function processData() {
     runData = {};
     runs.forEach((run) => {
-      let runDate = new Date(run.meta.date).toLocaleDateString("it-IT");
+      let runDate = new Date(run.updated_at).toDateString();
       runData[runDate] = (runData[runDate] || 0) + 1; // Count occurrences of each date
     });
 
@@ -133,6 +150,14 @@
                 },
               },
             },
+            x: {
+              ticks: {
+                callback: function (value) {
+                  // Convert raw values back to MM:SS for y-axis labels
+                  return getDayName(value);
+                },
+              },
+            },
           },
         },
       });
@@ -157,7 +182,7 @@
     )
       .then((response) => response.json())
       .then((data) => {
-        runs = data.runs;
+        runs = data.runs.reverse();
       })
       .catch((error) => {
         console.error("Error:", error);

@@ -139,7 +139,7 @@
             ora: "",
             partenza: "",
             arrivo: "",
-            date: new Date().toISOString().split("T")[0],
+            date: "",
           }
       );
     setTimeout(() => {
@@ -438,7 +438,7 @@
                         <tr class="border border-green-300">
                           <td class="py-2 px-4">{index + 1}</td>
                           <td class="py-2 px-4 border-l border-green-300"
-                            >{run.meta.date}</td
+                            >{run.meta.ora ? run.meta.date : "Da assegnare"}</td
                           >
                           <td class="py-2 px-4 border-l border-green-300"
                             >{run.meta.ora}</td
@@ -504,13 +504,13 @@
 {#if show_form}
   <div
     transition:fade={{ duration: 300 }}
-    class="fixed inset-0 overflow-hidden z-40 flex items-center flex-col gap-10 justify-center p-4 bg-white transition-opacity duration-500"
+    class="fixed inset-0 overflow-hidden z-40 flex items-center flex-col gap-10 top-20 p-4 pt-8 bg-white transition-opacity duration-500"
   >
-    <div class="max-w-screen-xl px-20 w-full overflow-y-auto max-h-[600px]">
+    <div class="container px-3 w-full overflow-y-auto max-h-[800px]">
       {#if show_form}
         <!-- Form Modal -->
         <div class="z-50 transform transition-all duration-500">
-          <h2 class="text-3xl font-bold mb-6">
+          <h2 class="text-3xl font-bold mb-8">
             {action === "add" ? "Aggiungi paziente" : "Modifica trasporti"}
           </h2>
           <form
@@ -643,7 +643,6 @@
                         {#if additionalRuns[i]}
                           <input
                             type={types[key]}
-                            required
                             placeholder={key === "Partenza" || key === "Arrivo"
                               ? "Cerca..."
                               : ""}
