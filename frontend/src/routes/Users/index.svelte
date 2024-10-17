@@ -386,7 +386,7 @@
                       user_id = user._id;
                       new_user = {
                         username: user.username,
-                        password: user.password,
+                        password: "",
                         email: user.email,
                         first_name: user.first_name,
                         last_name: user.last_name,
@@ -509,7 +509,6 @@
                     <input
                       type="password"
                       id="field-{key}"
-                      disabled={action === "edit"}
                       required
                       class="block w-full disabled:bg-gray-200 border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
                       bind:value={new_user[meta_verifier[key]]}

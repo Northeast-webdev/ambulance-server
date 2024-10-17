@@ -3,6 +3,7 @@
 const { fastify } = require("../init");
 const { Car } = require("../schema/car.schema");
 const { User } = require("../schema/user.schema");
+const bcrypt = require("bcrypt");
 require("dotenv").config();
 
 const listUsers = async (request, reply) => {
@@ -49,8 +50,16 @@ const getUser = async (request, reply) => {
 };
 
 const updateUser = async (request, reply) => {
-  const { email, first_name, last_name, dob, phone, car, last_location } =
-    request.body;
+  const {
+    email,
+    first_name,
+    last_name,
+    dob,
+    phone,
+    car,
+    last_location,
+    password,
+  } = request.body;
   const updates = {};
 
   // if some fields are missing, do not update them
@@ -60,6 +69,10 @@ const updateUser = async (request, reply) => {
   if (dob) updates.dob = dob;
   if (phone) updates.phone = phone;
   if (last_location) updates.last_location = last_location;
+  if (password) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    updates.password = hashedPassword;
+  }
   if (car === "") {
     updates.car = null;
     const existingCar = await Car.findOne({ user: request.params.id });
