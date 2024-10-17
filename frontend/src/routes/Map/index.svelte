@@ -37,13 +37,18 @@
   let socket;
   let driverMarkers = new Map(); // Map to store markers by driver ID
   let fullScreen = false;
-
+  let reconnectAttempts = 0;
+  let isConnected = false;
+  const MAX_RECONNECT_ATTEMPTS = 300;
+  const BASE_RECONNECT_TIMEOUT = 1000; // Start with 1 second and increase
   $: drivers && drivers.length && getMarkers();
 
-  onMount(() => {
+  function createWebSocket() {
     socket = new WebSocket(import.meta.env.VITE_WS_URL + "/api/cars/ws");
 
     socket.onopen = () => {
+      isConnected = true;
+      reconnectAttempts = 0;
       console.log("WebSocket connection established");
     };
 
@@ -52,17 +57,29 @@
       if (!data.documentKey || !data.updateDescription.updatedFields) return;
       const id = data.documentKey._id;
       const last_location = data.updateDescription.updatedFields.last_location;
-      if (!last_location || !id) return;
-      console.log(driverMarkers);
-      // Update the driver's last location based on the ID
-      if (driverMarkers.has(id)) {
-        const marker = driverMarkers.get(id);
-        marker.position = {
-          lat: last_location.latitude,
-          lng: last_location.longitude,
-        };
+      const status = data.updateDescription.updatedFields.status;
+      if (last_location) {
+        // Update the driver's last location based on the ID
+        if (driverMarkers.has(id)) {
+          const marker = driverMarkers.get(id);
+          marker.position = {
+            lat: last_location.latitude,
+            lng: last_location.longitude,
+          };
+        }
       }
-      console.log(data);
+      if (status) {
+        if (driverMarkers.has(id)) {
+          const driver = drivers.find((x) => x._id === id);
+          const marker = driverMarkers.get(id);
+          const markerContent = document.createElement("div");
+          markerContent.className = `marker-circle ${getMarkerClass(status)}`;
+          markerContent.textContent = driver.name; // Set the marker ID
+          markerContent.style.fontSize =
+            driver.name.length > 4 ? "10px" : "12px";
+          marker.content = markerContent;
+        }
+      }
     };
 
     socket.onclose = () => {
@@ -71,8 +88,18 @@
 
     socket.onerror = (error) => {
       console.error("WebSocket error:", error);
+      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        const reconnectTimeout =
+          BASE_RECONNECT_TIMEOUT * 2 ** reconnectAttempts;
+        reconnectAttempts += 1;
+        setTimeout(() => {
+          createWebSocket();
+        }, reconnectTimeout);
+      }
     };
-  });
+  }
+
+  onMount(createWebSocket);
 
   onDestroy(() => {
     if (socket) {
