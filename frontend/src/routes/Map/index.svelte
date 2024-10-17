@@ -174,7 +174,7 @@
     });
 
     // Fetch drivers from the API
-    fetch(import.meta.env.VITE_API_URL + "/api/cars", {
+    fetch(import.meta.env.VITE_API_URL + "/api/cars?limit=100", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -182,9 +182,9 @@
     })
       .then((response) => response.json())
       .then((data) => {
-        drivers = data.cars.sort((a, b) => {
-          a.created_at.localeCompare(b.created_at);
-        });
+        drivers = data.cars.sort((a, b) =>
+          a.created_at.localeCompare(b.created_at)
+        );
       })
       .catch((error) => {
         console.error("Error:", error);
