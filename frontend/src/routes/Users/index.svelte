@@ -258,25 +258,27 @@
     <div class="flex justify-between items-center mb-6">
       <div>
         <h1 class="text-3xl font-bold">
-          Lista {userType === "driver" ||
-          userType === "administrator" ||
-          userType === "operator"
+          Lista {userType === "driver" || userType === "administrator"
             ? "degli"
             : "dei"}
           {userType === "driver"
             ? "autisti"
             : userType === "administrator"
               ? "amministratori"
-              : userType}
+              : userType === "operator"
+                ? "coordinatori"
+                : userType}
         </h1>
         <p class="text-gray-500">
           {users.filter((x) => x.driver_status === "free").length}
-          {userType === "driver" ? "disponibili" : "disponibile"}
           {userType === "driver"
             ? "autisti"
             : userType === "administrator"
-              ? "amministratore"
-              : userType}
+              ? "amministratori"
+              : userType === "operator"
+                ? "coordinatori"
+                : userType}
+          disponibili
         </p>
       </div>
       <button
