@@ -349,7 +349,7 @@
   <div class="container mx-auto py-6 px-3">
     <div class="flex justify-between items-center mb-6">
       <div>
-        <h1 class="text-3xl font-bold">Garage</h1>
+        <h1 class="text-3xl font-bold">Deposito</h1>
         <p class="text-gray-500">
           {cars.filter((x) => x.status === "free").length} disponibile {cars.length >
           1

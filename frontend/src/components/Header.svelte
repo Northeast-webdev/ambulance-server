@@ -13,10 +13,10 @@
     { name: "Utenti", path: "/users" },
     { name: "Mappa", path: "/" },
     { name: "Trasporti", path: "/runs" },
-    { name: "Garage", path: "/garage" },
+    { name: "Deposito", path: "/garage" },
     // { name: "Mezzi Checklist", path: "/car-checklists" },
     // { name: "Materiali Checklist", path: "/material-checklists" },
-    { name: "Stats", path: "/stats" },
+    { name: "Statistiche", path: "/stats" },
   ];
   function handleLogout() {
     token.set(null);
@@ -74,7 +74,7 @@
             to="/garage"
             class="px-4 py-2 text-center rounded-xl text-green-700 bg-white text-lg font-medium transition duration-200"
           >
-            Garage
+            Deposito
           </Link>
         </nav>
       {/if}

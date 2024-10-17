@@ -37,7 +37,7 @@
 
 <div class="container mx-auto py-6 px-3">
   <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold">Statistics</h1>
+    <h1 class="text-3xl font-bold">Statistiche</h1>
   </div>
 
   <!-- Chart Container -->
