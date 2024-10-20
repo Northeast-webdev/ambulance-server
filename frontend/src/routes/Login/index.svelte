@@ -2,52 +2,28 @@
 <script>
   import { useLocation, useNavigate } from "svelte-navigator";
   import Loading from "../../components/Loading.svelte";
-  import { token } from "../../stores";
+  import { supabase, user } from "../../stores";
 
-  let username = "";
+  let email = "";
   let password = "";
   let loading = false;
   const navigate = useNavigate();
   const location = useLocation();
-  let t = "";
   async function login() {
     try {
       loading = true;
-      const response = await fetch(
-        import.meta.env.VITE_API_URL + "/api/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ username, password }),
-        }
-      );
-      const { token, id, role } = await response.json();
-      if (!token) {
-        alert("Nome utente o password non validi");
-        loading = false;
-        return;
-      }
-      if (role === "driver") {
-        alert("Non hai i permessi per accedere le risorse");
-        loading = false;
-        return;
-      }
-      console.log(token, id, role);
-      t = token;
-      localStorage.setItem("token", token);
-      localStorage.setItem("id", id);
+      await supabase.auth.signInWithPassword({ email, password });
     } catch (error) {
       alert(error.error);
     } finally {
       loading = false;
     }
   }
-  $: if (t) {
-    token.set(t);
+  $: if ($user.role) {
     const from = ($location.state && $location.state.from) || "/";
-    navigate(from, { replace: true });
+    if (from === "/login") {
+      navigate("/", { replace: true });
+    } else navigate(from, { replace: true });
   }
 </script>
 
@@ -58,13 +34,13 @@
     <h1 class="text-2xl font-bold text-center text-gray-800 mb-6">Login</h1>
     <form on:submit|preventDefault={login} class="space-y-6">
       <div>
-        <label for="username" class="block text-sm font-medium text-gray-600"
-          >Username</label
+        <label for="email" class="block text-sm font-medium text-gray-600"
+          >Email</label
         >
         <input
           type="text"
-          id="username"
-          bind:value={username}
+          id="email"
+          bind:value={email}
           required
           class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
         />

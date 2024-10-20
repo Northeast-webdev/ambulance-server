@@ -40,7 +40,7 @@
   };
 
   onMount(() => {
-    if ($user.role !== "administrator") {
+    if ($user.role !== "ADMIN") {
       return;
     }
     loading = true;
@@ -193,7 +193,7 @@
 
 {#if loading}
   <LoadingList />
-{:else if $user.role !== "administrator"}
+{:else if $user.role !== "ADMIN"}
   <div class="flex justify-center items-center flex-col fixed inset-0 z-10">
     <h1 class="text-3xl font-bold">Accesso Negato</h1>
     <p class="text-gray-500">

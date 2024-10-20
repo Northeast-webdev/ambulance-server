@@ -1,10 +1,10 @@
 <script>
   import { useLocation, useNavigate } from "svelte-navigator";
+  import { user } from "../../stores";
 
   const navigate = useNavigate();
   const location = useLocation();
-  const token = localStorage.getItem("token");
-  $: if (!token) {
+  $: if (!$user.role) {
     navigate("/login", {
       state: { from: $location.pathname },
       replace: true,
@@ -12,6 +12,6 @@
   }
 </script>
 
-{#if token}
+{#if $user.role}
   <slot />
 {/if}

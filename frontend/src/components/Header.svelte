@@ -4,29 +4,30 @@
 
   import { Link, useLocation, useNavigate } from "svelte-navigator";
   import logo from "../assets/logo.png";
-  import { token, user } from "../stores";
+  import { supabase, user } from "../stores";
 
   const navigate = useNavigate();
   const location = useLocation();
   const links = [
+    { name: "Mappa", path: "/" },
     { name: "Pazienti", path: "/pazienti" },
     { name: "Utenti", path: "/users" },
-    { name: "Mappa", path: "/" },
     { name: "Trasporti", path: "/runs" },
     { name: "Deposito", path: "/garage" },
-    // { name: "Mezzi Checklist", path: "/car-checklists" },
-    // { name: "Materiali Checklist", path: "/material-checklists" },
     { name: "Statistiche", path: "/stats" },
   ];
-  function handleLogout() {
-    token.set(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("id");
+  async function handleLogout() {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.log("Error logging out:", error.message);
+      return;
+    }
+    user.set({});
     navigate("/login", { replace: true });
   }
 </script>
 
-{#if $token}
+{#if $user.role}
   <header
     class="bg-gradient-to-l from-green-600 to-green-900 shadow-lg shadow-gray-300 sticky top-0 z-50"
   >
@@ -41,7 +42,7 @@
       </div>
 
       <!-- Navigation Links -->
-      {#if $user.role === "administrator" || $user.role === "operator"}
+      {#if $user.role === "ADMIN" || $user.role === "OPERATOR"}
         <nav class="flex-1 mx-6 space-x-2">
           {#each links as link}
             <Link
@@ -57,7 +58,7 @@
         </nav>
       {/if}
 
-      {#if $user.role === "mappatore"}
+      {#if $user.role === "MAP"}
         <nav class="flex-1 mx-6 space-x-6">
           <Link
             to="/"
@@ -68,7 +69,7 @@
         </nav>
       {/if}
 
-      {#if $user.role === "meccanico" || $user.role === "direzione"}
+      {#if $user.role === "MECHANIC" || $user.role === "MANAGER"}
         <nav class="flex-1 mx-6 space-x-6">
           <Link
             to="/garage"
@@ -81,8 +82,7 @@
 
       <!-- User Information -->
       <div
-        class="text-gray-50 {$user.role === 'administrator' ||
-        $user.role === 'operator'
+        class="text-gray-50 {$user.role === 'ADMIN' || $user.role === 'OPERATOR'
           ? 'text-right'
           : 'text-right flex-1'} mx-6"
       >
@@ -90,9 +90,9 @@
           {`${$user.first_name} ${$user.last_name}`}
         </h3>
         <p class="text-sm uppercase tracking-widest">
-          {$user.role === "administrator"
+          {$user.role === "ADMIN"
             ? "amministratore"
-            : $user.role === "operator"
+            : $user.role === "OPERATOR"
               ? "coordinatore"
               : $user.role}
         </p>

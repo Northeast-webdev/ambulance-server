@@ -357,7 +357,7 @@
             : "mezzo"}
         </p>
       </div>
-      {#if $user.role !== "meccanico" && $user.role !== "direzione"}
+      {#if $user.role !== "MECHANIC" && $user.role !== "MANAGER"}
         <button
           on:click={newCarToggle}
           class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-md"
@@ -474,7 +474,7 @@
                   >
                 {/if}
               </p>
-              {#if $user.role !== "direzione"}
+              {#if $user.role !== "MANAGER"}
                 <button
                   on:click={() => {
                     action = "edit";
@@ -502,7 +502,7 @@
             </div>
 
             <!-- Car Damage Points Display -->
-            {#if $user.role === "administrator" || $user.role === "meccanico"}
+            {#if $user.role === "ADMIN" || $user.role === "MECHANIC"}
               <div class="van-diagram-container">
                 <!-- Car Image with Points -->
                 <div class="relative mx-auto w-[375px]">
@@ -560,7 +560,7 @@
             {/if}
           </div>
 
-          {#if $user.role !== "direzione"}
+          {#if $user.role !== "MANAGER"}
             <h2 class="text-2xl font-bold mb-4">
               Checklist mezzo {selectedCar.name}
             </h2>
@@ -633,7 +633,7 @@
               Vedi tutte le checklist
             </button>
           {/if}
-          {#if $user.role !== "meccanico"}
+          {#if $user.role !== "MECHANIC"}
             <h2 class="text-2xl font-bold mb-4 mt-8">
               Checklist Materiale infermieristico mezzo {selectedCar.name}
             </h2>
