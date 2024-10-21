@@ -8,7 +8,7 @@
   import MdiPencil from "virtual:icons/mdi/pencil";
   import MdiTrashCan from "virtual:icons/mdi/trash-can";
   import LoadingList from "../../components/LoadingList.svelte";
-  import { user as storeUser, user } from "../../stores";
+  import { user as storeUser, supabase, user } from "../../stores";
   let show_password = false;
   $: type = show_password ? "text" : "password";
   let loading = false;
@@ -17,7 +17,7 @@
   let show_form = false;
   let action = "new";
   let user_id = "";
-  let userType = "driver";
+  let userType = "ADMIN";
   let meta_verifier = {
     Mezzo: "car",
     Email: "email",
@@ -25,7 +25,6 @@
     Password: "password",
     Nome: "first_name",
     Cognome: "last_name",
-    "Data di nascita": "dob",
     Telefono: "phone",
   };
   let new_user = {
@@ -34,9 +33,24 @@
     email: "",
     first_name: "",
     last_name: "",
-    dob: "",
     phone: "",
-    car: "",
+    car_id: null,
+  };
+  const addNewLabels = {
+    ADMIN: "amministratore",
+    DRIVER: "autista",
+    OPERATOR: "coordinatore",
+    MAP: "mappatore",
+    MANAGER: "direzione",
+    MECHANIC: "meccanico",
+  };
+  const availableLabels = {
+    ADMIN: "amministratori",
+    DRIVER: "autisti",
+    OPERATOR: "coordinatori",
+    MAP: "mappatore",
+    MANAGER: "direzione",
+    MECHANIC: "meccanico",
   };
 
   onMount(() => {
@@ -50,19 +64,8 @@
   });
 
   async function getCars() {
-    fetch(import.meta.env.VITE_API_URL + "/api/cars?limit=50", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        cars = data.cars;
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+    const { data, error } = await supabase.from("cars").select();
+    cars = data;
   }
 
   function newUserToggle() {
@@ -101,26 +104,24 @@
   }
 
   async function newUser() {
+    const { password, ...usr } = new_user;
     if (action === "new") {
       try {
-        const response = await fetch(
-          import.meta.env.VITE_API_URL + "/api/register",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: JSON.stringify({ ...new_user, role: userType }),
-          }
-        );
-        const data = await response.json();
-        console.log("data: ", data);
-        if (data.error) {
-          alert(data.error);
+        const { data, error: signUpErr } = await supabase.auth.signUp({
+          email: usr.email,
+          password: password,
+        });
+        if (signUpErr) {
+          console.log(signUpErr);
           return;
         }
-
+        const { error } = await supabase
+          .from("users")
+          .insert({ ...usr, role: userType });
+        if (error) {
+          console.log(error);
+          return;
+        }
         await getUsers(userType);
         new_user = {
           username: "",
@@ -128,9 +129,8 @@
           email: "",
           first_name: "",
           last_name: "",
-          dob: "",
           phone: "",
-          car: "",
+          car_id: null,
         };
         show_form = false;
       } catch (error) {
@@ -138,20 +138,12 @@
       }
     } else {
       try {
-        const response = await fetch(
-          import.meta.env.VITE_API_URL + "/api/users/" + user_id,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: JSON.stringify({ ...new_user }),
-          }
-        );
-        const data = await response.json();
-        if (data.error) {
-          alert(data.error);
+        const { error } = await supabase
+          .from("users")
+          .update({ ...new_user })
+          .eq("id", user_id);
+        if (error) {
+          console.log(error);
           return;
         }
         await getUsers(userType);
@@ -161,9 +153,8 @@
           email: "",
           first_name: "",
           last_name: "",
-          dob: "",
           phone: "",
-          car: "",
+          car_id: null,
         };
         show_form = false;
       } catch (error) {
@@ -173,21 +164,12 @@
   }
 
   async function getUsers(type) {
-    console.log(type);
     userType = type;
-    fetch(import.meta.env.VITE_API_URL + "/api/users?limit=50&type=" + type, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        users = data.users;
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+    const { data, error } = await supabase
+      .from("users")
+      .select()
+      .eq("role", type);
+    users = data;
   }
 </script>
 
@@ -205,50 +187,50 @@
   <div class=" mb-6 shadow-lg">
     <div class="container mx-auto p-4 flex gap-4">
       <button
-        class="{userType === 'administrator'
+        class="{userType === 'ADMIN'
           ? 'bg-emerald-200  text-emerald-700'
           : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
-        on:click={() => getUsers("administrator")}
+        on:click={() => getUsers("ADMIN")}
       >
         <span>Amministratore</span>
       </button>
       <button
-        class="{userType === 'driver'
+        class="{userType === 'DRIVER'
           ? 'bg-emerald-200 text-emerald-700'
           : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
-        on:click={() => getUsers("driver")}
+        on:click={() => getUsers("DRIVER")}
       >
         <span>Autisti</span>
       </button>
       <button
-        class="{userType === 'operator'
+        class="{userType === 'OPERATOR'
           ? 'bg-emerald-200  text-emerald-700'
           : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
-        on:click={() => getUsers("operator")}
+        on:click={() => getUsers("OPERATOR")}
       >
         <span>Coordinatore</span>
       </button>
       <button
-        class="{userType === 'mappatore'
+        class="{userType === 'MAP'
           ? 'bg-emerald-200  text-emerald-700'
           : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
-        on:click={() => getUsers("mappatore")}
+        on:click={() => getUsers("MAP")}
       >
         <span>Mappatore</span>
       </button>
       <button
-        class="{userType === 'meccanico'
+        class="{userType === 'MECHANIC'
           ? 'bg-emerald-200  text-emerald-700'
           : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
-        on:click={() => getUsers("meccanico")}
+        on:click={() => getUsers("MECHANIC")}
       >
         <span>Meccanico</span>
       </button>
       <button
-        class="{userType === 'direzione'
+        class="{userType === 'MANAGER'
           ? 'bg-emerald-200  text-emerald-700'
           : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
-        on:click={() => getUsers("direzione")}
+        on:click={() => getUsers("MANAGER")}
       >
         <span>Direzione</span>
       </button>
@@ -258,26 +240,14 @@
     <div class="flex justify-between items-center mb-6">
       <div>
         <h1 class="text-3xl font-bold">
-          Lista {userType === "driver" || userType === "administrator"
+          Lista {userType === "DRIVER" || userType === "ADMIN"
             ? "degli"
             : "dei"}
-          {userType === "driver"
-            ? "autisti"
-            : userType === "administrator"
-              ? "amministratori"
-              : userType === "operator"
-                ? "coordinatori"
-                : userType}
+          {availableLabels[userType]}
         </h1>
         <p class="text-gray-500">
-          {users.filter((x) => x.driver_status === "free").length}
-          {userType === "driver"
-            ? "autisti"
-            : userType === "administrator"
-              ? "amministratori"
-              : userType === "operator"
-                ? "coordinatori"
-                : userType}
+          {users.filter((x) => x.online).length}
+          {availableLabels[userType]}
           disponibili
         </p>
       </div>
@@ -287,11 +257,11 @@
       >
         <span class="text-2xl">+</span>
         <span
-          >Aggiungi {userType === "driver"
+          >Aggiungi {userType === "DRIVER"
             ? "autista"
-            : userType === "administrator"
+            : userType === "ADMIN"
               ? "amministratore"
-              : userType}</span
+              : addNewLabels[userType]}</span
         >
       </button>
     </div>
@@ -303,6 +273,8 @@
       >
         <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
           <tr>
+            <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+            ></th>
             <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
               >Nome</th
             >
@@ -351,6 +323,13 @@
                 ? 'bg-white'
                 : 'bg-gray-100'} border-b border-l"
             >
+              <td class="py-3 border-r">
+                <div
+                  class="w-4 h-4 rounded-full mx-auto {user.online
+                    ? 'bg-green-400'
+                    : 'bg-red-400'}"
+                ></div>
+              </td>
               <td class="py-3 px-4 border-r">{user.first_name}</td>
               <td class="py-3 px-4 border-r">{user.last_name}</td>
               <td class="py-3 px-4 border-r">{user.email}</td>
@@ -380,21 +359,20 @@
                 >{moment(user.created_at).format("DD/MM/YYYY HH:MM")}</td
               >
               <td class="py-3 px-4 border-r flex justify-center gap-3">
-                {#if user._id !== $storeUser._id}
+                {#if user.id !== $storeUser.id}
                   <button
                     on:click={() => {
                       console.log("user: ", user);
                       action = "edit";
-                      user_id = user._id;
+                      user_id = user.id;
                       new_user = {
                         username: user.username,
                         password: "",
                         email: user.email,
                         first_name: user.first_name,
                         last_name: user.last_name,
-                        dob: user.dob.split("T")[0],
                         phone: user.phone,
-                        car: user.car ? user.car._id : "",
+                        car_id: user.car_id || "",
                       };
                       show_form = true;
                     }}
@@ -404,7 +382,7 @@
                     <span>Modifica</span>
                   </button>
                   <button
-                    on:click={deleteCar(user._id)}
+                    on:click={deleteCar(user.id)}
                     class="border-red-600 border hover:bg-red-600 text-red-600 hover:text-red-100 font-bold py-2 px-4 rounded-lg transition duration-200"
                   >
                     <MdiTrashCan class="w-4 h-4 inline" />
@@ -440,9 +418,8 @@
             email: "",
             first_name: "",
             last_name: "",
-            dob: "",
             phone: "",
-            car: "",
+            car_id: null,
           };
         }}
         aria-label="Close form"
@@ -472,7 +449,7 @@
                 >
                   <option value="">Seleziona</option>
                   {#each cars as car}
-                    <option value={car._id}>{car.name}</option>
+                    <option value={car.id}>{car.name}</option>
                   {/each}
                 </select>
               {:else if key !== "Mezzo"}
