@@ -72,6 +72,8 @@ const listRuns = async (request, reply) => {
     updated_date,
     car,
     status,
+    start_date,
+    end_date,
   } = request.query;
   const q = {};
   if (date) {
@@ -85,6 +87,9 @@ const listRuns = async (request, reply) => {
     const endDate = new Date(updated_date);
     endDate.setDate(endDate.getDate() + 1);
     q.updated_at = { $gte: startDate, $lt: endDate };
+  }
+  if (start_date && end_date) {
+    q.updated_at = { $gte: new Date(start_date), $lt: new Date(end_date) };
   }
   if (patient) {
     q.patient = patient;
