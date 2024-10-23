@@ -1,78 +1,154 @@
 <script>
   import { onMount } from "svelte";
   import Chart from "./Chart.svelte";
+  import ChartRuns from "./ChartRuns.svelte";
 
   let users = [];
   let cars = [];
+  let runs = [];
+  let type = "users";
 
-  onMount(async () => {
-    fetch(import.meta.env.VITE_API_URL + "/api/users?limit=50&type=driver", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        users = data.users;
+  const getData = async (/** @type {string} */ t) => {
+    type = t || "users";
+    if (t === "users") {
+      fetch(import.meta.env.VITE_API_URL + "/api/users?limit=50&type=driver", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-    fetch(import.meta.env.VITE_API_URL + "/api/cars?limit=50", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        cars = data.cars;
+        .then((response) => response.json())
+        .then((data) => {
+          users = data.users;
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    }
+    if (type === "cars") {
+      fetch(import.meta.env.VITE_API_URL + "/api/cars?limit=50", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  });
+        .then((response) => response.json())
+        .then((data) => {
+          cars = data.cars;
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    }
+    if (type === "runs") {
+      fetch(import.meta.env.VITE_API_URL + "/api/runs?limit=50", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          runs = data.runs;
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    }
+  };
+
+  onMount(getData);
 </script>
 
+<div class=" mb-6 shadow-lg">
+  <div class="container mx-auto p-4 flex gap-4">
+    <button
+      class="{type === 'users'
+        ? 'bg-emerald-200  text-emerald-700'
+        : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
+      on:click={() => getData("users")}
+    >
+      <span>Utenti</span>
+    </button>
+    <button
+      class="{type === 'cars'
+        ? 'bg-emerald-200  text-emerald-700'
+        : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
+      on:click={() => getData("cars")}
+    >
+      <span>Mezzi</span>
+    </button>
+    <button
+      class="{type === 'runs'
+        ? 'bg-emerald-200  text-emerald-700'
+        : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
+      on:click={() => getData("runs")}
+    >
+      <span>Trasporti</span>
+    </button>
+  </div>
+</div>
 <div class="container mx-auto py-6 px-3">
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold">Statistiche</h1>
   </div>
 
   <!-- Chart Container -->
-  <div class="flex justify-center items-center gap-14 mb-10">
-    <div class="flex-1">
-      <Chart userList={users} label="Trasporti al giorno" />
+  {#if type === "users"}
+    <div class="flex flex-wrap gap-[2.5%]">
+      <div class="w-full max-w-[47.5%]">
+        <Chart userList={users} label="Trasporti al giorno" />
+      </div>
+      <div class="w-full max-w-[47.5%]">
+        <Chart
+          backgroundColor="#34792866"
+          borderColor="#347928"
+          userList={users}
+          isAverageLength
+          label="Durata media del trasporto"
+        />
+      </div>
+      <div class="w-full max-w-[47.5%]">
+        <Chart
+          backgroundColor="#FCCD2A66"
+          borderColor="#FCCD2A"
+          userList={users}
+          isAveragePickup
+          label="Durata media del ritiro"
+        />
+      </div>
     </div>
-    <div class="flex-1">
-      <Chart
-        backgroundColor="#52225866"
-        borderColor="#522258"
-        label="Trasporti al giorno (mezzi)"
-        userList={cars}
-        isCar
-      />
+  {/if}
+  {#if type === "runs"}
+    <div class="max-w-screen-lg mx-auto">
+      <ChartRuns label="C/S/B" />
     </div>
-  </div>
-  <div class="flex justify-center items-center gap-14">
-    <div class="flex-1">
-      <Chart
-        backgroundColor="#34792866"
-        borderColor="#347928"
-        userList={users}
-        isAverageLength
-        label="Durata media del trasporto"
-      />
+  {/if}
+  {#if type === "cars"}
+    <div class="flex flex-wrap gap-[2.5%]">
+      <div class="w-full max-w-[47.5%]">
+        <Chart isCar userList={cars} label="Trasporti al giorno" />
+      </div>
+      <div class="w-full max-w-[47.5%]">
+        <Chart
+          backgroundColor="#34792866"
+          borderColor="#347928"
+          isCar
+          userList={cars}
+          isAverageLength
+          label="Durata media del trasporto"
+        />
+      </div>
+      <div class="w-full max-w-[47.5%]">
+        <Chart
+          backgroundColor="#FCCD2A66"
+          borderColor="#FCCD2A"
+          isCar
+          userList={cars}
+          isAveragePickup
+          label="Durata media del ritiro"
+        />
+      </div>
     </div>
-    <div class="flex-1">
-      <Chart
-        backgroundColor="#FCCD2A66"
-        borderColor="#FCCD2A"
-        userList={users}
-        isAveragePickup
-        label="Durata media del ritiro"
-      />
-    </div>
-  </div>
+  {/if}
 </div>

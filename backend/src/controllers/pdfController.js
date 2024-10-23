@@ -178,6 +178,118 @@ const printCarChecklist = async (request) => {
       <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
       ${damagePoints.join("")}
       </div>
+      <div
+      style="
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        max-width: 420px;
+        justify-content: space-evenly;
+        margin: auto;
+      "
+    >
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          margin-top: 0.25rem;
+          margin-bottom: 0.25rem;
+        "
+      >
+        <div
+          style="
+            width: 20px;
+            height: 20px;
+            border: 1px solid black;
+            border-radius: 4px;
+            margin-right: 0.25rem;
+            background-color: rgb(251, 191, 36);
+          "
+        ></div>
+        <span>Strisciata</span>
+      </div>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          margin-top: 0.25rem;
+          margin-bottom: 0.25rem;
+        "
+      >
+        <div
+          style="
+            width: 20px;
+            height: 20px;
+            border: 1px solid black;
+            border-radius: 4px;
+            margin-right: 0.25rem;
+            background-color: rgb(59, 130, 246);
+          "
+        ></div>
+        <span>Ammaccatura</span>
+      </div>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          margin-top: 0.25rem;
+          margin-bottom: 0.25rem;
+        "
+      >
+        <div
+          style="
+            width: 20px;
+            height: 20px;
+            border: 1px solid black;
+            border-radius: 4px;
+            margin-right: 0.25rem;
+            background-color: rgb(34, 197, 94);
+          "
+        ></div>
+        <span>Pezzo mancante</span>
+      </div>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          margin-top: 0.25rem;
+          margin-bottom: 0.25rem;
+        "
+      >
+        <div
+          style="
+            width: 20px;
+            height: 20px;
+            border: 1px solid black;
+            border-radius: 4px;
+            margin-right: 0.25rem;
+            background-color: rgb(173, 216, 230);
+          "
+        ></div>
+        <span>Rottura</span>
+      </div>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          margin-top: 0.25rem;
+          margin-bottom: 0.25rem;
+        "
+      >
+        <div
+          style="
+            width: 20px;
+            height: 20px;
+            border: 1px solid black;
+            border-radius: 4px;
+            margin-right: 0.25rem;
+            background-color: rgb(255, 192, 203);
+          "
+        ></div>
+        <span>Altro</span>
+      </div>
+    </div>
       <style>
       @page {
         size: A4;

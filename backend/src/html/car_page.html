@@ -1,0 +1,240 @@
+<html>
+  <head>
+    <title>Checklist Mezzo ${carChecklist.car.name}</title>
+  </head>
+  <body>
+    <table class="headerTable">
+      <tr>
+        <td><img src="data:image/png;base64,${logo}" alt="Logo" /></td>
+        <td><h3>Checklist Mezzo ${carChecklist.car.name}</h3></td>
+        <td>${carChecklist.created_at.toLocaleDateString("it-IT")}</td>
+      </tr>
+    </table>
+    <table id="mainTable">
+      <thead>
+        <tr>
+          <th>Elemento</th>
+          <th>Valore</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Nome</td>
+          <td>${carChecklist.car.name}</td>
+        </tr>
+        <tr>
+          <td>Marca</td>
+          <td>${carChecklist.car.meta.brand}</td>
+        </tr>
+        <tr>
+          <td>Modello</td>
+          <td>${carChecklist.car.meta.model}</td>
+        </tr>
+        <tr>
+          <td>Targa</td>
+          <td>${carChecklist.car.meta.plate_number}</td>
+        </tr>
+        <tr>
+          <td>Autista</td>
+          <td>
+            ${carChecklist.user.first_name} ${ carChecklist.user.last_name }
+          </td>
+        </tr>
+        <tr>
+          <td>Inizio turno</td>
+          <td>
+            ${ carChecklist.car.shift_start.toLocaleDateString("it-IT") + " " +
+            carChecklist.car.shift_start.toLocaleTimeString("it-IT") }
+          </td>
+        </tr>
+        <tr>
+          <td>Chilometri</td>
+          <td>${carChecklist.car.meta.kilometers}km</td>
+        </tr>
+        <tr>
+          <td>Livello carburante</td>
+          <td>${carChecklist.car.meta.carbon_level}%</td>
+        </tr>
+        ${checklistRows}
+      </tbody>
+    </table>
+
+    <table class="headerTable" style="margin-bottom: 30px">
+      <tr>
+        <td><img src="data:image/png;base64,${logo}" alt="Logo" /></td>
+        <td><h3>Punti di danno</h3></td>
+        <td>${carChecklist.created_at.toLocaleDateString("it-IT")}</td>
+      </tr>
+    </table>
+    <div
+      style="
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      "
+    >
+      ${damagePoints.join("")}
+    </div>
+    <div
+      style="
+        display: flex;
+        flex-wrap: wrap;
+        align-content: center;
+        gap: 0.5rem;
+        flex-direction: column;
+      "
+    >
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          margin-top: 0.25rem;
+          margin-bottom: 0.25rem;
+        "
+      >
+        <div
+          style="
+            width: 20px;
+            height: 20px;
+            border: 1px solid black;
+            border-radius: 4px;
+            margin-right: 0.25rem;
+            background-color: rgb(251, 191, 36);
+          "
+        ></div>
+        <span>Strisciata</span>
+      </div>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          margin-top: 0.25rem;
+          margin-bottom: 0.25rem;
+        "
+      >
+        <div
+          style="
+            width: 20px;
+            height: 20px;
+            border: 1px solid black;
+            border-radius: 4px;
+            margin-right: 0.25rem;
+            background-color: rgb(59, 130, 246);
+          "
+        ></div>
+        <span>Ammaccatura</span>
+      </div>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          margin-top: 0.25rem;
+          margin-bottom: 0.25rem;
+        "
+      >
+        <div
+          style="
+            width: 20px;
+            height: 20px;
+            border: 1px solid black;
+            border-radius: 4px;
+            margin-right: 0.25rem;
+            background-color: rgb(34, 197, 94);
+          "
+        ></div>
+        <span>Pezzo mancante</span>
+      </div>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          margin-top: 0.25rem;
+          margin-bottom: 0.25rem;
+        "
+      >
+        <div
+          style="
+            width: 20px;
+            height: 20px;
+            border: 1px solid black;
+            border-radius: 4px;
+            margin-right: 0.25rem;
+            background-color: rgb(173, 216, 230);
+          "
+        ></div>
+        <span>Rottura</span>
+      </div>
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          margin-top: 0.25rem;
+          margin-bottom: 0.25rem;
+        "
+      >
+        <div
+          style="
+            width: 20px;
+            height: 20px;
+            border: 1px solid black;
+            border-radius: 4px;
+            margin-right: 0.25rem;
+            background-color: rgb(255, 192, 203);
+          "
+        ></div>
+        <span>Altro</span>
+      </div>
+    </div>
+    <style>
+      @page {
+        size: A4;
+        margin: 10mm;
+      }
+      html {
+        font-size: 20px !important;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: white;
+      }
+      .headerTable {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto 20px;
+        border: 0;
+      }
+      .headerTable h3,
+      .headerTable td {
+        margin: 0;
+        text-align: center;
+      }
+      .headerTable img {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto;
+      }
+      #mainTable {
+        width: 100%;
+        border-collapse: collapse;
+        page-break-after: always;
+      }
+      #mainTable th,
+      #mainTable td {
+        border: 1px solid black;
+        padding: 8px 4px;
+        text-align: center;
+        font-weight: 500;
+      }
+      #mainTable th {
+        background-color: #f2f2f2;
+        font-weight: 600;
+      }
+    </style>
+  </body>
+</html>

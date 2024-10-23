@@ -4,13 +4,15 @@
   import { onMount } from "svelte";
 
   let chartCanvas;
-  let date = new Date();
+  let start_date = new Date(new Date().setDate(new Date().getDate() - 7));
+  let end_date = new Date();
   let runs = [];
   let runData = {}; // Object to store counts by date
   let chartLabels = [];
   let chartCounts = [];
   let chartInstance; // To store chart instance
   let selected_user;
+  let loading = false;
   export let label = "Trasporti";
   export let borderColor = "#60A5FA";
   export let backgroundColor = "#60A5FA66";
@@ -128,9 +130,6 @@
             {
               label: label,
               data: chartCounts,
-              animation: {
-                duration: 1000,
-              },
               borderColor: borderColor,
               backgroundColor: backgroundColor,
               pointBorderWidth: 4,
@@ -143,6 +142,9 @@
         options: {
           responsive: true,
           plugins: {
+            legend: {
+              display: false,
+            },
             tooltip: {
               callbacks: {
                 label: (item) => {
@@ -179,15 +181,9 @@
     }
   };
   const getRuns = async () => {
-    // get query params and set initial variables to url params
-    const urlParams = new URLSearchParams(window.location.search);
-    const dateParam = urlParams.get("date");
-    if (dateParam) {
-      date = new Date(dateParam);
-    }
     fetch(
       import.meta.env.VITE_API_URL +
-        `/api/runs?updated_date=${dateParam || ""}&status=completed`,
+        `/api/runs?start_date=${start_date.toISOString().split("T")[0] || ""}&end_date=${end_date.toISOString().split("T")[0] || ""}&status=completed`,
       {
         method: "GET",
         headers: {
@@ -214,9 +210,10 @@
       });
   };
   const getRunsByDate = async () => {
+    loading = true;
     fetch(
       import.meta.env.VITE_API_URL +
-        `/api/runs?date=${date.toISOString().split("T")[0] || ""}&status=completed&user=${selected_user || ""}&car=${isCar ? selected_user : ""}`,
+        `/api/runs?start_date=${start_date.toISOString().split("T")[0] || ""}&end_date=${end_date.toISOString().split("T")[0] || ""}&status=completed&user=${selected_user || ""}&car=${isCar ? selected_user : ""}`,
       {
         method: "GET",
         headers: {
@@ -226,7 +223,7 @@
     )
       .then((response) => response.json())
       .then((data) => {
-        runs = data.runs;
+        runs = data.runs.reverse();
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -240,36 +237,50 @@
           processData();
         }
         drawData();
+
+        loading = false;
       });
   };
-  onMount(async () => {
-    await getRuns();
-  });
+  onMount(getRuns);
 </script>
 
 <div>
+  <h2 class="text-xl text-gray-800 text-center font-bold">{label}</h2>
   <div class="mt-8 mb-4 flex items-center justify-between gap-4 mx-8">
-    <div class="flex items-center gap-4">
-      <DateInput bind:value={date} format="dd/MM/yyyy" class="stats" />
-      <select
-        class="font-bold text-green-700 border-green-700 border rounded-lg py-1 px-4 bg-white w-32"
-        bind:value={selected_user}
-      >
-        <option value="">Tutti</option>
-        {#each userList as user}
-          <option value={user._id}
-            >{isCar
-              ? user.name
-              : user.first_name + " " + user.last_name}</option
-          >
-        {/each}
-      </select>
+    <div class="flex items-center gap-3">
+      <DateInput
+        bind:value={start_date}
+        format="dd/MM/yyyy"
+        class="stats"
+        dynamicPositioning
+      />
+      <p class="font-black text-green-800">-</p>
+      <DateInput
+        bind:value={end_date}
+        format="dd/MM/yyyy"
+        class="stats"
+        dynamicPositioning
+      />
     </div>
-    <button
-      on:click={getRunsByDate}
-      class="bg-lime-600 hover:bg-lime-800 text-white font-bold py-1 px-4 rounded-lg transition duration-200"
+    <select
+      class="font-bold ml-auto text-green-700 border-green-700 border rounded-lg py-1 px-4 bg-white w-32"
+      bind:value={selected_user}
     >
-      Scegli
+      <option value="">Tutti</option>
+      {#each userList as user}
+        <option value={user._id}
+          >{isCar ? user.name : user.first_name + " " + user.last_name}</option
+        >
+      {/each}
+    </select>
+    <button
+      disabled={loading}
+      on:click={getRunsByDate}
+      class="{loading
+        ? 'bg-gray-400'
+        : 'bg-lime-600 hover:bg-lime-800'} text-white w-20 font-bold py-1 px-4 rounded-lg transition duration-200"
+    >
+      {loading ? "..." : "Scegli"}
     </button>
   </div>
   <canvas bind:this={chartCanvas}></canvas>
