@@ -363,10 +363,10 @@
               Ricevuta
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              N. Viaggi
+              N. Trasporti
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              N. Viaggi eseguiti
+              N. Trasporti eseguiti
             </th>
           </tr>
         </thead>
@@ -571,12 +571,6 @@
                     <div></div>
                   {/if}
                   <div class="relative">
-                    {#if key === "Data"}
-                      <span
-                        class="absolute block -left-6 top-9 z-10 text-gray-500"
-                        >1</span
-                      >
-                    {/if}
                     {#if types[key] !== "textarea"}
                       <label
                         for="field-{key}"
@@ -667,7 +661,7 @@
                         {#if key === "Data"}
                           <span
                             class="absolute block -left-6 top-9 z-10 text-gray-500"
-                            >{i + 1}</span
+                            >{(i + 1) % 2 ? "A" : "R"}</span
                           >
                         {/if}
                         <label
@@ -700,9 +694,9 @@
                       </div>
                     {/each}
                   </div>
-                  {#if i + 1 === 2}
+                  {#if i % 2}
                     <div
-                      class="border-t border-gray-300 pt-6 md:col-span-2 lg:col-span-4"
+                      class="border-t border-gray-300 pt-2 mt-4 md:col-span-2 lg:col-span-4"
                     ></div>
                   {/if}
                 {/each}

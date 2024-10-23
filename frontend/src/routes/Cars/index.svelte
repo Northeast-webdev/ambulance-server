@@ -1,7 +1,7 @@
 <script>
   // @ts-nocheck
   import { DateInput } from "date-picker-svelte";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { navigate } from "svelte-navigator";
   import { fade } from "svelte/transition";
   // van images
@@ -64,6 +64,11 @@
   let car_check_date = new Date();
   let material_date = new Date();
   let pointsLoading = false;
+  let socket;
+  let reconnectAttempts = 0;
+  let isConnected = false;
+  const MAX_RECONNECT_ATTEMPTS = 300;
+  const BASE_RECONNECT_TIMEOUT = 1000; // Start with 1 second and increase
 
   // Helper function to get part names based on color index
   const getPartName = (index) => {
@@ -341,6 +346,56 @@
       import: "default",
     })
   );
+
+  function createWebSocket() {
+    socket = new WebSocket(import.meta.env.VITE_WS_URL + "/api/cars/ws");
+
+    socket.onopen = () => {
+      isConnected = true;
+      reconnectAttempts = 0;
+      console.log("WebSocket connection established");
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (!data.documentKey || !data.updateDescription.updatedFields) return;
+      const id = data.documentKey._id;
+      const status = data.updateDescription.updatedFields.status;
+
+      if (status) {
+        cars = cars.map((car) => {
+          if (car._id === id) {
+            car.status = status || car.status;
+          }
+          return car;
+        });
+      }
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket connection closed");
+    };
+
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        const reconnectTimeout =
+          BASE_RECONNECT_TIMEOUT * 2 ** reconnectAttempts;
+        reconnectAttempts += 1;
+        setTimeout(() => {
+          createWebSocket();
+        }, reconnectTimeout);
+      }
+    };
+  }
+
+  onMount(createWebSocket);
+
+  onDestroy(() => {
+    if (socket) {
+      socket.close();
+    }
+  });
 </script>
 
 {#if loading}

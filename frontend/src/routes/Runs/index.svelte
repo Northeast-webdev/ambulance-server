@@ -22,6 +22,7 @@
   let driver_id = "";
   let drivers = [];
   let socket;
+  let carSocket;
   let currentTime = new Date();
   let currentTimeTimeout;
   let additionalRuns = [];
@@ -45,6 +46,12 @@
     Arrivo: "arrivo",
     "Note particolari": "note_particolari",
   };
+
+  let carReconnectAttempts = 0;
+  let isCarConnected = false;
+  const MAX_RECONNECT_ATTEMPTS = 300;
+  const BASE_RECONNECT_TIMEOUT = 1000; // Start with 1 second and increase
+
   $: showPopup &&
     setTimeout(() => {
       getMapInfo();
@@ -131,6 +138,58 @@
   onDestroy(() => {
     if (socket) {
       socket.close();
+    }
+  });
+
+  function createWebSocket() {
+    carSocket = new WebSocket(import.meta.env.VITE_WS_URL + "/api/cars/ws");
+
+    carSocket.onopen = () => {
+      isCarConnected = true;
+      carReconnectAttempts = 0;
+      console.log("WebSocket connection established");
+    };
+
+    carSocket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (!data.documentKey || !data.updateDescription.updatedFields) return;
+      const id = data.documentKey._id;
+      const status = data.updateDescription.updatedFields.status;
+
+      if (status) {
+        freeCars = cars
+          .map((car) => {
+            if (car._id === id) {
+              car.status = status || car.status;
+            }
+            return car;
+          })
+          .filter((x) => x.status === "free");
+      }
+    };
+
+    carSocket.onclose = () => {
+      console.log("WebSocket connection closed");
+    };
+
+    carSocket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      if (carReconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        const reconnectTimeout =
+          BASE_RECONNECT_TIMEOUT * 2 ** carReconnectAttempts;
+        carReconnectAttempts += 1;
+        setTimeout(() => {
+          createWebSocket();
+        }, reconnectTimeout);
+      }
+    };
+  }
+
+  onMount(createWebSocket);
+
+  onDestroy(() => {
+    if (carSocket) {
+      carSocket.close();
     }
   });
 
@@ -434,7 +493,14 @@
         <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
           <tr>
             {#each Object.keys(meta_verifier) as key}
-              {#if key !== "Titolo" && key !== "Note particolari"}
+              {#if key === "Ora"}
+                <span></span>
+              {:else if key === "Data"}
+                <th
+                  class="py-3 px-4 text-left w-48 font-semibold text-gray-700 border-b"
+                  >{key} / Ora</th
+                >
+              {:else if key !== "Titolo" && key !== "Note particolari"}
                 <th
                   class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
                   >{key}</th
@@ -457,13 +523,19 @@
                       : 'bg-gray-50'} border-b border-l"
             >
               {#each Object.keys(meta_verifier) as key}
-                {#if key !== "Titolo" && key !== "Paziente" && key !== "Note particolari"}
-                  <td class="py-3 px-4 border-r border-inherit"
-                    >{run.meta[meta_verifier[key]]}</td
+                {#if key === "Ora"}
+                  <span></span>
+                {:else if key !== "Titolo" && key !== "Paziente" && key !== "Note particolari" && key !== "Data"}
+                  <td
+                    class="py-3 px-4 border-r border-inherit {key ===
+                      'Partenza' || key === 'Arrivo'
+                      ? 'w-56'
+                      : ''}">{run.meta[meta_verifier[key]]}</td
                   >
                 {:else if key === "Data"}
                   <td class="py-3 px-4 border-r border-inherit"
-                    >{run.meta[meta_verifier[key]] ?? run.created_at}</td
+                    >{run.meta[meta_verifier[key]] ?? run.created_at} / {run
+                      .meta.ora || "-"}</td
                   >
                 {:else if key === "Paziente"}
                   <td class="py-3 px-4 border-r border-inherit">
