@@ -9,23 +9,13 @@ require("dotenv").config();
 const userConnections = new Map();
 
 const createRun = async (request, reply) => {
-  const { meta, status, geometry, additionalRuns, patient: pat } = request.body;
-  const run = new Run({
-    meta,
-    status,
-    geometry,
-  });
+  const { additionalRuns, patient: pat } = request.body;
+  let patID = "";
   try {
     const patient = await Patient.find({
       name: { $regex: pat || "", $options: "i" },
     });
-    if (patient.length) {
-      await Patient.updateOne(
-        { _id: patient[0]._id },
-        { $push: { runs: run._id } }
-      );
-      run.patient = patient[0]._id;
-    } else {
+    if (!patient.length) {
       let words = pat.split(" ");
 
       for (let i = 0; i < words.length; i++) {
@@ -33,13 +23,8 @@ const createRun = async (request, reply) => {
       }
       const newPatient = new Patient({ name: words.join(" ") });
       await newPatient.save();
-      await Patient.updateOne(
-        { _id: newPatient._id },
-        { $push: { runs: run._id } }
-      );
-      run.patient = newPatient._id;
+      patID = newPatient._id;
     }
-    await run.save();
     if (additionalRuns && additionalRuns.length) {
       for await (const additionalRun of additionalRuns) {
         const newRun = new Run({
@@ -47,16 +32,18 @@ const createRun = async (request, reply) => {
           status: "pending",
           geometry: additionalRun.geometry,
           end_geometry: additionalRun.end_geometry,
-          patient: run.patient,
+          patient: patID,
         });
         await newRun.save();
         await Patient.updateOne(
-          { _id: run.patient },
+          { _id: patID },
           { $push: { runs: newRun._id } }
         );
       }
     }
-    reply.send({ run: run });
+    reply.send({
+      message: "Successfully added " + additionalRuns.length + " runs",
+    });
   } catch (err) {
     reply.code(500).send({ error: err });
   }
