@@ -321,14 +321,6 @@
                 class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
                 >Mezzo</th
               >
-              <th
-                transition:fly={{
-                  x: 100,
-                  duration: 300,
-                }}
-                class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                >Status</th
-              >
             {/if}
             <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
               >Data di Creazione</th
@@ -360,19 +352,6 @@
                     <span class="font-bold"> {user.car.name}</span>
                   {:else}
                     <span class="text-gray-500">-</span>
-                  {/if}
-                </td>
-                <td class="py-3 px-4 border-r">
-                  {#if user.driver_status === "free"}
-                    <span
-                      class="text-green-900 bg-green-300 px-4 py-1 rounded-full inline-block"
-                      >Disponibile</span
-                    >
-                  {:else}
-                    <span
-                      class="text-red-900 bg-red-200 px-4 py-1 rounded-full inline-block"
-                      >Non disponibile</span
-                    >
                   {/if}
                 </td>
               {/if}

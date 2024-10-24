@@ -181,33 +181,39 @@
     }
   };
   const getRuns = async () => {
-    fetch(
-      import.meta.env.VITE_API_URL +
-        `/api/runs?start_date=${start_date.toISOString().split("T")[0] || ""}&end_date=${end_date.toISOString().split("T")[0] || ""}&status=completed`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        runs = data.runs.reverse();
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      })
-      .finally(() => {
-        if (isAveragePickup) {
-          processAveragePickup();
-        } else if (isAverageLength) {
-          processAverageLength();
-        } else {
-          processData();
+    loading = true;
+    setTimeout(() => {
+      fetch(
+        import.meta.env.VITE_API_URL +
+          `/api/runs?start_date=${start_date.toISOString().split("T")[0] || ""}&end_date=${end_date.toISOString().split("T")[0] || ""}&status=completed`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-        drawData();
-      });
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          runs = data.runs.reverse();
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        })
+        .finally(() => {
+          if (isAveragePickup) {
+            processAveragePickup();
+          } else if (isAverageLength) {
+            processAverageLength();
+          } else {
+            processData();
+          }
+          setTimeout(() => {
+            drawData();
+          }, 100);
+          loading = false;
+        });
+    }, 500);
   };
   const getRunsByDate = async () => {
     loading = true;
@@ -283,5 +289,12 @@
       {loading ? "..." : "Scegli"}
     </button>
   </div>
+  {#if !runs.length}
+    <p
+      class="text-lg font-bold text-center h-80 flex justify-center items-center"
+    >
+      <span>Loading...</span>
+    </p>
+  {/if}
   <canvas bind:this={chartCanvas}></canvas>
 </div>

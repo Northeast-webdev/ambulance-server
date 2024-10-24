@@ -284,7 +284,7 @@
     }
     fetch(
       import.meta.env.VITE_API_URL +
-        `/api/runs?patient=${patient || ""}&date=${dateParam || ""}&status=${
+        `/api/runs?patient=${patient || ""}&updated_date=${date.toISOString().split("T")[0]}&status=${
           status || ""
         }`,
       {
@@ -348,7 +348,7 @@
     }
     fetch(
       import.meta.env.VITE_API_URL +
-        "/api/runs?date=" +
+        "/api/runs?updated_date=" +
         date.toISOString().split("T")[0],
       {
         method: "GET",

@@ -108,7 +108,7 @@
           label="Durata media del trasporto"
         />
       </div>
-      <div class="w-full max-w-[47.5%]">
+      <div class="w-full max-w-[47.5%] mt-10">
         <Chart
           backgroundColor="#FCCD2A66"
           borderColor="#FCCD2A"
@@ -139,7 +139,7 @@
           label="Durata media del trasporto"
         />
       </div>
-      <div class="w-full max-w-[47.5%]">
+      <div class="w-full max-w-[47.5%] mt-10">
         <Chart
           backgroundColor="#FCCD2A66"
           borderColor="#FCCD2A"
