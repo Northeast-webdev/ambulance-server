@@ -11,7 +11,7 @@
   let runs = [];
   let show_form = false;
   let showPopup = false;
-  let showFinalPopup = true;
+  let showFinalPopup = false;
   let loading = false;
   let showMap = true;
   let cars = [];
