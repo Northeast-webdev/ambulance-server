@@ -57,6 +57,7 @@ const listRuns = async (request, reply) => {
     user,
     date,
     updated_date,
+    meta_date,
     car,
     status,
     start_date,
@@ -74,6 +75,9 @@ const listRuns = async (request, reply) => {
     const endDate = new Date(updated_date);
     endDate.setDate(endDate.getDate() + 1);
     q.updated_at = { $gte: startDate, $lt: endDate };
+  }
+  if (meta_date) {
+    q["meta.date"] = meta_date;
   }
   if (start_date && end_date) {
     q.updated_at = { $gte: new Date(start_date), $lt: new Date(end_date) };
@@ -104,7 +108,7 @@ const listRuns = async (request, reply) => {
       .populate("patient")
       .skip((page - 1) * limit)
       .limit(limit)
-      .sort({ created_at: -1 })
+      .sort(meta_date ? { "meta.ora": -1 } : { created_at: -1 })
       .exec();
     return { runs, page, limit };
   } catch (err) {
