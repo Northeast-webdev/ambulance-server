@@ -22,19 +22,8 @@
   let bRuns = data.map((item) => item.B);
 
   function getDayName(dateString) {
-    const daysOfWeek = [
-      "Domenica",
-      "Lunedì",
-      "Martedì",
-      "Mercoledì",
-      "Giovedì",
-      "Venerdì",
-      "Sabato",
-    ];
-
     const date = new Date(labels[dateString]);
-    const dayNumber = date.getDay(); // Get the day of the week as a number (0-6)
-    return daysOfWeek[dayNumber]; // Return the name of the day
+    return date.toLocaleDateString("it-IT").slice(0, 5); // Return the name of the day
   }
 
   const drawData = () => {

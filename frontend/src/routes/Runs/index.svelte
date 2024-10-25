@@ -11,7 +11,7 @@
   let runs = [];
   let show_form = false;
   let showPopup = false;
-  let showFinalPopup = false;
+  let showFinalPopup = true;
   let loading = false;
   let showMap = true;
   let cars = [];
@@ -266,7 +266,7 @@
 
       map.setView(
         [driver.last_location.latitude, driver.last_location.longitude],
-        13
+        16
       );
     });
   }
@@ -411,8 +411,6 @@
           return run;
         });
       }
-      showPopup = false;
-      map = null;
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -420,6 +418,16 @@
       map = null;
       showFinalPopup = true;
       await getRuns();
+      setTimeout(() => {
+        map.setView(
+          [
+            cars.find((x) => x._id === selected_car).last_location.latitude,
+            cars.find((x) => x._id === selected_car).last_location.longitude,
+          ],
+          16
+        );
+        selected_car = null;
+      }, 1000);
     }
   }
 
@@ -507,6 +515,9 @@
       >
         <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
           <tr>
+            <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+              >Pronto</th
+            >
             {#each Object.keys(meta_verifier) as key}
               {#if key === "Ora"}
                 <span></span>
@@ -522,9 +533,6 @@
                 >
               {/if}
             {/each}
-            <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-              >Pronto</th
-            >
           </tr>
         </thead>
         <tbody>
@@ -542,6 +550,18 @@
                         ? 'bg-violet-200 border-violet-300'
                         : 'bg-gray-50'} border-b border-l"
             >
+              <td class="py-3 px-4 border-r border-inherit text-center">
+                {#if run.status === "pending"}
+                  <input
+                    type="checkbox"
+                    class="w-6 h-6 inline-block cursor-pointer accent-purple-600"
+                    checked={run.readyToGo}
+                    on:click={() => {
+                      run.readyToGo = !run.readyToGo;
+                    }}
+                  />
+                {/if}
+              </td>
               {#each Object.keys(meta_verifier) as key}
                 {#if key === "Ora"}
                   <span></span>
@@ -575,16 +595,6 @@
                   </td>
                 {/if}
               {/each}
-              <td class="py-3 px-4 border-r border-inherit text-center">
-                <input
-                  type="checkbox"
-                  class="w-6 h-6 inline-block cursor-pointer accent-purple-600"
-                  checked={run.readyToGo}
-                  on:click={() => {
-                    run.readyToGo = !run.readyToGo;
-                  }}
-                />
-              </td>
             </tr>
             <!-- Patient and run status, with showing the assigned car that are revealed on name click -->
             {#if run.visibleInfo}
@@ -602,7 +612,7 @@
               >
                 <td
                   class="py-3 px-4"
-                  colspan={Object.keys(meta_verifier).length - 1}
+                  colspan={Object.keys(meta_verifier).length}
                 >
                   <div class="flex items-center justify-evenly mx-10">
                     <div class="flex items-center gap-4">
@@ -702,68 +712,9 @@
 {#if showPopup || show_form || showFinalPopup}
   <div
     transition:fade={{ duration: 300 }}
-    class="fixed inset-0 overflow-hidden z-40 flex items-center flex-col gap-10 justify-center p-4 bg-white transition-opacity duration-500"
+    class="fixed inset-0 top-20 overflow-hidden z-40 pt-10 flex items-center flex-col gap-10 p-4 bg-white transition-opacity duration-500"
   >
-    <div class="flex max-w-screen-lg w-full mx-auto pt-32 relative">
-      <div class="flex items-center">
-        <!-- Step 1 -->
-        <div
-          class="flex items-center pr-10 transition border-b-2 border-gray-300"
-        >
-          <div
-            class="flex items-end gap-3 transition text-gray-300 font-semibold"
-          >
-            <span class="text-4xl">1</span>
-            <span class="pb-1 text-xl">Inserisci le informazioni</span>
-          </div>
-        </div>
-
-        <!-- Step 2 -->
-        <div
-          class="flex items-center pr-10 transition {showPopup
-            ? 'border-b-2 border-lime-600 '
-            : 'border-b-2 border-gray-300 '}"
-        >
-          <div
-            class="flex items-end gap-3 transition {showPopup
-              ? 'text-lime-600'
-              : 'text-gray-300'} font-semibold"
-          >
-            <span class="text-4xl">2</span>
-            <span class="pb-1 text-xl">Assegna ed invia</span>
-          </div>
-        </div>
-
-        <!-- Step 3 -->
-        <div
-          class="flex items-center pr-10 transition {showFinalPopup
-            ? 'border-b-2 border-lime-600 '
-            : 'border-b-2 border-gray-300 '}"
-        >
-          <div
-            class="flex items-end gap-3 transition {showFinalPopup
-              ? 'text-lime-600'
-              : 'text-gray-300'} font-semibold"
-          >
-            <span class="text-4xl">3</span>
-            <span class="pb-1 text-xl">Assegnazione completata</span>
-          </div>
-        </div>
-      </div>
-
-      <button
-        class="absolute text-3xl top-32 mt-2 right-6 text-gray-600 hover:text-gray-800"
-        on:click={() => {
-          showPopup ? (showPopup = false) : null;
-          map = null;
-          showFinalPopup ? (showFinalPopup = false) : null;
-        }}
-        aria-label="Close form"
-      >
-        ✕
-      </button>
-    </div>
-    <div class="max-w-screen-lg w-full overflow-y-auto">
+    <div class="container w-full overflow-y-auto">
       {#if showPopup}
         <!-- Form Modal -->
         <div class="z-50 transform transition-all duration-500">
@@ -771,7 +722,7 @@
           <p class="text-gray-700 mb-6">
             Vuoi assegnare già da ora la corsa ad un mezzo?
           </p>
-          <div class="flex items-center gap-4 mb-12">
+          <div class="flex items-center gap-4 mb-6">
             <button
               on:click={updateRun}
               class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg"
@@ -780,109 +731,118 @@
             </button>
             <button
               class="bg-amber-700 hover:bg-amber-900 text-white font-bold py-2 px-6 rounded-lg"
-              on:click={() => (showPopup = false)}
+              type="button"
+              on:click={() => {
+                showPopup ? (showPopup = false) : null;
+                map = null;
+                showFinalPopup ? (showFinalPopup = false) : null;
+              }}
             >
               Salta per ora
             </button>
           </div>
           <h2 class="text-3xl font-bold mb-6">Lista veicoli</h2>
-          <table
-            class="min-w-full border-collapse shadow-lg rounded-lg overflow-hidden"
-          >
-            <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
-              <tr>
-                <th
-                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                ></th>
-                <th
-                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                  >Nome</th
-                >
-                <th
-                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                  >Modello</th
-                >
-                <th
-                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                  >Marca</th
-                >
-                <th
-                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                  >Status</th
-                >
-                <th
-                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                  >Driver</th
-                >
-              </tr>
-            </thead>
-            <tbody>
-              {#each freeCars as car}
-                <tr
-                  class="border-b cursor-pointer {selected_car === car._id
-                    ? 'bg-lime-100'
-                    : 'bg-gray-50'}"
-                  on:click={() => {
-                    selected_car === car._id
-                      ? (selected_car = null)
-                      : (selected_car = car._id);
-                  }}
-                >
-                  <td class="border-r text-center">
-                    <input
-                      type="radio"
-                      class="bg-gray-200 checked:bg-lime-600 checked:border-transparent checked:text-white rounded-full appearance-none w-4 h-4 border pointer-events-none border-gray-300 checked:ring-2 checked:ring-lime-600 checked:ring-offset-2 checked:ring-offset-gray-200"
-                      checked={selected_car === car._id}
-                    />
-                  </td>
-                  <td class="py-3 px-4 border-r">{car.name}</td>
-                  <td class="py-3 px-4 border-r">{car.meta.model}</td>
-                  <td class="py-3 px-4 border-r">{car.meta.brand}</td>
-                  <td class="py-3 px-4 border-r font-bold">
-                    {#if car.status === "free"}
-                      <span
-                        class="text-green-900 bg-green-300 px-4 rounded-full inline-block text-sm py-1"
-                        >Disponibile</span
+          <div class="flex gap-10">
+            <div class="flex-grow-0">
+              <table
+                class="min-w-full border-collapse shadow-lg rounded-lg overflow-hidden"
+              >
+                <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
+                  <tr>
+                    <th
+                      class="py-2 px-4 text-left font-semibold text-gray-700 border-b"
+                    ></th>
+                    <th
+                      class="py-2 px-4 text-left font-semibold text-gray-700 border-b"
+                      >Nome</th
+                    >
+                    <th
+                      class="py-2 px-4 text-left font-semibold text-gray-700 border-b"
+                      >Modello</th
+                    >
+                    <th
+                      class="py-2 px-4 text-left font-semibold text-gray-700 border-b"
+                      >Marca</th
+                    >
+                    <th
+                      class="py-2 px-4 text-left font-semibold text-gray-700 border-b"
+                      >Status</th
+                    >
+                    <th
+                      class="py-2 px-4 text-left font-semibold text-gray-700 border-b"
+                      >Driver</th
+                    >
+                  </tr>
+                </thead>
+                <tbody>
+                  {#each freeCars as car}
+                    <tr
+                      class="border-b cursor-pointer {selected_car === car._id
+                        ? 'bg-lime-100'
+                        : 'bg-gray-50'}"
+                      on:click={() => {
+                        map.setView(
+                          [
+                            car.last_location.latitude,
+                            car.last_location.longitude,
+                          ],
+                          16
+                        );
+                        selected_car === car._id
+                          ? (selected_car = null)
+                          : (selected_car = car._id);
+                      }}
+                    >
+                      <td class="border-r text-center">
+                        <input
+                          type="radio"
+                          class="bg-gray-200 checked:bg-lime-600 checked:border-transparent checked:text-white rounded-full appearance-none w-4 h-4 border pointer-events-none border-gray-300 checked:ring-2 checked:ring-lime-600 checked:ring-offset-2 checked:ring-offset-gray-200"
+                          checked={selected_car === car._id}
+                        />
+                      </td>
+                      <td class="py-2 px-4 border-r">{car.name}</td>
+                      <td class="py-2 px-4 border-r">{car.meta.model}</td>
+                      <td class="py-2 px-4 border-r">{car.meta.brand}</td>
+                      <td class="py-2 px-4 border-r font-bold">
+                        {#if car.status === "free"}
+                          <span
+                            class="text-green-900 bg-green-300 px-4 rounded-full inline-block text-sm py-1"
+                            >Disponibile</span
+                          >
+                        {:else if car.status === "on_break"}
+                          <span
+                            class="text-yellow-900 bg-yellow-200 px-4 rounded-full inline-block text-sm py-1"
+                            >Pausa</span
+                          >
+                        {:else if car.status === "garage"}
+                          <span
+                            class="text-gray-900 bg-gray-300 px-4 rounded-full inline-block text-sm py-1"
+                            >Al deposito</span
+                          >
+                        {:else}
+                          <span
+                            class="text-red-900 bg-red-200 px-4 rounded-full inline-block text-sm py-1"
+                            >Non disponibile</span
+                          >
+                        {/if}
+                      </td>
+                      <td class="py-2 px-4"
+                        >{car.user
+                          ? `${car.user.first_name} ${car.user.last_name}`
+                          : "Nessun driver"}</td
                       >
-                    {:else if car.status === "on_break"}
-                      <span
-                        class="text-yellow-900 bg-yellow-200 px-4 rounded-full inline-block text-sm py-1"
-                        >Pausa</span
-                      >
-                    {:else if car.status === "garage"}
-                      <span
-                        class="text-gray-900 bg-gray-300 px-4 rounded-full inline-block text-sm py-1"
-                        >Al deposito</span
-                      >
-                    {:else}
-                      <span
-                        class="text-red-900 bg-red-200 px-4 rounded-full inline-block text-sm py-1"
-                        >Non disponibile</span
-                      >
-                    {/if}
-                  </td>
-                  <td class="py-3 px-4"
-                    >{car.user
-                      ? `${car.user.first_name} ${car.user.last_name}`
-                      : "Nessun driver"}</td
-                  >
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-
-          <button
-            on:click={() => (showMap = !showMap)}
-            class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg my-6"
-          >
-            {!showMap ? "Vedi" : "Nascondi"} mappa
-          </button>
-          <!-- Map Container -->
-          <div class={showMap ? "" : "opacity-0"}>
-            <div
-              id="map"
-              class="aspect-[16/7] rounded-lg shadow-md z-10 mb-8"
-            ></div>
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            </div>
+            <!-- Map Container -->
+            <div class="{showMap ? '' : 'opacity-0'} flex-1">
+              <div
+                id="map"
+                class="aspect-[16/9] rounded-lg shadow-md z-10 mb-8"
+              ></div>
+            </div>
           </div>
         </div>
       {/if}
@@ -894,23 +854,14 @@
           <p class="text-gray-700 mb-6">
             Il guidatore riceverà una notifica per l'accettazione della corsa
           </p>
-          <button
-            class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg mb-4"
-            on:click={() => {
-              show_form = true;
-              showFinalPopup = false;
-            }}
-          >
-            Crea un’altra corsa
-          </button>
           <!-- Map Container -->
           <div
             id="map"
-            class="aspect-[16/7] max-w-2xl rounded-lg shadow-md z-10 mb-8"
+            class="aspect-[16/9] max-w-screen-lg rounded-lg shadow-md z-10"
           ></div>
 
           <button
-            class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg ml-auto block"
+            class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg mt-10 ml-auto block"
             on:click={() => (showFinalPopup = false)}
             aria-label="Close form"
           >

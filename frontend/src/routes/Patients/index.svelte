@@ -363,10 +363,10 @@
               Ricevuta
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              N. Trasporti
+              N. Viaggi
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              N. Trasporti eseguiti
+              N. Viaggi eseguiti
             </th>
           </tr>
         </thead>
@@ -385,7 +385,7 @@
               </td>
               <td class="py-3 px-6 text-left whitespace-nowrap">
                 <div class="flex items-center">
-                  <span class="font-medium"
+                  <span class="font-medium uppercase"
                     >{patient.runs[0]?.meta?.csb || "-"}</span
                   >
                 </div>
@@ -420,14 +420,18 @@
               </td>
               <td class="py-3 px-6 text-left whitespace-nowrap">
                 <div class="flex items-center gap-2">
-                  <span class="font-bold">{patient.runs.length}</span>
+                  <span class="font-bold"
+                    >{Math.floor(patient.runs.length / 2)}</span
+                  >
                 </div>
               </td>
               <td class="py-3 px-6 text-left whitespace-nowrap">
                 <div class="flex items-center gap-2">
                   <span class="font-bold"
-                    >{patient.runs.filter((run) => run.status === "completed")
-                      .length}</span
+                    >{Math.floor(
+                      patient.runs.filter((run) => run.status === "completed")
+                        .length / 2
+                    )}</span
                   >
                 </div>
               </td>
@@ -441,6 +445,10 @@
                   <table class="border-collapse w-full">
                     <thead class="bg-green-300">
                       <tr>
+                        <th
+                          class="text-left uppercase font-semibold text-sm py-2 px-4"
+                          >N</th
+                        >
                         <th
                           class="text-left uppercase font-semibold text-sm py-2 px-4"
                           >A/R</th
@@ -478,6 +486,13 @@
                             ? ''
                             : 'border-b-2 border-b-green-500'}"
                         >
+                          {#if (index + 1) % 2}
+                            <td
+                              rowspan="2"
+                              class="py-2 px-4 h-5 bg-green-100 text-center border border-green-300"
+                              >{(index + 1 * 2) / 2}</td
+                            >
+                          {/if}
                           <td class="py-2 px-4"
                             >{(index + 1) % 2 ? "A" : "R"}</td
                           >
