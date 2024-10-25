@@ -108,7 +108,7 @@ const listRuns = async (request, reply) => {
       .populate("patient")
       .skip((page - 1) * limit)
       .limit(limit)
-      .sort(meta_date ? { "meta.ora": -1 } : { created_at: -1 })
+      .sort(meta_date ? { "meta.ora": 1 } : { created_at: -1 })
       .exec();
     return { runs, page, limit };
   } catch (err) {

@@ -284,7 +284,7 @@
     }
     fetch(
       import.meta.env.VITE_API_URL +
-        `/api/runs?patient=${patient || ""}&updated_date=${date.toISOString().split("T")[0]}&status=${
+        `/api/runs?patient=${patient || ""}&meta_date=${date.toISOString().split("T")[0]}&status=${
           status || ""
         }`,
       {
@@ -348,7 +348,7 @@
     }
     fetch(
       import.meta.env.VITE_API_URL +
-        "/api/runs?updated_date=" +
+        "/api/runs?meta_date=" +
         date.toISOString().split("T")[0],
       {
         method: "GET",
@@ -530,11 +530,13 @@
                     class="py-3 px-4 border-r border-inherit {key ===
                       'Partenza' || key === 'Arrivo'
                       ? 'w-56'
-                      : ''}">{run.meta[meta_verifier[key]]}</td
+                      : key === 'C/S/B'
+                        ? 'uppercase'
+                        : ''}">{run.meta[meta_verifier[key]]}</td
                   >
                 {:else if key === "Data"}
                   <td class="py-3 px-4 border-r border-inherit"
-                    >{run.meta[meta_verifier[key]] ?? run.created_at} / {run
+                    >{run.meta[meta_verifier[key]] ?? run.created_at}<br />{run
                       .meta.ora || "-"}</td
                   >
                 {:else if key === "Paziente"}
