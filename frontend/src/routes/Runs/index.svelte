@@ -62,6 +62,12 @@
       getMapInfo();
     }, 1000);
 
+  $: (() => {
+    if (!runs.length) return;
+    const readyToGo = runs.filter((x) => x.readyToGo).map((x) => x._id);
+    localStorage.setItem("ready_runs", JSON.stringify(readyToGo));
+  })();
+
   onMount(() => {
     const recursiveTimeout = () => {
       currentTime = new Date();
@@ -296,7 +302,16 @@
     )
       .then((response) => response.json())
       .then((data) => {
-        runs = data.runs;
+        const readyString = localStorage.getItem("ready_runs");
+        if (readyString) {
+          const js = JSON.parse(readyString);
+          runs = data.runs.map((x) => {
+            return {
+              ...x,
+              readyToGo: js.includes(x._id) ? true : false,
+            };
+          });
+        } else runs = data.runs;
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -507,6 +522,9 @@
                 >
               {/if}
             {/each}
+            <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+              >Pronto</th
+            >
           </tr>
         </thead>
         <tbody>
@@ -520,7 +538,9 @@
                     ? 'bg-sky-200 border-sky-300'
                     : run.status === 'completed'
                       ? 'bg-green-200 border-green-300'
-                      : 'bg-gray-50'} border-b border-l"
+                      : run.readyToGo
+                        ? 'bg-violet-200 border-violet-300'
+                        : 'bg-gray-50'} border-b border-l"
             >
               {#each Object.keys(meta_verifier) as key}
                 {#if key === "Ora"}
@@ -536,8 +556,9 @@
                   >
                 {:else if key === "Data"}
                   <td class="py-3 px-4 border-r border-inherit"
-                    >{run.meta[meta_verifier[key]] ?? run.created_at}<br />{run
-                      .meta.ora || "-"}</td
+                    >{new Date(run.meta[meta_verifier[key]]).toLocaleDateString(
+                      "it-IT"
+                    ) ?? run.created_at}<br />{run.meta.ora || "-"}</td
                   >
                 {:else if key === "Paziente"}
                   <td class="py-3 px-4 border-r border-inherit">
@@ -554,6 +575,16 @@
                   </td>
                 {/if}
               {/each}
+              <td class="py-3 px-4 border-r border-inherit text-center">
+                <input
+                  type="checkbox"
+                  class="w-6 h-6 inline-block cursor-pointer accent-purple-600"
+                  checked={run.readyToGo}
+                  on:click={() => {
+                    run.readyToGo = !run.readyToGo;
+                  }}
+                />
+              </td>
             </tr>
             <!-- Patient and run status, with showing the assigned car that are revealed on name click -->
             {#if run.visibleInfo}
