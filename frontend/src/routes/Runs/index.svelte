@@ -112,7 +112,10 @@
           freeCars = cars
             .map((c) => {
               if (c._id === found_run.car._id) {
-                c.status = status === "completed" ? "free" : "busy";
+                c.status =
+                  status === "completed" || status === "refused"
+                    ? "free"
+                    : "busy";
               }
               return c;
             })

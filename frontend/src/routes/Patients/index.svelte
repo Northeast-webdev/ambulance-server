@@ -497,7 +497,11 @@
                             >{(index + 1) % 2 ? "A" : "R"}</td
                           >
                           <td class="py-2 px-4 border-l border-green-300"
-                            >{run.meta.ora ? run.meta.date : "Da assegnare"}</td
+                            >{run.meta.ora
+                              ? new Date(run.meta.date).toLocaleDateString(
+                                  "it-IT"
+                                )
+                              : "Da assegnare"}</td
                           >
                           <td class="py-2 px-4 border-l border-green-300"
                             >{run.meta.ora}</td
