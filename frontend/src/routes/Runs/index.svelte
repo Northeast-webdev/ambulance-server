@@ -673,19 +673,19 @@
                     {:else}
                     <button
                         disabled={currentTime.getTime() <
-                          new Date(run.updated_at).getTime() + 30000}
+                          new Date(run.updated_at).getTime() + 60000}
                         on:click={() =>
                           currentTime.getTime() <
-                          new Date(run.updated_at).getTime() + 30000
+                          new Date(run.updated_at).getTime() + 60000
                             ? null
                             : openPopup(run)}
                         class="bg-lime-700 hover:bg-lime-800 disabled:bg-gray-600 transition text-white font-bold py-2 px-6 rounded-lg"
                       >
                         {currentTime.getTime() <
-                        new Date(run.updated_at).getTime() + 30000
+                        new Date(run.updated_at).getTime() + 60000
                           ? Math.floor(
                               (new Date(run.updated_at).getTime() +
-                                30000 -
+                                60000 -
                                 currentTime.getTime()) /
                                 1000
                             )
@@ -695,19 +695,19 @@
                     {#if run.status === "pending" && run.car}
                       <button
                         disabled={currentTime.getTime() <
-                          new Date(run.updated_at).getTime() + 30000}
+                          new Date(run.updated_at).getTime() + 60000}
                         on:click={() =>
                           currentTime.getTime() <
-                          new Date(run.updated_at).getTime() + 30000
+                          new Date(run.updated_at).getTime() + 60000
                             ? null
                             : pingDriver(run)}
                         class="bg-lime-700 hover:bg-lime-800 disabled:bg-gray-600 transition text-white font-bold py-2 px-6 rounded-lg"
                       >
                         {currentTime.getTime() <
-                        new Date(run.updated_at).getTime() + 30000
+                        new Date(run.updated_at).getTime() + 60000
                           ? Math.floor(
                               (new Date(run.updated_at).getTime() +
-                                30000 -
+                                60000 -
                                 currentTime.getTime()) /
                                 1000
                             )
