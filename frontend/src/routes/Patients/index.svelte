@@ -363,10 +363,10 @@
               Ricevuta
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              N. Viaggi
+              N. viaggi A/R
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              N. Viaggi eseguiti
+              N. trasporti eseguiti
             </th>
           </tr>
         </thead>
@@ -428,10 +428,10 @@
               <td class="py-3 px-6 text-left whitespace-nowrap">
                 <div class="flex items-center gap-2">
                   <span class="font-bold"
-                    >{Math.floor(
+                    >{
                       patient.runs.filter((run) => run.status === "completed")
-                        .length / 2
-                    )}</span
+                        .length
+                    }</span
                   >
                 </div>
               </td>
