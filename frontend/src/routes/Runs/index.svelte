@@ -671,11 +671,25 @@
                         Assegna corsa
                       </button>
                     {:else}
-                      <button
-                        on:click={() => openPopup(run)}
-                        class="bg-lime-500 hover:bg-lime-600 transition text-white font-bold py-2 px-6 rounded-lg"
+                    <button
+                        disabled={currentTime.getTime() <
+                          new Date(run.updated_at).getTime() + 30000}
+                        on:click={() =>
+                          currentTime.getTime() <
+                          new Date(run.updated_at).getTime() + 30000
+                            ? null
+                            : openPopup(run)}
+                        class="bg-lime-700 hover:bg-lime-800 disabled:bg-gray-600 transition text-white font-bold py-2 px-6 rounded-lg"
                       >
-                        Riassegna corsa
+                        {currentTime.getTime() <
+                        new Date(run.updated_at).getTime() + 30000
+                          ? Math.floor(
+                              (new Date(run.updated_at).getTime() +
+                                30000 -
+                                currentTime.getTime()) /
+                                1000
+                            )
+                          : "Riassegna corsa"}
                       </button>
                     {/if}
                     {#if run.status === "pending" && run.car}
