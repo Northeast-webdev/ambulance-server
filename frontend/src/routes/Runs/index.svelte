@@ -446,8 +446,18 @@
     const raw = localStorage.getItem("run_pinged");
     if (!raw) return;
     const run_pinged = JSON.parse(raw);
-    if (run_pinged.count >= 5) {
-      alert("Autista pingato troppe volte");
+    if (run_pinged.count >= 3) {
+      const response = await fetch(
+        import.meta.env.VITE_API_URL + "/api/runs/" + run._id,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ status: 'refused' }),
+        }
+      );
       return;
     }
 
