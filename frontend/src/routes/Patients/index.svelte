@@ -352,7 +352,7 @@
         <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
           <tr>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              Nome e Cognome
+              Cognome Nome
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
               C/S/B
@@ -386,7 +386,7 @@
                     class="font-bold underline text-green-700"
                     on:click={() =>
                       (patient.visibleInfo = !patient.visibleInfo)}
-                    >{patient.name + " " + (patient.surname || "")}</button
+                    >{(patient.surname || "") + " " + patient.name}</button
                   >
                 </div>
               </td>
