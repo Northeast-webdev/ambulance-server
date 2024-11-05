@@ -16,10 +16,10 @@ const createPatient = async (request, reply) => {
 };
 
 const listPatients = async (request, reply) => {
-  const { page = 1, limit = 10, q } = request.query;
+  const { page = 1, limit = 10, surname } = request.query;
   try {
     const patients = await Patient.find({
-      name: { $regex: q || "", $options: "i" },
+      surname: { $regex: surname || "", $options: "i" },
     })
       .skip((page - 1) * limit)
       .limit(limit)
@@ -58,7 +58,7 @@ const updatePatient = async (request, reply) => {
     const patient = await Patient.findOneAndUpdate(
       { _id: request.params.id },
       { name },
-      { new: true }
+      { new: true },
     ).exec();
     return patient;
   } catch (err) {

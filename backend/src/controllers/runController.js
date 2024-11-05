@@ -9,19 +9,15 @@ require("dotenv").config();
 const userConnections = new Map();
 
 const createRun = async (request, reply) => {
-  const { additionalRuns, patient: pat } = request.body;
+  const { additionalRuns, name, surname } = request.body;
   let patID = "";
   try {
     const patient = await Patient.find({
-      name: { $regex: pat || "", $options: "i" },
+      name: { $regex: name || "", $options: "i" },
+      surname: { $regex: surname || "", $options: "i" },
     });
     if (!patient.length) {
-      let words = pat.split(" ");
-
-      for (let i = 0; i < words.length; i++) {
-        words[i] = words[i][0].toUpperCase() + words[i].substr(1).toLowerCase();
-      }
-      const newPatient = new Patient({ name: words.join(" ") });
+      const newPatient = new Patient({ name, surname });
       await newPatient.save();
       patID = newPatient._id;
     }
@@ -37,7 +33,7 @@ const createRun = async (request, reply) => {
         await newRun.save();
         await Patient.updateOne(
           { _id: patID },
-          { $push: { runs: newRun._id } }
+          { $push: { runs: newRun._id } },
         );
       }
     }
@@ -151,7 +147,7 @@ const updateRun = async (request, reply) => {
       updates.length = Math.floor(
         (new Date(run.checkpoints.completed).getTime() -
           new Date(run.checkpoints.ongoing).getTime()) /
-          1000
+          1000,
       );
     }
     if (status === "picked_up") {
@@ -179,15 +175,6 @@ const updateRun = async (request, reply) => {
       return;
     }
     const existingCar = await Car.findOne({ _id: result.car._id.toString() });
-    if (existingCar && status === "ongoing") {
-      await Car.findOneAndUpdate(
-        { _id: existingCar._id.toString() },
-        { status: "busy" },
-        {
-          returnDocument: "after",
-        }
-      );
-    }
     console.log("Existing car:", existingCar);
     const assignedUserId = existingCar.user.toString();
 
@@ -199,7 +186,7 @@ const updateRun = async (request, reply) => {
         JSON.stringify({
           type: "new_run",
           data: result,
-        })
+        }),
       );
       console.log(`New run sent to user ${assignedUserId}`);
     }
@@ -233,7 +220,7 @@ const websocketHandler = (socket, req) => {
     socket.send(
       JSON.stringify({
         error: "Unauthorized",
-      })
+      }),
     );
     socket.close();
     return;
@@ -252,7 +239,7 @@ const websocketHandler = (socket, req) => {
           JSON.stringify({
             type: "pong",
             data: "pong",
-          })
+          }),
         );
         break;
       case "accept_run":
@@ -266,16 +253,7 @@ const websocketHandler = (socket, req) => {
           },
           {
             returnDocument: "after",
-          }
-        );
-        await Car.findOneAndUpdate(
-          { _id: x.car.toString() },
-          {
-            status: "busy",
           },
-          {
-            returnDocument: "after",
-          }
         );
         break;
       case "refuse_run":
@@ -288,13 +266,13 @@ const websocketHandler = (socket, req) => {
           },
           {
             returnDocument: "after",
-          }
+          },
         );
         break;
       case "location_update":
         const { carID, latitude, longitude } = data.data;
         console.log(
-          `Location update from car ${carID}: ${latitude}, ${longitude}`
+          `Location update from car ${carID}: ${latitude}, ${longitude}`,
         );
         // Implement location update logic here
         const car = await Car.findOne({
@@ -345,12 +323,12 @@ const runRoutes = () => {
   fastify.put(
     "/api/runs/:id",
     { preHandler: [fastify.authenticate] },
-    updateRun
+    updateRun,
   );
   fastify.delete(
     "/api/runs/:id",
     { preHandler: [fastify.authenticate] },
-    deleteRun
+    deleteRun,
   );
 
   fastify.register(async (fastify) => {
