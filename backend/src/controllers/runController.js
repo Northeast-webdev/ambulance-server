@@ -10,12 +10,12 @@ const userConnections = new Map();
 
 const createRun = async (request, reply) => {
   const { additionalRuns, name, surname } = request.body;
-  let patID = "";
   try {
     const patient = await Patient.find({
       name: { $regex: name || "", $options: "i" },
       surname: { $regex: surname || "", $options: "i" },
     });
+    let patID = patient.length ? patient[0]._id : "";
     if (!patient.length) {
       const newPatient = new Patient({ name, surname });
       await newPatient.save();
