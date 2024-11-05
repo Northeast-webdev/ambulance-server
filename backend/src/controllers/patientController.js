@@ -17,10 +17,12 @@ const createPatient = async (request, reply) => {
 
 const listPatients = async (request, reply) => {
   const { page = 1, limit = 10, surname } = request.query;
+  const query = {};
+  if (surname) {
+    query.surname = { $regex: surname || "", $options: "i" };
+  }
   try {
-    const patients = await Patient.find({
-      surname: { $regex: surname || "", $options: "i" },
-    })
+    const patients = await Patient.find(query)
       .skip((page - 1) * limit)
       .limit(limit)
       .populate({

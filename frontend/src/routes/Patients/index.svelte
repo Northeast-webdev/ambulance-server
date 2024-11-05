@@ -239,7 +239,7 @@
   })();
   const getPatients = async () => {
     loading = true;
-    fetch(import.meta.env.VITE_API_URL + "/api/patient?surname=" + query, {
+    fetch(import.meta.env.VITE_API_URL + "/api/patient", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
