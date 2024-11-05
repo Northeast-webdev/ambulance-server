@@ -12,7 +12,8 @@
   let action = "add";
   let selected_run = null;
   let meta_verifier = {
-    Paziente: "paziente",
+    Nome: "nome",
+    Cognome: "cognome",
     "C/S/B": "csb",
     Servizio: "servizio",
     Tel: "tel",
@@ -24,7 +25,6 @@
   let types = {
     Titolo: "text",
     Ora: "time",
-    Paziente: "text",
     Servizio: "select",
     "C/S/B": "select",
     Partenza: "autocomplete",
@@ -35,11 +35,14 @@
     Tel: "tel",
     "Note particolari": "textarea",
     Data: "date",
+    Nome: "text",
+    Cognome: "text",
   };
 
   let new_run = {
     csb: "",
-    paziente: "",
+    nome: "",
+    cognome: "",
     servizio: "",
     tel: "",
     n_richiesta: "",
@@ -49,7 +52,8 @@
 
   let edit_run = {
     csb: "",
-    paziente: "",
+    nome: "",
+    cognome: "",
     servizio: "",
     tel: "",
     n_richiesta: "",
@@ -98,7 +102,7 @@
   async function newRun() {
     if (action === "add") {
       try {
-        const { geometry, end_geometry, paziente, ...newR } = new_run;
+        const { geometry, end_geometry, nome, cognome, ...newR } = new_run;
         await fetch(import.meta.env.VITE_API_URL + "/api/runs", {
           method: "POST",
           headers: {
@@ -116,14 +120,16 @@
                 date: run.date,
               },
             })),
-            patient: paziente,
+            name: nome,
+            surname: cognome,
           }),
         });
         show_form = false;
         getPatients();
         new_run = {
           csb: "",
-          paziente: "",
+          nome: "",
+          cognome: "",
           servizio: "",
           tel: "",
           n_richiesta: "",
@@ -135,7 +141,7 @@
       }
     } else {
       try {
-        const { geometry, end_geometry, paziente, ...newR } = edit_run;
+        const { geometry, end_geometry, nome, cognome, ...newR } = edit_run;
         await fetch(
           import.meta.env.VITE_API_URL + "/api/runs/" + selected_run,
           {
@@ -145,13 +151,14 @@
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
             body: JSON.stringify({ meta: newR, geometry }),
-          }
+          },
         );
         show_form = false;
         getPatients();
         edit_run = {
           csb: "",
-          paziente: "",
+          nome: "",
+          cognome: "",
           servizio: "",
           tel: "",
           n_richiesta: "",
@@ -177,17 +184,17 @@
             partenza: "",
             arrivo: "",
             date: "",
-          }
+          },
       );
       setTimeout(() => {
         for (let i = 0; i < new_run.viaggio * 2; i++) {
           const partenzaInput = document.getElementById(`field-Partenza-${i}`);
           const arrivoInput = document.getElementById(`field-Arrivo-${i}`);
           const partenzaAutocomplete = new google.maps.places.Autocomplete(
-            partenzaInput
+            partenzaInput,
           );
           const arrivoAutocomplete = new google.maps.places.Autocomplete(
-            arrivoInput
+            arrivoInput,
           );
 
           partenzaAutocomplete.addListener("place_changed", () => {
@@ -205,7 +212,7 @@
               "Selected place:",
               place.formatted_address,
               place.geometry.location.lat(),
-              place.geometry.location.lng()
+              place.geometry.location.lng(),
             );
           });
           arrivoAutocomplete.addListener("place_changed", () => {
@@ -223,7 +230,7 @@
               "Selected place:",
               place.formatted_address,
               place.geometry.location.lat(),
-              place.geometry.location.lng()
+              place.geometry.location.lng(),
             );
           });
         }
@@ -232,7 +239,7 @@
   })();
   const getPatients = async () => {
     loading = true;
-    fetch(import.meta.env.VITE_API_URL + "/api/patient?q=" + query, {
+    fetch(import.meta.env.VITE_API_URL + "/api/patient?surname=" + query, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -258,10 +265,10 @@
         const partenzaInput = document.getElementById("field-Partenza");
         const arrivoInput = document.getElementById("field-Arrivo");
         const partenzaAutocomplete = new google.maps.places.Autocomplete(
-          partenzaInput
+          partenzaInput,
         );
         const arrivoAutocomplete = new google.maps.places.Autocomplete(
-          arrivoInput
+          arrivoInput,
         );
 
         partenzaAutocomplete.addListener("place_changed", () => {
@@ -279,7 +286,7 @@
             "Selected place:",
             place.formatted_address,
             place.geometry.location.lat(),
-            place.geometry.location.lng()
+            place.geometry.location.lng(),
           );
         });
         arrivoAutocomplete.addListener("place_changed", () => {
@@ -297,7 +304,7 @@
             "Selected place:",
             place.formatted_address,
             place.geometry.location.lat(),
-            place.geometry.location.lng()
+            place.geometry.location.lng(),
           );
         });
       }, 1000);
@@ -312,14 +319,14 @@
 {:else}
   <div class="container mx-auto py-6 px-3">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold">Pazienti</h1>
+      <h1 class="text-3xl font-bold">Prenotazioni</h1>
 
       <button
         on:click={() => newRunToggle("add")}
         class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-md"
       >
         <span class="text-2xl">+</span>
-        <span>Aggiungi Paziente</span>
+        <span>Aggiungi Prenotazione</span>
       </button>
     </div>
 
@@ -328,7 +335,7 @@
         bind:value={query}
         class="border border-gray-400 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 outline-none transition-all"
         type="text"
-        placeholder="Cerca paziente..."
+        placeholder="Cerca cognome..."
       />
       <button
         on:click={getPatients}
@@ -345,7 +352,7 @@
         <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
           <tr>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              Paziente
+              Nome e Cognome
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
               C/S/B
@@ -379,7 +386,7 @@
                     class="font-bold underline text-green-700"
                     on:click={() =>
                       (patient.visibleInfo = !patient.visibleInfo)}
-                    >{patient.name}</button
+                    >{patient.name + " " + (patient.surname || "")}</button
                   >
                 </div>
               </td>
@@ -428,10 +435,8 @@
               <td class="py-3 px-6 text-left whitespace-nowrap">
                 <div class="flex items-center gap-2">
                   <span class="font-bold"
-                    >{
-                      patient.runs.filter((run) => run.status === "completed")
-                        .length
-                    }</span
+                    >{patient.runs.filter((run) => run.status === "completed")
+                      .length}</span
                   >
                 </div>
               </td>
@@ -499,7 +504,7 @@
                           <td class="py-2 px-4 border-l border-green-300"
                             >{run.meta.ora
                               ? new Date(run.meta.date).toLocaleDateString(
-                                  "it-IT"
+                                  "it-IT",
                                 )
                               : "Da assegnare"}</td
                           >
@@ -531,7 +536,8 @@
                                   edit_run = {
                                     csb: run.meta.csb,
                                     ora: run.meta.ora,
-                                    paziente: patient.name,
+                                    nome: patient.name,
+                                    cognome: patient.surname,
                                     servizio: run.meta.servizio,
                                     tel: run.meta.tel,
                                     partenza: run.meta.partenza,
@@ -574,7 +580,7 @@
         <!-- Form Modal -->
         <div class="z-50 transform transition-all duration-500">
           <h2 class="text-3xl font-bold mb-8">
-            {action === "add" ? "Aggiungi paziente" : "Modifica trasporti"}
+            {action === "add" ? "Aggiungi prenotazione" : "Modifica trasporti"}
           </h2>
           <form
             on:submit|preventDefault={() => {
@@ -599,7 +605,9 @@
                         <span
                           class="text-red-500 {key === 'Arrivo' ||
                           key === 'Partenza' ||
-                          key === 'Ora'
+                          key === 'Ora' ||
+                          key === 'N. Richiesta' ||
+                          key === 'Ricevuta'
                             ? 'hidden'
                             : ''}">*</span
                         >
@@ -636,7 +644,7 @@
                         step="1"
                         disabled={action === "add"
                           ? false
-                          : key === "Paziente" || key === "Viaggi"
+                          : key === "Viaggi"
                             ? true
                             : false}
                         autocomplete="off"
@@ -652,10 +660,14 @@
                     {:else if types[key] !== "textarea"}
                       <input
                         type={types[key]}
-                        required={types[key] !== "time"}
+                        required={types[key] !== "time" &&
+                          key !== "N. Richiesta" &&
+                          key !== "Ricevuta"}
                         disabled={action === "add"
                           ? false
-                          : key === "Paziente" || key === "Viaggi"
+                          : key === "Nome" ||
+                              key === "Cognome" ||
+                              key === "Viaggi"
                             ? true
                             : false}
                         id="field-{key}"
@@ -771,7 +783,7 @@
                         step="1"
                         disabled={action === "add"
                           ? false
-                          : key === "Paziente" || key === "Viaggi"
+                          : key === "Viaggi"
                             ? true
                             : false}
                         autocomplete="off"
@@ -790,7 +802,9 @@
                         required={types[key] !== "time"}
                         disabled={action === "add"
                           ? false
-                          : key === "Paziente" || key === "Viaggi"
+                          : key === "Nome" ||
+                              key === "Cognome" ||
+                              key === "Viaggi"
                             ? true
                             : false}
                         id="field-{key}"
@@ -861,7 +875,8 @@
                   show_form = false;
                   new_run = {
                     csb: "",
-                    paziente: "",
+                    nome: "",
+                    cognome: "",
                     servizio: "",
                     tel: "",
                     n_richiesta: "",
@@ -870,7 +885,8 @@
                   };
                   edit_run = {
                     csb: "",
-                    paziente: "",
+                    nome: "",
+                    cognome: "",
                     servizio: "",
                     tel: "",
                     n_richiesta: "",

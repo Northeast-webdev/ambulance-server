@@ -9,10 +9,10 @@
   const navigate = useNavigate();
   const location = useLocation();
   const links = [
-    { name: "Pazienti", path: "/pazienti" },
-    { name: "Utenti", path: "/users" },
-    { name: "Mappa", path: "/" },
+    { name: "Prenotazioni", path: "/pazienti" },
     { name: "Trasporti", path: "/runs" },
+    { name: "Mappa", path: "/" },
+    { name: "Utenti", path: "/users" },
     { name: "Deposito", path: "/garage" },
     // { name: "Mezzi Checklist", path: "/car-checklists" },
     // { name: "Materiali Checklist", path: "/material-checklists" },

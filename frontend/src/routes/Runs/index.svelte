@@ -209,7 +209,7 @@
 
     // Add OpenStreetMap tiles
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-      map
+      map,
     );
 
     if (selected_run.partenza && selected_run.arrivo) {
@@ -223,7 +223,7 @@
         [selected_run.geometry.latitude, selected_run.geometry.longitude],
         {
           icon: partenzaIcon,
-        }
+        },
       ).addTo(map);
 
       const arrivoIcon = L.divIcon({
@@ -239,7 +239,7 @@
         ],
         {
           icon: arrivoIcon,
-        }
+        },
       ).addTo(map);
     }
 
@@ -264,12 +264,12 @@
         [driver.last_location.latitude, driver.last_location.longitude],
         {
           icon: customIcon,
-        }
+        },
       ).addTo(map);
 
       map.setView(
         [driver.last_location.latitude, driver.last_location.longitude],
-        16
+        16,
       );
     });
   }
@@ -301,7 +301,7 @@
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      }
+      },
     )
       .then((response) => response.json())
       .then((data) => {
@@ -359,7 +359,7 @@
       window.history.replaceState(
         {},
         "",
-        window.location.pathname + `?date=${date.toISOString().split("T")[0]}`
+        window.location.pathname + `?date=${date.toISOString().split("T")[0]}`,
       );
     } else {
       window.history.replaceState({}, "", window.location.pathname);
@@ -373,7 +373,7 @@
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      }
+      },
     )
       .then((response) => response.json())
       .then((data) => {
@@ -403,7 +403,7 @@
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({ car: selected_car }),
-        }
+        },
       );
       const data = await response.json();
       if (data.run) {
@@ -427,7 +427,7 @@
             cars.find((x) => x._id === selected_car).last_location.latitude,
             cars.find((x) => x._id === selected_car).last_location.longitude,
           ],
-          16
+          16,
         );
         selected_car = null;
       }, 1000);
@@ -440,7 +440,7 @@
     if (!exists_ping) {
       localStorage.setItem(
         "run_pinged",
-        JSON.stringify({ run: run._id, count: 1 })
+        JSON.stringify({ run: run._id, count: 1 }),
       );
     }
     const raw = localStorage.getItem("run_pinged");
@@ -455,8 +455,8 @@
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify({ status: 'refused' }),
-        }
+          body: JSON.stringify({ status: "refused" }),
+        },
       );
       return;
     }
@@ -466,7 +466,7 @@
       JSON.stringify({
         run: run._id,
         count: run._id === run_pinged.run ? parseInt(run_pinged.count) + 1 : 1,
-      })
+      }),
     );
     try {
       const response = await fetch(
@@ -478,7 +478,7 @@
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({ notification_sent: true, car: run.car._id }),
-        }
+        },
       );
       const data = await response.json();
       runs = runs.map((r) => {
@@ -590,7 +590,7 @@
                 {:else if key === "Data"}
                   <td class="py-3 px-4 border-r border-inherit"
                     >{new Date(run.meta[meta_verifier[key]]).toLocaleDateString(
-                      "it-IT"
+                      "it-IT",
                     ) ?? run.created_at}<br />{run.meta.ora || "-"}</td
                   >
                 {:else if key === "Paziente"}
@@ -601,8 +601,7 @@
                         run.visibleInfo = !run.visibleInfo;
                       }}
                     >
-                      {run.meta[meta_verifier[key]] ||
-                        run.patient.name ||
+                      {run.patient.name + " " + (run.patient.surname || "") ||
                         "Nessun paziente"}
                     </button>
                   </td>
@@ -681,7 +680,7 @@
                         Assegna corsa
                       </button>
                     {:else}
-                    <button
+                      <button
                         disabled={currentTime.getTime() <
                           new Date(run.updated_at).getTime() + 60000}
                         on:click={() =>
@@ -697,7 +696,7 @@
                               (new Date(run.updated_at).getTime() +
                                 60000 -
                                 currentTime.getTime()) /
-                                1000
+                                1000,
                             )
                           : "Riassegna corsa"}
                       </button>
@@ -719,7 +718,7 @@
                               (new Date(run.updated_at).getTime() +
                                 60000 -
                                 currentTime.getTime()) /
-                                1000
+                                1000,
                             )
                           : "Notifica autista"}
                       </button>
@@ -813,7 +812,7 @@
                             car.last_location.latitude,
                             car.last_location.longitude,
                           ],
-                          16
+                          16,
                         );
                         selected_car === car._id
                           ? (selected_car = null)
