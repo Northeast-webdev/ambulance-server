@@ -326,7 +326,7 @@
         class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-md"
       >
         <span class="text-2xl">+</span>
-        <span>Aggiungi Prenotazione</span>
+        <span>Nuova Prenotazione</span>
       </button>
     </div>
 
