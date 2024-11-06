@@ -580,7 +580,7 @@
         <!-- Form Modal -->
         <div class="z-50 transform transition-all duration-500">
           <h2 class="text-3xl font-bold mb-8">
-            {action === "add" ? "Aggiungi prenotazione" : "Modifica trasporti"}
+            {action === "add" ? "Nuova prenotazione" : "Modifica trasporti"}
           </h2>
           <form
             on:submit|preventDefault={() => {
