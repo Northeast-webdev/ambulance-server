@@ -13,13 +13,11 @@
   $: type = show_password ? "text" : "password";
   let loading = false;
   let users = [];
-  let cars = [];
   let show_form = false;
   let action = "new";
   let user_id = "";
   let userType = "driver";
   let meta_verifier = {
-    Mezzo: "car",
     Email: "email",
     Username: "username",
     Password: "password",
@@ -36,7 +34,6 @@
     last_name: "",
     dob: "",
     phone: "",
-    car: "",
   };
 
   onMount(() => {
@@ -45,25 +42,8 @@
     }
     loading = true;
     getUsers(userType);
-    getCars();
     loading = false;
   });
-
-  async function getCars() {
-    fetch(import.meta.env.VITE_API_URL + "/api/cars?limit=50", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        cars = data.cars;
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  }
 
   function newUserToggle() {
     show_form = !show_form;
@@ -72,7 +52,7 @@
 
   async function deleteCar(id) {
     const confirm = window.confirm(
-      "Sei sicuro di voler eliminare questo utente?"
+      "Sei sicuro di voler eliminare questo utente?",
     );
     if (!confirm) {
       return;
@@ -86,7 +66,7 @@
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
       const data = await response.json();
       console.log("data: ", data);
@@ -112,7 +92,7 @@
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
             body: JSON.stringify({ ...new_user, role: userType }),
-          }
+          },
         );
         const data = await response.json();
         console.log("data: ", data);
@@ -130,7 +110,6 @@
           last_name: "",
           dob: "",
           phone: "",
-          car: "",
         };
         show_form = false;
       } catch (error) {
@@ -147,7 +126,7 @@
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
             body: JSON.stringify({ ...new_user }),
-          }
+          },
         );
         const data = await response.json();
         if (data.error) {
@@ -163,7 +142,6 @@
           last_name: "",
           dob: "",
           phone: "",
-          car: "",
         };
         show_form = false;
       } catch (error) {
@@ -373,7 +351,6 @@
                         last_name: user.last_name,
                         dob: user.dob.split("T")[0],
                         phone: user.phone,
-                        car: user.car ? user.car._id : "",
                       };
                       show_form = true;
                     }}
@@ -421,7 +398,6 @@
             last_name: "",
             dob: "",
             phone: "",
-            car: "",
           };
         }}
         aria-label="Close form"
@@ -434,27 +410,8 @@
       <form on:submit|preventDefault={newUser} class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           {#each Object.keys(meta_verifier) as key}
-            <div
-              class={key === "Mezzo" && userType !== "driver" ? "hidden" : ""}
-            >
-              {#if key === "Mezzo" && userType === "driver"}
-                <label
-                  for="field-{key}"
-                  class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  {key} <span class="text-red-500">*</span>
-                </label>
-                <select
-                  id="field-{key}"
-                  class="block w-full border outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
-                  bind:value={new_user[meta_verifier[key]]}
-                >
-                  <option value="">Seleziona</option>
-                  {#each cars as car}
-                    <option value={car._id}>{car.name}</option>
-                  {/each}
-                </select>
-              {:else if key !== "Mezzo"}
+            <div>
+              {#if key !== "Mezzo"}
                 <label
                   for="field-{key}"
                   class="block text-sm font-medium text-gray-700 mb-1"
