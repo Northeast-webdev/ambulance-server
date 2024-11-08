@@ -98,7 +98,16 @@
     Partenza: "partenza",
     Arrivo: "arrivo",
   };
-
+  let presetAddresses = [
+    {
+      label: "HO",
+      full: "Sestri Levante Hospital, Via A. Terzi 37, Sestri Levante",
+      geometry: {
+        latitude: 44.2752759,
+        longitude: 9.4059067,
+      },
+    },
+  ];
   async function newRun() {
     if (action === "add") {
       try {
@@ -179,6 +188,12 @@
     let route = "";
     let subpremise = "";
     let locality = "";
+    let formattedName = "";
+    console.log(data.address_components);
+    // Check if the place is a hospital
+    if (data.types.includes("hospital")) {
+      formattedName = `${data.name}`;
+    }
 
     data.address_components.forEach((component) => {
       if (component.types.includes("street_number")) {
@@ -196,13 +211,18 @@
     });
 
     // Combine the extracted parts into the desired format
-    let address = `${route} ${streetNumber}`;
+    let address = `${route} ${streetNumber || route ? streetNumber + ", " : ""}`;
     if (subpremise) {
       address += `/${subpremise}`;
     }
-    address += `, ${locality}`;
+    address += `${locality}`;
 
-    return address;
+    // Prepend the hospital name if it exists
+    if (formattedName) {
+      address = `${formattedName}, ${address}`;
+    }
+
+    return address.trim();
   }
   $: (() => {
     if (show_form && action !== "edit") {
@@ -714,7 +734,7 @@
                 {/each}
                 {#each Array.from({ length: new_run.viaggio * 2 }) as _, i}
                   <div
-                    class="md:col-span-2 lg:col-span-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                    class="md:col-span-2 lg:col-span-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative"
                   >
                     {#each Object.keys(additionalRunsMeta) as key}
                       <div
@@ -754,9 +774,66 @@
                                 [additionalRunsMeta[key]]: e.target.value,
                               })}
                           />
+                          {#if (i + 1) % 2 && (key === "Partenza" || key === "Arrivo")}
+                            <div class="mt-2 flex gap-2">
+                              {#each presetAddresses as address}
+                                <button
+                                  type="button"
+                                  on:click={() => {
+                                    additionalRuns[i][key.toLowerCase()] =
+                                      address.full;
+                                    if (key === "Partenza") {
+                                      additionalRuns[i].geometry =
+                                        address.geometry;
+                                    } else {
+                                      additionalRuns[i].end_geometry =
+                                        address.geometry;
+                                    }
+                                  }}
+                                  class="bg-gray-200 hover:bg-gray-400 rounded-md px-2 py-1"
+                                >
+                                  {address.label}
+                                </button>
+                              {/each}
+                            </div>
+                          {/if}
                         {/if}
                       </div>
                     {/each}
+                    {#if i % 2}
+                      <button
+                        type="button"
+                        on:click={() => {
+                          additionalRuns[i].partenza =
+                            additionalRuns[i - 1].arrivo;
+                          additionalRuns[i].arrivo =
+                            additionalRuns[i - 1].partenza;
+                          additionalRuns[i].geometry =
+                            additionalRuns[i - 1].end_geometry;
+                          additionalRuns[i].end_geometry =
+                            additionalRuns[i - 1].geometry;
+                          console.log(additionalRuns[i]);
+                          console.log(additionalRuns[i - 1]);
+                        }}
+                        class="absolute -top-5 p-2 bg-gray-200 rounded-md flex items-center justify-center -right-11 lock"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          fill="currentColor"
+                          class="bi bi-link-45deg"
+                          viewBox="0 0 16 16"
+                        >
+                          <path
+                            d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z"
+                          />
+                          <path
+                            d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243z"
+                          />
+                        </svg></button
+                      >
+                    {/if}
                   </div>
                   {#if i % 2}
                     <div
@@ -949,3 +1026,27 @@
     </div>
   </div>
 {/if}
+
+<style>
+  .lock::before {
+    content: "";
+    height: 2rem;
+    width: 1px;
+    background: gray;
+    display: block;
+    position: absolute;
+    top: -3rem;
+    left: 1.25rem;
+  }
+
+  .lock::after {
+    content: "";
+    height: 2rem;
+    width: 1px;
+    background: gray;
+    display: block;
+    position: absolute;
+    bottom: -3rem;
+    left: 1.25rem;
+  }
+</style>
