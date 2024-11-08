@@ -174,7 +174,36 @@
       }
     }
   }
+  function extractFullAddress(data) {
+    let streetNumber = "";
+    let route = "";
+    let subpremise = "";
+    let locality = "";
 
+    data.address_components.forEach((component) => {
+      if (component.types.includes("street_number")) {
+        streetNumber = component.long_name;
+      }
+      if (component.types.includes("route")) {
+        route = component.long_name;
+      }
+      if (component.types.includes("subpremise")) {
+        subpremise = component.long_name;
+      }
+      if (component.types.includes("locality")) {
+        locality = component.long_name;
+      }
+    });
+
+    // Combine the extracted parts into the desired format
+    let address = `${route} ${streetNumber}`;
+    if (subpremise) {
+      address += `/${subpremise}`;
+    }
+    address += `, ${locality}`;
+
+    return address;
+  }
   $: (() => {
     if (show_form && action !== "edit") {
       additionalRuns = Array.from({ length: new_run.viaggio * 2 }).map(
@@ -203,14 +232,15 @@
               console.error("No geometry available for the selected place");
               return;
             }
-            additionalRuns[i].partenza = place.formatted_address;
+            const str = extractFullAddress(place);
+            additionalRuns[i].partenza = str;
             additionalRuns[i].geometry = {
               latitude: place.geometry.location.lat(),
               longitude: place.geometry.location.lng(),
             };
             console.log(
               "Selected place:",
-              place.formatted_address,
+              str,
               place.geometry.location.lat(),
               place.geometry.location.lng(),
             );
@@ -221,14 +251,15 @@
               console.error("No geometry available for the selected place");
               return;
             }
-            additionalRuns[i].arrivo = place.formatted_address;
+            const str = extractFullAddress(place);
+            additionalRuns[i].arrivo = str;
             additionalRuns[i].end_geometry = {
               latitude: place.geometry.location.lat(),
               longitude: place.geometry.location.lng(),
             };
             console.log(
               "Selected place:",
-              place.formatted_address,
+              str,
               place.geometry.location.lat(),
               place.geometry.location.lng(),
             );
@@ -277,14 +308,15 @@
             console.error("No geometry available for the selected place");
             return;
           }
-          edit_run.partenza = place.formatted_address;
+          const str = extractFullAddress(place);
+          edit_run.partenza = str;
           edit_run.geometry = {
             latitude: place.geometry.location.lat(),
             longitude: place.geometry.location.lng(),
           };
           console.log(
             "Selected place:",
-            place.formatted_address,
+            str,
             place.geometry.location.lat(),
             place.geometry.location.lng(),
           );
@@ -295,14 +327,15 @@
             console.error("No geometry available for the selected place");
             return;
           }
-          edit_run.arrivo = place.formatted_address;
+          const str = extractFullAddress(place);
+          edit_run.arrivo = str;
           edit_run.end_geometry = {
             latitude: place.geometry.location.lat(),
             longitude: place.geometry.location.lng(),
           };
           console.log(
             "Selected place:",
-            place.formatted_address,
+            str,
             place.geometry.location.lat(),
             place.geometry.location.lng(),
           );
