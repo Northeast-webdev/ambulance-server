@@ -376,7 +376,7 @@
 
   onMount(getRuns);
 
-  async function updateRun() {
+  async function updateRun(isProgrammed = false) {
     if (!selected_car) {
       return;
     }
@@ -389,7 +389,10 @@
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify({ car: selected_car }),
+          body: JSON.stringify({
+            car: selected_car,
+            status: isProgrammed ? "ongoing" : "pending",
+          }),
         },
       );
       const data = await response.json();
@@ -741,6 +744,12 @@
               class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg"
             >
               Assegna mezzo
+            </button>
+            <button
+              on:click={() => updateRun(true)}
+              class="bg-purple-700 hover:bg-purple-900 text-white font-bold py-2 px-6 rounded-lg"
+            >
+              Programmata mezzo
             </button>
             <button
               class="bg-amber-700 hover:bg-amber-900 text-white font-bold py-2 px-6 rounded-lg"
