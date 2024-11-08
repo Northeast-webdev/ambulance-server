@@ -380,6 +380,12 @@
     if (!selected_car) {
       return;
     }
+    const query = {
+      car: selected_car,
+    };
+    if (isProgrammed) {
+      query.status = "ongoing";
+    }
     try {
       const response = await fetch(
         import.meta.env.VITE_API_URL + "/api/runs/" + selected_run,
@@ -389,10 +395,7 @@
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify({
-            car: selected_car,
-            status: isProgrammed ? "ongoing" : "pending",
-          }),
+          body: JSON.stringify(query),
         },
       );
       const data = await response.json();
@@ -740,7 +743,7 @@
           </p>
           <div class="flex items-center gap-4 mb-6">
             <button
-              on:click={updateRun}
+              on:click={() => updateRun(false)}
               class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg"
             >
               Assegna mezzo
