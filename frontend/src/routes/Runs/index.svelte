@@ -268,6 +268,37 @@
 
   let date = new Date();
 
+  const cancelRun = async (run) => {
+    const confirmation = prompt("Sei sicuro? Digita 'SI' per confermare");
+    if (confirmation && confirmation.match(new RegExp("si", "gi"))) {
+      console.log("cancelled run", run);
+      try {
+        const response = await fetch(
+          import.meta.env.VITE_API_URL + "/api/runs/" + run._id,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ status: "pending", car: "" }),
+          },
+        );
+        const data = await response.json();
+        if (data.run) {
+          runs = runs.map((run) => {
+            if (run._id === data.run._id) {
+              return data.run;
+            }
+            return run;
+          });
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    }
+  };
+
   const getRuns = async () => {
     // get query params and set initial variables to url params
     const urlParams = new URLSearchParams(window.location.search);
@@ -385,6 +416,7 @@
     };
     if (isProgrammed) {
       query.status = "ongoing";
+      query.programmed = true;
     }
     try {
       const response = await fetch(
@@ -534,7 +566,7 @@
                 >
               {:else if key !== "Titolo" && key !== "Note particolari"}
                 <th
-                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b min-w-20"
                   >{key}</th
                 >
               {/if}
@@ -619,7 +651,9 @@
                   class="py-3 px-4"
                   colspan={Object.keys(meta_verifier).length}
                 >
-                  <div class="flex items-center justify-evenly mx-10">
+                  <div
+                    class="flex items-center justify-between mx-auto max-w-4xl"
+                  >
                     <div class="flex items-center gap-4">
                       <p class="text-gray-800">Status paziente</p>
                       <div
@@ -692,6 +726,14 @@
                                 1000,
                             )
                           : "Riassegna corsa"}
+                      </button>
+                    {/if}
+                    {#if run.status !== "pending" && run.status !== "refused" && run.status !== "completed"}
+                      <button
+                        on:click={() => cancelRun(run)}
+                        class="bg-red-500 hover:bg-red-600 transition text-white font-bold py-2 px-6 rounded-lg"
+                      >
+                        Annulla corsa
                       </button>
                     {/if}
                     {#if run.status === "pending" && run.car}

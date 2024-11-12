@@ -127,7 +127,8 @@ const getRun = async (request, reply) => {
 };
 
 const updateRun = async (request, reply) => {
-  const { car, user, meta, status, notification_sent, geometry } = request.body;
+  const { car, user, meta, status, notification_sent, geometry, programmed } =
+    request.body;
   const updates = {};
   const run = await Run.findOne({ _id: request.params.id });
   // if some fields are missing, do not update them
@@ -138,6 +139,7 @@ const updateRun = async (request, reply) => {
   }
   if (user) updates.user = user;
   if (meta) updates.meta = meta;
+  if (programmed) updates.programmed = programmed;
   if (status) {
     updates.status = status;
     if (status === "completed") {

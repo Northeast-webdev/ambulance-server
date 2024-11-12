@@ -17,6 +17,7 @@ const runSchema = new Schema({
     picked_up: { type: Date, default: null },
     completed: { type: Date, default: null },
   },
+  programmed: { type: Boolean, default: false },
   length: { type: Number, default: 0 },
   status: { type: String, default: "pending" },
   created_at: { type: Date, default: Date.now },
