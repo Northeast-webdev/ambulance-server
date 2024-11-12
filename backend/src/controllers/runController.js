@@ -127,8 +127,16 @@ const getRun = async (request, reply) => {
 };
 
 const updateRun = async (request, reply) => {
-  const { car, user, meta, status, notification_sent, geometry, programmed } =
-    request.body;
+  const {
+    car,
+    user,
+    meta,
+    status,
+    notification_sent,
+    geometry,
+    programmed,
+    run_cancelled,
+  } = request.body;
   const updates = {};
   const run = await Run.findOne({ _id: request.params.id });
   // if some fields are missing, do not update them
@@ -172,11 +180,13 @@ const updateRun = async (request, reply) => {
       .populate("patient");
     console.log("Status:", status);
     console.log("Car:", car);
-    if (!result.car || !car) {
+    if ((!result.car || !car) && !run_cancelled) {
       reply.send({ run: result });
       return;
     }
-    const existingCar = await Car.findOne({ _id: result.car._id.toString() });
+    const existingCar = await Car.findOne({
+      _id: run_cancelled ? run.car?._id.toString() : result.car._id.toString(),
+    });
     console.log("Existing car:", existingCar);
     const assignedUserId = existingCar.user.toString();
 
@@ -186,11 +196,11 @@ const updateRun = async (request, reply) => {
     if (assignedUserConnection) {
       assignedUserConnection.send(
         JSON.stringify({
-          type: "new_run",
+          type: run_cancelled ? "stop_run" : "new_run",
           data: result,
         }),
       );
-      console.log(`New run sent to user ${assignedUserId}`);
+      console.log(`Run sent to user ${assignedUserId}`);
     }
     reply.send({ run: result });
   } catch (error) {
