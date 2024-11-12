@@ -48,6 +48,7 @@
     n_richiesta: "",
     ricevuta: "",
     viaggio: "1",
+    note_particolari: "",
   };
 
   let edit_run = {
@@ -63,6 +64,7 @@
     partenza: "",
     arrivo: "",
     viaggio: "1",
+    note_particolari: "",
   };
   let options = {
     servizio: [
@@ -144,6 +146,7 @@
           n_richiesta: "",
           ricevuta: "",
           viaggio: "1",
+          note_particolari: "",
         };
       } catch (error) {
         console.error("Error:", error);
@@ -177,6 +180,7 @@
           partenza: "",
           arrivo: "",
           viaggio: "1",
+          note_particolari: "",
         };
       } catch (error) {
         console.error("Error:", error);
@@ -599,6 +603,7 @@
                                     ricevuta: run.meta.ricevuta,
                                     viaggio: "1",
                                     date: run.meta.date,
+                                    note_particolari: run.meta.note_particolari,
                                   };
                                   newRunToggle("edit");
                                 }}
@@ -856,7 +861,9 @@
                         <span
                           class="text-red-500 {key === 'Arrivo' ||
                           key === 'Partenza' ||
-                          key === 'Ora'
+                          key === 'Ora' ||
+                          key === 'N. Richiesta' ||
+                          key === 'Ricevuta'
                             ? 'hidden'
                             : ''}">*</span
                         >
@@ -909,7 +916,9 @@
                     {:else if types[key] !== "textarea"}
                       <input
                         type={types[key]}
-                        required={types[key] !== "time"}
+                        required={types[key] !== "time" &&
+                          key !== "N. Richiesta" &&
+                          key !== "Ricevuta"}
                         disabled={action === "add"
                           ? false
                           : key === "Nome" ||
@@ -973,7 +982,7 @@
                 <textarea
                   id="field-note_particolari"
                   class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
-                  bind:value={new_run["note_particolari"]}
+                  bind:value={edit_run["note_particolari"]}
                 ></textarea>
               </div>
             </div>
@@ -992,6 +1001,7 @@
                     n_richiesta: "",
                     ricevuta: "",
                     viaggio: "1",
+                    note_particolari: "",
                   };
                   edit_run = {
                     csb: "",
@@ -1006,6 +1016,7 @@
                     partenza: "",
                     arrivo: "",
                     viaggio: "1",
+                    note_particolari: "",
                   };
                 }}
                 aria-label="Close form"

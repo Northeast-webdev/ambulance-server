@@ -285,6 +285,7 @@
               status: "pending",
               car: "",
               run_cancelled: true,
+              programmed: false,
             }),
           },
         );
@@ -732,7 +733,7 @@
                           : "Riassegna corsa"}
                       </button>
                     {/if}
-                    {#if run.status !== "pending" && run.status !== "refused" && run.status !== "completed"}
+                    {#if run.status !== "pending" && run.status !== "completed"}
                       <button
                         on:click={() => cancelRun(run)}
                         class="bg-red-500 hover:bg-red-600 transition text-white font-bold py-2 px-6 rounded-lg"

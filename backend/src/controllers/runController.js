@@ -147,7 +147,7 @@ const updateRun = async (request, reply) => {
   }
   if (user) updates.user = user;
   if (meta) updates.meta = meta;
-  if (programmed) updates.programmed = programmed;
+  if (programmed !== undefined) updates.programmed = programmed;
   if (status) {
     updates.status = status;
     if (status === "completed") {
