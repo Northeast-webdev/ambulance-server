@@ -733,7 +733,7 @@
                           : "Riassegna corsa"}
                       </button>
                     {/if}
-                    {#if run.status !== "pending" && run.status !== "completed"}
+                    {#if run.status !== "completed" && run.car}
                       <button
                         on:click={() => cancelRun(run)}
                         class="bg-red-500 hover:bg-red-600 transition text-white font-bold py-2 px-6 rounded-lg"
