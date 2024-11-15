@@ -968,6 +968,28 @@
                           edit_run[additionalRunsMeta[key]] = e.target.value;
                         }}
                       />
+
+                      {#if key === "Partenza" || key === "Arrivo"}
+                        <div class="mt-2 flex gap-2">
+                          {#each presetAddresses as address}
+                            <button
+                              type="button"
+                              on:click={() => {
+                                edit_run[additionalRunsMeta[key]] =
+                                  address.full;
+                                if (key === "Partenza") {
+                                  edit_run.geometry = address.geometry;
+                                } else {
+                                  edit_run.end_geometry = address.end_geometry;
+                                }
+                              }}
+                              class="bg-gray-200 hover:bg-gray-400 rounded-md px-2 py-1"
+                            >
+                              {address.label}
+                            </button>
+                          {/each}
+                        </div>
+                      {/if}
                     </div>
                   {/each}
                 </div>

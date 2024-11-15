@@ -353,26 +353,13 @@
       .then((data) => {
         cars = data.cars;
         freeCars = data.cars.filter((x) => x.status === "free");
+        drivers = data.cars;
       })
       .catch((error) => {
         console.error("Error:", error);
       })
       .finally(() => {
         loading = false;
-      });
-
-    fetch(import.meta.env.VITE_API_URL + "/api/cars", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        drivers = data.cars;
-      })
-      .catch((error) => {
-        console.error("Error:", error);
       });
   };
 
@@ -439,9 +426,9 @@
       if (data.run) {
         runs = runs.map((run) => {
           if (run._id === data.run._id) {
-            return data.run;
+            return { ...data.run, visibleInfo: true };
           }
-          return run;
+          return { ...run, visibleInfo: true };
         });
       }
     } catch (error) {
@@ -450,7 +437,6 @@
       showPopup = false;
       map = null;
       showFinalPopup = true;
-      await getRuns();
       setTimeout(() => {
         map.setView(
           [
@@ -657,7 +643,7 @@
                   colspan={Object.keys(meta_verifier).length}
                 >
                   <div
-                    class="flex items-center justify-between mx-auto max-w-4xl"
+                    class="flex items-center justify-between mx-auto max-w-5xl"
                   >
                     <div class="flex items-center gap-4">
                       <p class="text-gray-800">Status paziente</p>
@@ -694,7 +680,7 @@
                       <p class="text-gray-800 cursor-pointer py-2 px-6">
                         Corsa completata
                       </p>
-                    {:else if run.car && run.status !== "refused"}
+                    {:else if run.car}
                       <p class="text-gray-800 cursor-pointer">
                         Mezzo assegnato: <span class="hover:underline"
                           >{run.car.name} - {run.car.user
@@ -733,14 +719,6 @@
                           : "Riassegna corsa"}
                       </button>
                     {/if}
-                    {#if run.status !== "completed" && run.car}
-                      <button
-                        on:click={() => cancelRun(run)}
-                        class="bg-red-500 hover:bg-red-600 transition text-white font-bold py-2 px-6 rounded-lg"
-                      >
-                        Annulla corsa
-                      </button>
-                    {/if}
                     {#if run.status === "pending" && run.car}
                       <button
                         disabled={currentTime.getTime() <
@@ -761,6 +739,15 @@
                                 1000,
                             )
                           : "Notifica autista"}
+                      </button>
+                    {/if}
+
+                    {#if run.status !== "completed" && run.car && currentTime.getTime() < new Date(run.updated_at).getTime() + 60000}
+                      <button
+                        on:click={() => cancelRun(run)}
+                        class="bg-red-500 hover:bg-red-600 transition text-white font-bold py-2 px-6 rounded-lg"
+                      >
+                        Annulla corsa
                       </button>
                     {/if}
                   </div>

@@ -176,7 +176,13 @@ const updateRun = async (request, reply) => {
       returnDocument: "after",
     });
     const result = await Run.findOne({ _id: request.params.id })
-      .populate("car")
+      .populate({
+        path: "car",
+        populate: {
+          path: "user",
+          model: "User",
+        },
+      })
       .populate("patient");
     console.log("Status:", status);
     console.log("Car:", car);
