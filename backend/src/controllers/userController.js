@@ -35,10 +35,16 @@ const getUser = async (request, reply) => {
           {
             path: "car_checklists",
             model: "CarChecklist",
+            options: {
+              sort: { created_at: -1 },
+            },
           },
           {
             path: "material_checklists",
             model: "MaterialChecklist",
+            options: {
+              sort: { created_at: -1 },
+            },
           },
         ],
       })
