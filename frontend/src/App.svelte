@@ -12,6 +12,7 @@
   import Map from "./routes/Map/index.svelte";
   import MaterialChecklists from "./routes/MaterialChecklists/index.svelte";
   import Patients from "./routes/Patients/index.svelte";
+  import Prenotazione from "./routes/Prenotazione/index.svelte";
   import Runs from "./routes/Runs/index.svelte";
   import Stats from "./routes/Stats/index.svelte";
   import Users from "./routes/Users/index.svelte";
@@ -91,6 +92,9 @@
       </PrivateRoute>
       <PrivateRoute path="/pazienti">
         <Patients />
+      </PrivateRoute>
+      <PrivateRoute path="/prenotazione">
+        <Prenotazione />
       </PrivateRoute>
       <PrivateRoute path="/users">
         <Users />

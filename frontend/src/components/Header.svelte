@@ -9,7 +9,8 @@
   const navigate = useNavigate();
   const location = useLocation();
   const links = [
-    { name: "Prenotazioni", path: "/pazienti" },
+    { name: "Pazienti", path: "/pazienti" },
+    { name: "Nuova Prenotazione", path: "/prenotazione" },
     { name: "Trasporti", path: "/runs" },
     { name: "Mappa", path: "/" },
     { name: "Utenti", path: "/users" },

@@ -208,7 +208,7 @@
     loading = true;
     fetch(
       import.meta.env.VITE_API_URL +
-        `/api/runs?start_date=${start_date.toISOString().split("T")[0] || ""}&end_date=${end_date.toISOString().split("T")[0] || ""}&status=completed&user=${selected_user || ""}&car=${isCar ? selected_user : ""}`,
+        `/api/runs?start_date=${start_date.toISOString().split("T")[0] || ""}&end_date=${end_date.toISOString().split("T")[0] || ""}&status=completed${!isCar ? "&user=" + selected_user : ""}${isCar ? "&car=" + selected_user : ""}`,
       {
         method: "GET",
         headers: {
@@ -218,6 +218,7 @@
     )
       .then((response) => response.json())
       .then((data) => {
+        console.log(data);
         runs = data.runs.reverse();
       })
       .catch((error) => {
@@ -239,51 +240,72 @@
   onMount(getRuns);
 </script>
 
-<div>
-  <h2 class="text-xl text-gray-800 text-center font-bold">{label}</h2>
-  <div class="mt-8 mb-4 flex items-center justify-between gap-4 mx-8">
-    <div class="flex items-center gap-3">
-      <DateInput
-        bind:value={start_date}
-        format="dd/MM/yyyy"
-        class="stats"
-        dynamicPositioning
-      />
-      <p class="font-black text-green-800">-</p>
-      <DateInput
-        bind:value={end_date}
-        format="dd/MM/yyyy"
-        class="stats"
-        dynamicPositioning
-      />
+<div class="flex gap-[2.5%] items-start">
+  <div class="flex-1 sticky top-28">
+    <h2 class="text-xl text-gray-800 text-center font-bold">{label}</h2>
+    <div class="mt-8 mb-4 flex items-center justify-between gap-4 mx-8">
+      <div class="flex items-center gap-3">
+        <DateInput
+          bind:value={start_date}
+          format="dd/MM/yyyy"
+          class="stats"
+          dynamicPositioning
+        />
+        <p class="font-black text-green-800">-</p>
+        <DateInput
+          bind:value={end_date}
+          format="dd/MM/yyyy"
+          class="stats"
+          dynamicPositioning
+        />
+      </div>
+      <select
+        class="font-bold ml-auto text-green-700 border-green-700 border rounded-lg py-1 px-4 bg-white w-32"
+        bind:value={selected_user}
+      >
+        <option value="">Tutti</option>
+        {#each userList as user}
+          <option value={user._id}
+            >{isCar
+              ? user.name
+              : user.first_name + " " + user.last_name}</option
+          >
+        {/each}
+      </select>
+      <button
+        disabled={loading}
+        on:click={getRunsByDate}
+        class="{loading
+          ? 'bg-gray-400'
+          : 'bg-lime-600 hover:bg-lime-800'} text-white w-20 font-bold py-1 px-4 rounded-lg transition duration-200"
+      >
+        {loading ? "..." : "Scegli"}
+      </button>
     </div>
-    <select
-      class="font-bold ml-auto text-green-700 border-green-700 border rounded-lg py-1 px-4 bg-white w-32"
-      bind:value={selected_user}
-    >
-      <option value="">Tutti</option>
-      {#each userList as user}
-        <option value={user._id}
-          >{isCar ? user.name : user.first_name + " " + user.last_name}</option
-        >
-      {/each}
-    </select>
-    <button
-      disabled={loading}
-      on:click={getRunsByDate}
-      class="{loading
-        ? 'bg-gray-400'
-        : 'bg-lime-600 hover:bg-lime-800'} text-white w-20 font-bold py-1 px-4 rounded-lg transition duration-200"
-    >
-      {loading ? "..." : "Scegli"}
-    </button>
+    {#if loading}
+      <p
+        class="text-lg font-bold text-center h-80 flex justify-center items-center"
+      >
+        <span>Loading...</span>
+      </p>
+    {/if}
+    <canvas class={loading ? "opacity-0" : ""} bind:this={chartCanvas}></canvas>
   </div>
-  {#if !runs.length}
-    <p
-      class="text-lg font-bold text-center h-80 flex justify-center items-center"
-    >
-      <span>Loading...</span>
-    </p>
-  {/if}
-  <canvas bind:this={chartCanvas}></canvas>
+  <div class="flex-1">
+    <ul class="mt-8 space-y-4 px-8">
+      {#each chartLabels as l, index}
+        <li class="bg-gray-100 p-4 rounded-lg shadow-sm">
+          <p class="font-semibold">{new Date(l).toLocaleDateString("it-IT")}</p>
+          {#if isAveragePickup || isAverageLength}
+            <p>{label}: {formatTime(chartCounts[index])}</p>
+          {:else}
+            <p>{label}: {chartCounts[index]}</p>
+          {/if}
+        </li>
+      {/each}
+    </ul>
+    {#if !chartLabels.length}
+      <p class="text-center text-gray-500 mt-4">Nessun dato disponibile</p>
+    {/if}
+  </div>
 </div>

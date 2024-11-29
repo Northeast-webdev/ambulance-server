@@ -9,8 +9,8 @@
   let type = "users";
 
   const getData = async (/** @type {string} */ t) => {
-    type = t || "users";
-    if (t === "users") {
+    type = t || type;
+    if (type === "users") {
       fetch(import.meta.env.VITE_API_URL + "/api/users?limit=50&type=driver", {
         method: "GET",
         headers: {
@@ -95,11 +95,11 @@
 
   <!-- Chart Container -->
   {#if type === "users"}
-    <div class="flex flex-wrap gap-[2.5%]">
-      <div class="w-full max-w-[47.5%]">
+    <div class="">
+      <div class="w-full">
         <Chart userList={users} label="Trasporti al giorno" />
       </div>
-      <div class="w-full max-w-[47.5%]">
+      <div class="w-full mt-5">
         <Chart
           backgroundColor="#34792866"
           borderColor="#347928"
@@ -108,7 +108,7 @@
           label="Durata media del trasporto"
         />
       </div>
-      <div class="w-full max-w-[47.5%] mt-10">
+      <div class="w-full mt-5">
         <Chart
           backgroundColor="#FCCD2A66"
           borderColor="#FCCD2A"
@@ -120,16 +120,16 @@
     </div>
   {/if}
   {#if type === "runs"}
-    <div class="max-w-screen-lg mx-auto">
+    <div class="w-full mt-5">
       <ChartRuns label="C/S/B" />
     </div>
   {/if}
   {#if type === "cars"}
-    <div class="flex flex-wrap gap-[2.5%]">
-      <div class="w-full max-w-[47.5%]">
+    <div class="">
+      <div class="w-full">
         <Chart isCar userList={cars} label="Trasporti al giorno" />
       </div>
-      <div class="w-full max-w-[47.5%]">
+      <div class="w-full mt-5">
         <Chart
           backgroundColor="#34792866"
           borderColor="#347928"
@@ -139,7 +139,7 @@
           label="Durata media del trasporto"
         />
       </div>
-      <div class="w-full max-w-[47.5%] mt-10">
+      <div class="w-full mt-5">
         <Chart
           backgroundColor="#FCCD2A66"
           borderColor="#FCCD2A"

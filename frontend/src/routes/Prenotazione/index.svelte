@@ -2,13 +2,13 @@
   // frontend/src/routes/Patients/index.svelte
   // @ts-nocheck
   import { onMount } from "svelte";
-  import { useLocation } from "svelte-navigator";
+  import { Link, navigate, useLocation } from "svelte-navigator";
   import { fade } from "svelte/transition";
   import LoadingList from "../../components/LoadingList.svelte";
 
   let patients = [];
   let loading = false;
-  let show_form = false;
+  let show_form = true;
   let query = "";
   let action = "add";
   let selected_run = null;
@@ -188,6 +188,7 @@
         console.error("Error:", error);
       }
     }
+    navigate("/pazienti");
   }
   function extractFullAddress(data) {
     let streetNumber = "";
@@ -378,6 +379,14 @@
   <div class="container mx-auto py-6 px-3">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold">Prenotazioni</h1>
+
+      <button
+        on:click={() => newRunToggle("add")}
+        class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-md"
+      >
+        <span class="text-2xl">+</span>
+        <span>Nuova Prenotazione</span>
+      </button>
     </div>
 
     <div class="mb-8 flex items-center gap-4">
@@ -813,21 +822,19 @@
                           console.log(additionalRuns[i]);
                           console.log(additionalRuns[i - 1]);
                         }}
-                        class="absolute -top-8 p-2 bg-gray-200 rounded-md flex items-center justify-center -right-11 lock"
+                        class="absolute -top-10 p-2 bg-gray-200 rounded-md flex items-center justify-center -right-11 lock"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
+                          width="20"
+                          height="20"
                           fill="currentColor"
-                          class="bi bi-link-45deg"
+                          class="bi bi-arrow-left-right transform rotate-90"
                           viewBox="0 0 16 16"
                         >
                           <path
-                            d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z"
-                          />
-                          <path
-                            d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243z"
+                            fill-rule="evenodd"
+                            d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"
                           />
                         </svg></button
                       >
@@ -1002,42 +1009,13 @@
               </div>
             </div>
             <div class="flex gap-4 justify-between mt-4">
-              <button
+              <Link
+                to="/pazienti"
                 class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200"
                 type="button"
-                on:click={() => {
-                  show_form = false;
-                  new_run = {
-                    csb: "",
-                    nome: "",
-                    cognome: "",
-                    servizio: "",
-                    tel: "",
-                    n_richiesta: "",
-                    ricevuta: "",
-                    viaggio: "1",
-                    note_particolari: "",
-                  };
-                  edit_run = {
-                    csb: "",
-                    nome: "",
-                    cognome: "",
-                    servizio: "",
-                    tel: "",
-                    n_richiesta: "",
-                    ricevuta: "",
-                    ora: "",
-                    date: new Date().toISOString().split("T")[0],
-                    partenza: "",
-                    arrivo: "",
-                    viaggio: "1",
-                    note_particolari: "",
-                  };
-                }}
-                aria-label="Close form"
               >
                 Annulla
-              </button>
+              </Link>
               <button
                 aria-label="Submit form"
                 type="submit"

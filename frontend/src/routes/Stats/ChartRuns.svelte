@@ -82,7 +82,10 @@
   // Function to process data and organize it by csb type
   const processData = () => {
     const runsByDate = {};
-
+    labels = [];
+    cRuns = [];
+    sRuns = [];
+    bRuns = [];
     runs.forEach((run) => {
       const date = run.meta.date;
       const csbType = run.meta.csb.toUpperCase(); // Uppercase to handle case insensitivity
@@ -161,40 +164,60 @@
   onMount(getRuns);
 </script>
 
-<div>
-  <h2 class="text-xl text-gray-800 text-center font-bold">{label}</h2>
-  <div class="mt-8 mb-4 flex items-center justify-between gap-4 mx-8">
-    <div class="flex items-center gap-3">
-      <DateInput
-        bind:value={start_date}
-        format="dd/MM/yyyy"
-        class="stats"
-        dynamicPositioning
-      />
-      <p class="font-black text-green-800">-</p>
-      <DateInput
-        bind:value={end_date}
-        format="dd/MM/yyyy"
-        class="stats"
-        dynamicPositioning
-      />
+<div class="flex gap-[2.5%] items-start">
+  <div class="flex-1 sticky top-28">
+    <h2 class="text-xl text-gray-800 text-center font-bold">{label}</h2>
+    <div class="mt-8 mb-4 flex items-center justify-between gap-4 mx-8">
+      <div class="flex items-center gap-3">
+        <DateInput
+          bind:value={start_date}
+          format="dd/MM/yyyy"
+          class="stats"
+          dynamicPositioning
+        />
+        <p class="font-black text-green-800">-</p>
+        <DateInput
+          bind:value={end_date}
+          format="dd/MM/yyyy"
+          class="stats"
+          dynamicPositioning
+        />
+      </div>
+      <button
+        disabled={loading}
+        on:click={getRunsByDate}
+        class="{loading
+          ? 'bg-gray-400'
+          : 'bg-lime-600 hover:bg-lime-800'} text-white w-20 font-bold py-1 px-4 rounded-lg transition duration-200"
+      >
+        {loading ? "..." : "Scegli"}
+      </button>
     </div>
-    <button
-      disabled={loading}
-      on:click={getRunsByDate}
-      class="{loading
-        ? 'bg-gray-400'
-        : 'bg-lime-600 hover:bg-lime-800'} text-white w-20 font-bold py-1 px-4 rounded-lg transition duration-200"
-    >
-      {loading ? "..." : "Scegli"}
-    </button>
+    {#if loading}
+      <p
+        class="text-lg font-bold text-center h-80 flex justify-center items-center"
+      >
+        <span>Loading...</span>
+      </p>
+    {/if}
+    <canvas class={loading ? "opacity-0" : ""} bind:this={chartCanvas}></canvas>
   </div>
-  {#if !runs.length}
-    <p
-      class="text-lg font-bold text-center h-80 flex justify-center items-center"
-    >
-      <span>Loading...</span>
-    </p>
-  {/if}
-  <canvas bind:this={chartCanvas}></canvas>
+
+  <div class="flex-1">
+    <ul class="mt-8 space-y-4 px-8">
+      {#each labels as label, index}
+        <li class="bg-gray-100 p-4 rounded-lg shadow-sm">
+          <p class="font-semibold">
+            {new Date(label).toLocaleDateString("it-IT")}
+          </p>
+          <p>C: {cRuns[index]}</p>
+          <p>S: {sRuns[index]}</p>
+          <p>B: {bRuns[index]}</p>
+        </li>
+      {/each}
+    </ul>
+    {#if !labels.length}
+      <p class="text-center text-gray-500 mt-4">Nessun dato disponibile</p>
+    {/if}
+  </div>
 </div>
