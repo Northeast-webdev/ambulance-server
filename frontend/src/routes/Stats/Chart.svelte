@@ -269,19 +269,24 @@
           dynamicPositioning
         />
       </div>
-      <select
-        class="font-bold ml-auto text-green-700 border-green-700 border rounded-lg py-1 px-4 bg-white w-32"
-        bind:value={selected_user}
-      >
-        <option value="">Tutti</option>
-        {#each userList as user}
-          <option value={user._id}
-            >{isCar
-              ? user.name
-              : user.first_name + " " + user.last_name}</option
-          >
-        {/each}
-      </select>
+      <div class="ml-auto flex gap-4 items-center">
+        <p class="text-green-800 font-medium">
+          {!isCar ? "Autista" : "Mezzo"}
+        </p>
+        <select
+          class="font-bold text-green-700 border-green-700 border rounded-lg py-1 px-4 bg-white w-32"
+          bind:value={selected_user}
+        >
+          <option value="">Tutti</option>
+          {#each userList as user}
+            <option value={user._id}
+              >{isCar
+                ? user.name
+                : user.first_name + " " + user.last_name}</option
+            >
+          {/each}
+        </select>
+      </div>
       <button
         disabled={loading}
         on:click={getRunsByDate}
@@ -316,7 +321,11 @@
             )}
           </p>
         {:else}
-          <p>{label}: {chartCounts.reduce((total, num) => total + num, 0)}</p>
+          <p>
+            {!isAverageLength && !isAveragePickup
+              ? "Trasporti nel periodo selezionato"
+              : label}: {chartCounts.reduce((total, num) => total + num, 0)}
+          </p>
         {/if}
       </li>
     </ul>
