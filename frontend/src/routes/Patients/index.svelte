@@ -837,7 +837,7 @@
                               })}
                           />
                           {#if (i + 1) % 2 && (key === "Partenza" || key === "Arrivo")}
-                            <div class="mt-2 flex gap-2">
+                            <div class="mt-2 flex gap-2 flex-wrap">
                               {#each presetAddresses as address}
                                 <button
                                   type="button"
@@ -1027,7 +1027,7 @@
                       />
 
                       {#if key === "Partenza" || key === "Arrivo"}
-                        <div class="mt-2 flex gap-2">
+                        <div class="mt-2 flex gap-2 flex-wrap">
                           {#each presetAddresses as address}
                             <button
                               type="button"
