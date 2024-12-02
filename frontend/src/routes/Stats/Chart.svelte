@@ -23,11 +23,18 @@
   // Register the components required for the chart
   Chart.register(...registerables);
 
-  // Helper function to format time in MM:SS format
-  function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
+  // Helper function to format time in MM:SS or HH:MM:SS format
+  function formatTime(s) {
+    const seconds = Number(typeof s === "string" ? s.replace(",", "") : s);
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = Math.floor(seconds % 60);
-    return `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+
+    if (hours > 0) {
+      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+    } else {
+      return `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+    }
   }
 
   function getDayName(dateString) {
@@ -43,8 +50,9 @@
       let runDate = new Date(run.updated_at).toDateString();
       let ongoingTime = new Date(run.checkpoints.ongoing).getTime(); // Convert to Unix timestamp
       let pickedUpTime = new Date(run.checkpoints.picked_up).getTime(); // Convert to Unix timestamp
+      let completedTime = new Date(run.checkpoints.completed).getTime(); // Convert to Unix timestamp
       if (!isNaN(ongoingTime) && !isNaN(pickedUpTime)) {
-        let pickupDuration = Math.round((pickedUpTime - ongoingTime) / 1000); // Difference in seconds
+        let pickupDuration = Math.round((completedTime - pickedUpTime) / 1000); // Difference in seconds
 
         if (!runData[runDate]) {
           runData[runDate] = { total: 0, count: 0 }; // Initialize
@@ -70,11 +78,13 @@
     runs.forEach((run) => {
       let runDate = new Date(run.updated_at).toDateString();
       let ongoingTime = new Date(run.checkpoints.ongoing).getTime(); // Convert to Unix timestamp
-      let pickedUpTime = new Date(run.checkpoints.completed).getTime(); // Convert to Unix timestamp
-
+      let pickedUpTime = new Date(run.checkpoints.picked_up).getTime(); // Convert to Unix timestamp
+      let completedTime = new Date(run.checkpoints.completed).getTime(); // Convert to Unix timestamp
       if (!isNaN(ongoingTime) && !isNaN(pickedUpTime)) {
-        let pickupDuration = (pickedUpTime - ongoingTime) / 1000; // Difference in seconds
-
+        let pickupDuration = run.programmed
+          ? Math.round((completedTime - pickedUpTime) / 1000)
+          : Math.round((completedTime - ongoingTime) / 1000); // Difference in seconds
+        console.log(ongoingTime, pickedUpTime);
         if (!runData[runDate]) {
           runData[runDate] = { total: 0, count: 0 }; // Initialize
         }
@@ -180,7 +190,7 @@
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       )
         .then((response) => response.json())
         .then((data) => {
@@ -214,7 +224,7 @@
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      }
+      },
     )
       .then((response) => response.json())
       .then((data) => {
@@ -293,16 +303,22 @@
   </div>
   <div class="flex-1">
     <ul class="mt-8 space-y-4 px-8">
-      {#each chartLabels as l, index}
-        <li class="bg-gray-100 p-4 rounded-lg shadow-sm">
-          <p class="font-semibold">{new Date(l).toLocaleDateString("it-IT")}</p>
-          {#if isAveragePickup || isAverageLength}
-            <p>{label}: {formatTime(chartCounts[index])}</p>
-          {:else}
-            <p>{label}: {chartCounts[index]}</p>
-          {/if}
-        </li>
-      {/each}
+      <li class="bg-gray-100 p-4 rounded-lg shadow-sm">
+        <p class="font-semibold">
+          Periodo dal {start_date.toLocaleDateString("it-IT")} al {end_date.toLocaleDateString(
+            "it-IT",
+          )}
+        </p>
+        {#if isAveragePickup || isAverageLength}
+          <p>
+            {label}: {formatTime(
+              chartCounts.reduce((total, num) => total + num, 0),
+            )}
+          </p>
+        {:else}
+          <p>{label}: {chartCounts.reduce((total, num) => total + num, 0)}</p>
+        {/if}
+      </li>
     </ul>
     {#if !chartLabels.length}
       <p class="text-center text-gray-500 mt-4">Nessun dato disponibile</p>

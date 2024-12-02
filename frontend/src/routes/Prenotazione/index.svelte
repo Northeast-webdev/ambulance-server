@@ -110,6 +110,70 @@
         longitude: 9.4059067,
       },
     },
+    {
+      label: "HM",
+      full: "Ospedale Padre Antero Micone, Largo Nevio Rosso 2, Genova",
+      geometry: {
+        latitude: 44.4342780756152,
+        longitude: 8.852516972194888,
+      },
+    },
+    {
+      label: "HSC",
+      full: "Ospedale San Carlo, P.le Efisio Gianasso 4, Genova",
+      geometry: {
+        latitude: 44.430456893499596,
+        longitude: 8.745671368621633,
+      },
+    },
+    {
+      label: "HCA",
+      full: "Ospedale La Colletta, Via Giappone 5, 16011 Arenzano",
+      geometry: {
+        latitude: 44.402075390300574,
+        longitude: 8.664021154303311,
+      },
+    },
+    {
+      label: "HGLR",
+      full: "Ente Ospedaliero Galliera, Via Alessandro Volta 6, Genova",
+      geometry: {
+        latitude: 44.399228910422444,
+        longitude: 8.942351654934132,
+      },
+    },
+    {
+      label: "HVS",
+      full: "Ospedale Villa Scassi, Corso Onofrio Scassi 1, Genova",
+      geometry: {
+        latitude: 44.412787716957645,
+        longitude: 8.897384154651395,
+      },
+    },
+    {
+      label: "HSM",
+      full: "Ospedale San Martino, Largo Rosanna Benzi 10, Genova",
+      geometry: {
+        latitude: 44.407634118406165,
+        longitude: 8.970082554934438,
+      },
+    },
+    {
+      label: "IST",
+      full: "IST Sud, Largo Rosanna Benzi, Genova",
+      geometry: {
+        latitude: 44.411757902118396,
+        longitude: 8.971474472130424,
+      },
+    },
+    {
+      label: "HGSL",
+      full: "Ospedale Gaslini, Via Gerolamo Gaslini 5, Genova",
+      geometry: {
+        latitude: 44.39356829733542,
+        longitude: 8.988731810753956,
+      },
+    },
   ];
   let location = useLocation();
   async function newRun() {
@@ -165,7 +229,7 @@
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
             body: JSON.stringify({ meta: newR, geometry }),
-          }
+          },
         );
         show_form = false;
         getPatients();
@@ -240,17 +304,17 @@
             partenza: "",
             arrivo: "",
             date: "",
-          }
+          },
       );
       setTimeout(() => {
         for (let i = 0; i < new_run.viaggio * 2; i++) {
           const partenzaInput = document.getElementById(`field-Partenza-${i}`);
           const arrivoInput = document.getElementById(`field-Arrivo-${i}`);
           const partenzaAutocomplete = new google.maps.places.Autocomplete(
-            partenzaInput
+            partenzaInput,
           );
           const arrivoAutocomplete = new google.maps.places.Autocomplete(
-            arrivoInput
+            arrivoInput,
           );
 
           partenzaAutocomplete.addListener("place_changed", () => {
@@ -269,7 +333,7 @@
               "Selected place:",
               str,
               place.geometry.location.lat(),
-              place.geometry.location.lng()
+              place.geometry.location.lng(),
             );
           });
           arrivoAutocomplete.addListener("place_changed", () => {
@@ -288,7 +352,7 @@
               "Selected place:",
               str,
               place.geometry.location.lat(),
-              place.geometry.location.lng()
+              place.geometry.location.lng(),
             );
           });
         }
@@ -323,10 +387,10 @@
         const partenzaInput = document.getElementById("field-Partenza");
         const arrivoInput = document.getElementById("field-Arrivo");
         const partenzaAutocomplete = new google.maps.places.Autocomplete(
-          partenzaInput
+          partenzaInput,
         );
         const arrivoAutocomplete = new google.maps.places.Autocomplete(
-          arrivoInput
+          arrivoInput,
         );
 
         partenzaAutocomplete.addListener("place_changed", () => {
@@ -345,7 +409,7 @@
             "Selected place:",
             str,
             place.geometry.location.lat(),
-            place.geometry.location.lng()
+            place.geometry.location.lng(),
           );
         });
         arrivoAutocomplete.addListener("place_changed", () => {
@@ -364,7 +428,7 @@
             "Selected place:",
             str,
             place.geometry.location.lat(),
-            place.geometry.location.lng()
+            place.geometry.location.lng(),
           );
         });
       }, 1000);
@@ -563,7 +627,7 @@
                           <td class="py-2 px-4 border-l border-green-300"
                             >{run.meta.ora
                               ? new Date(run.meta.date).toLocaleDateString(
-                                  "it-IT"
+                                  "it-IT",
                                 )
                               : "Da assegnare"}</td
                           >
@@ -782,7 +846,7 @@
                               })}
                           />
                           {#if (i + 1) % 2 && (key === "Partenza" || key === "Arrivo")}
-                            <div class="mt-2 flex gap-2">
+                            <div class="mt-2 flex gap-2 flex-wrap">
                               {#each presetAddresses as address}
                                 <button
                                   type="button"

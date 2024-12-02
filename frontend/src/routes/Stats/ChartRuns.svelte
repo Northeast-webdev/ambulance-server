@@ -119,7 +119,7 @@
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       )
         .then((response) => response.json())
         .then((data) => {
@@ -147,7 +147,7 @@
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      }
+      },
     )
       .then((response) => response.json())
       .then((data) => {
@@ -205,16 +205,16 @@
 
   <div class="flex-1">
     <ul class="mt-8 space-y-4 px-8">
-      {#each labels as label, index}
-        <li class="bg-gray-100 p-4 rounded-lg shadow-sm">
-          <p class="font-semibold">
-            {new Date(label).toLocaleDateString("it-IT")}
-          </p>
-          <p>C: {cRuns[index]}</p>
-          <p>S: {sRuns[index]}</p>
-          <p>B: {bRuns[index]}</p>
-        </li>
-      {/each}
+      <li class="bg-gray-100 p-4 rounded-lg shadow-sm">
+        <p class="font-semibold">
+          Periodo dal {start_date.toLocaleDateString("it-IT")} al {end_date.toLocaleDateString(
+            "it-IT",
+          )}
+        </p>
+        <p>C: {cRuns.reduce((total, num) => total + num, 0)}</p>
+        <p>S: {sRuns.reduce((total, num) => total + num, 0)}</p>
+        <p>B: {bRuns.reduce((total, num) => total + num, 0)}</p>
+      </li>
     </ul>
     {#if !labels.length}
       <p class="text-center text-gray-500 mt-4">Nessun dato disponibile</p>
