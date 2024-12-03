@@ -97,7 +97,7 @@
   {#if type === "users"}
     <div class="">
       <div class="w-full">
-        <Chart userList={users} label="Trasporti al giorno" />
+        <Chart userList={users} label="Numero di trasporti" />
       </div>
       <div class="w-full mt-5">
         <Chart
@@ -127,7 +127,7 @@
   {#if type === "cars"}
     <div class="">
       <div class="w-full">
-        <Chart isCar userList={cars} label="Trasporti al giorno" />
+        <Chart isCar userList={cars} label="Numero di trasporti" />
       </div>
       <div class="w-full mt-5">
         <Chart

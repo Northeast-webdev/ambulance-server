@@ -196,7 +196,7 @@
 
     // Add OpenStreetMap tiles
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-      map
+      map,
     );
 
     if (selected_run.partenza && selected_run.arrivo) {
@@ -210,7 +210,7 @@
         [selected_run.geometry.latitude, selected_run.geometry.longitude],
         {
           icon: partenzaIcon,
-        }
+        },
       ).addTo(map);
 
       const arrivoIcon = L.divIcon({
@@ -226,7 +226,7 @@
         ],
         {
           icon: arrivoIcon,
-        }
+        },
       ).addTo(map);
     }
 
@@ -251,12 +251,12 @@
         [driver.last_location.latitude, driver.last_location.longitude],
         {
           icon: customIcon,
-        }
+        },
       ).addTo(map);
 
       map.setView(
         [driver.last_location.latitude, driver.last_location.longitude],
-        16
+        16,
       );
     });
   }
@@ -287,7 +287,7 @@
               run_cancelled: true,
               programmed: false,
             }),
-          }
+          },
         );
         const data = await response.json();
         if (data.run) {
@@ -324,7 +324,7 @@
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      }
+      },
     )
       .then((response) => response.json())
       .then((data) => {
@@ -369,7 +369,7 @@
       window.history.replaceState(
         {},
         "",
-        window.location.pathname + `?date=${date.toISOString().split("T")[0]}`
+        window.location.pathname + `?date=${date.toISOString().split("T")[0]}`,
       );
     } else {
       window.history.replaceState({}, "", window.location.pathname);
@@ -383,7 +383,7 @@
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      }
+      },
     )
       .then((response) => response.json())
       .then((data) => {
@@ -420,7 +420,7 @@
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify(query),
-        }
+        },
       );
       const data = await response.json();
       if (data.run) {
@@ -443,7 +443,7 @@
             cars.find((x) => x._id === selected_car).last_location.latitude,
             cars.find((x) => x._id === selected_car).last_location.longitude,
           ],
-          16
+          16,
         );
         selected_car = null;
       }, 1000);
@@ -456,7 +456,7 @@
     if (!exists_ping) {
       localStorage.setItem(
         "run_pinged",
-        JSON.stringify({ run: run._id, count: 1 })
+        JSON.stringify({ run: run._id, count: 1 }),
       );
     }
     const raw = localStorage.getItem("run_pinged");
@@ -472,7 +472,7 @@
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({ status: "refused" }),
-        }
+        },
       );
       return;
     }
@@ -482,7 +482,7 @@
       JSON.stringify({
         run: run._id,
         count: run._id === run_pinged.run ? parseInt(run_pinged.count) + 1 : 1,
-      })
+      }),
     );
     try {
       const response = await fetch(
@@ -494,7 +494,7 @@
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({ notification_sent: true, car: run.car._id }),
-        }
+        },
       );
       const data = await response.json();
       runs = runs.map((r) => {
@@ -606,7 +606,7 @@
                 {:else if key === "Data"}
                   <td class="py-3 px-4 border-r border-inherit"
                     >{new Date(run.meta[meta_verifier[key]]).toLocaleDateString(
-                      "it-IT"
+                      "it-IT",
                     ) ?? run.created_at}<br />{run.meta.ora || "-"}</td
                   >
                 {:else if key === "Paziente"}
@@ -714,7 +714,7 @@
                               (new Date(run.updated_at).getTime() +
                                 60000 -
                                 currentTime.getTime()) /
-                                1000
+                                1000,
                             )
                           : "Riassegna corsa"}
                       </button>
@@ -736,7 +736,7 @@
                               (new Date(run.updated_at).getTime() +
                                 60000 -
                                 currentTime.getTime()) /
-                                1000
+                                1000,
                             )
                           : "Notifica autista"}
                       </button>
@@ -788,17 +788,6 @@
             >
               Programmata mezzo
             </button>
-            <button
-              class="bg-amber-700 hover:bg-amber-900 text-white font-bold py-2 px-6 rounded-lg"
-              type="button"
-              on:click={() => {
-                showPopup ? (showPopup = false) : null;
-                map = null;
-                showFinalPopup ? (showFinalPopup = false) : null;
-              }}
-            >
-              Salta per ora
-            </button>
           </div>
           <h2 class="text-3xl font-bold mb-6">Lista veicoli</h2>
           <div class="flex gap-10">
@@ -845,7 +834,7 @@
                             car.last_location.latitude,
                             car.last_location.longitude,
                           ],
-                          16
+                          16,
                         );
                         selected_car === car._id
                           ? (selected_car = null)

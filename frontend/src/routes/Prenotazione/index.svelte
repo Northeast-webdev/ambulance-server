@@ -1068,7 +1068,7 @@
                 <textarea
                   id="field-note_particolari"
                   class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
-                  bind:value={edit_run["note_particolari"]}
+                  bind:value={new_run["note_particolari"]}
                 ></textarea>
               </div>
             </div>

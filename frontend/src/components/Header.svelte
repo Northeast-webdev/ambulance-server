@@ -10,7 +10,7 @@
   const location = useLocation();
   const links = [
     { name: "Pazienti", path: "/pazienti" },
-    { name: "Nuova Prenotazione", path: "/prenotazione" },
+    { name: "Nuova prenotazione", path: "/prenotazione" },
     { name: "Trasporti", path: "/runs" },
     { name: "Mappa", path: "/" },
     { name: "Utenti", path: "/users" },
