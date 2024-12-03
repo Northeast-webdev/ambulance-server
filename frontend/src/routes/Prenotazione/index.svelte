@@ -101,10 +101,11 @@
     Partenza: "partenza",
     Arrivo: "arrivo",
   };
+
   let presetAddresses = [
     {
       label: "HO",
-      full: "Sestri Levante Hospital, Via A. Terzi 37, Sestri Levante",
+      full: "Sestri Levante Hospital, Via A. Terzi 37",
       geometry: {
         latitude: 44.2752759,
         longitude: 9.4059067,
@@ -112,7 +113,7 @@
     },
     {
       label: "HM",
-      full: "Ospedale Padre Antero Micone, Largo Nevio Rosso 2, Genova",
+      full: "Ospedale Padre Antero Micone, Largo Nevio Rosso 2",
       geometry: {
         latitude: 44.4342780756152,
         longitude: 8.852516972194888,
@@ -120,7 +121,7 @@
     },
     {
       label: "HSC",
-      full: "Ospedale San Carlo, P.le Efisio Gianasso 4, Genova",
+      full: "Ospedale San Carlo, P.le Efisio Gianasso 4",
       geometry: {
         latitude: 44.430456893499596,
         longitude: 8.745671368621633,
@@ -128,7 +129,7 @@
     },
     {
       label: "HCA",
-      full: "Ospedale La Colletta, Via Giappone 5, 16011 Arenzano",
+      full: "Ospedale La Colletta, Via Giappone 5",
       geometry: {
         latitude: 44.402075390300574,
         longitude: 8.664021154303311,
@@ -136,7 +137,7 @@
     },
     {
       label: "HGLR",
-      full: "Ente Ospedaliero Galliera, Via Alessandro Volta 6, Genova",
+      full: "Ente Ospedaliero Galliera, Via Alessandro Volta 6",
       geometry: {
         latitude: 44.399228910422444,
         longitude: 8.942351654934132,
@@ -144,7 +145,7 @@
     },
     {
       label: "HVS",
-      full: "Ospedale Villa Scassi, Corso Onofrio Scassi 1, Genova",
+      full: "Ospedale Villa Scassi, Corso Onofrio Scassi 1",
       geometry: {
         latitude: 44.412787716957645,
         longitude: 8.897384154651395,
@@ -152,7 +153,7 @@
     },
     {
       label: "HSM",
-      full: "Ospedale San Martino, Largo Rosanna Benzi 10, Genova",
+      full: "Ospedale San Martino, Largo Rosanna Benzi 10",
       geometry: {
         latitude: 44.407634118406165,
         longitude: 8.970082554934438,
@@ -160,7 +161,7 @@
     },
     {
       label: "IST",
-      full: "IST Sud, Largo Rosanna Benzi, Genova",
+      full: "IST Sud, Largo Rosanna Benzi",
       geometry: {
         latitude: 44.411757902118396,
         longitude: 8.971474472130424,
@@ -168,7 +169,7 @@
     },
     {
       label: "HGSL",
-      full: "Ospedale Gaslini, Via Gerolamo Gaslini 5, Genova",
+      full: "Ospedale Gaslini, Via Gerolamo Gaslini 5",
       geometry: {
         latitude: 44.39356829733542,
         longitude: 8.988731810753956,
