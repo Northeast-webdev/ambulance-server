@@ -437,7 +437,6 @@
     } finally {
       showPopup = false;
       map = null;
-      showFinalPopup = true;
       setTimeout(() => {
         map.setView(
           [
@@ -447,7 +446,8 @@
           16,
         );
         selected_car = null;
-      }, 1000);
+      }, 1250);
+      showFinalPopup = true;
     }
   }
 
@@ -830,13 +830,15 @@
                         ? 'bg-lime-100'
                         : 'bg-gray-50'}"
                       on:click={() => {
-                        map.setView(
+                        setTimeout(() => {
+                          map.setView(
                           [
                             car.last_location.latitude,
                             car.last_location.longitude,
                           ],
                           16,
                         );
+                        }, 1000);
                         selected_car === car._id
                           ? (selected_car = null)
                           : (selected_car = car._id);
