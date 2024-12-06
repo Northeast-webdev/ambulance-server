@@ -284,8 +284,7 @@
             body: JSON.stringify({
               status: "pending",
               car: "",
-              run_cancelled: true,
-              programmed: false,
+              run_cancelled: true
             }),
           },
         );
@@ -409,6 +408,8 @@
     if (isProgrammed) {
       query.status = "ongoing";
       query.programmed = true;
+    } else {
+      query.programmed = false;
     }
     try {
       const response = await fetch(
