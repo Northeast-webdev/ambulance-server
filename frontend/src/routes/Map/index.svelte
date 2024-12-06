@@ -261,7 +261,7 @@
         on:click={() => (fullScreen = !fullScreen)}
         class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
       >
-        Full screen toggle
+      Mostra schermo intero
       </button>
     </div>
     <!-- Search Bar -->

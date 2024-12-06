@@ -255,13 +255,18 @@
     <h2 class="text-xl text-gray-800 text-center font-bold">{label}</h2>
     <div class="mt-8 mb-4 flex items-center justify-between gap-4 mx-8">
       <div class="flex items-center gap-3">
+        <p class="text-black font-bold">
+          Dal
+        </p>
         <DateInput
           bind:value={start_date}
           format="dd/MM/yyyy"
           class="stats"
           dynamicPositioning
         />
-        <p class="font-black text-green-800">-</p>
+        <p class="text-black font-bold">
+          Al
+        </p>
         <DateInput
           bind:value={end_date}
           format="dd/MM/yyyy"
@@ -270,7 +275,7 @@
         />
       </div>
       <div class="ml-auto flex gap-4 items-center">
-        <p class="text-green-800 font-medium">
+        <p class="text-black font-bold">
           {!isCar ? "Autista" : "Mezzo"}
         </p>
         <select
@@ -294,7 +299,7 @@
           ? 'bg-gray-400'
           : 'bg-lime-600 hover:bg-lime-800'} text-white w-20 font-bold py-1 px-4 rounded-lg transition duration-200"
       >
-        {loading ? "..." : "Scegli"}
+        {loading ? "..." : "Cerca"}
       </button>
     </div>
     {#if loading}

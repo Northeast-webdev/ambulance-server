@@ -37,12 +37,12 @@
   let car_id = "";
   let loading = false;
   let meta_verifier = {
+    Immagine: "image",
     Nome: "name",
     Marca: "brand",
     Modello: "model",
     Chilometri: "kilometers",
     Targa: "plate_number",
-    Immagine: "image",
   };
   let checklist_verifier = {
     Marca: "brand",
@@ -420,10 +420,10 @@
       <div>
         <h1 class="text-3xl font-bold">Deposito</h1>
         <p class="text-gray-500">
-          {cars.filter((x) => x.status === "free").length} disponibile {cars.length >
+          {cars.filter((x) => x.status === "free").length} {cars.length >
           1
             ? "mezzi"
-            : "mezzo"}
+            : "mezzo"} disponibili
         </p>
       </div>
       {#if $user.role !== "meccanico" && $user.role !== "direzione"}
@@ -840,8 +840,26 @@
                   accept="image/*"
                   id="field-{key}"
                   class="block w-full border valid:border-green-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-600 transition-all"
-                  on:change={handleImageChange}
+                  on:change={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const img = new Image();
+                      img.onload = function() {
+                        const ratio = img.width / img.height;
+                        if (Math.abs(ratio - (600/400)) > 0.01) {
+                          alert('L\'immagine deve avere un rapporto di aspetto di 3:2 (come 600x400 pixel)');
+                          e.target.value = '';
+                        } else {
+                          handleImageChange(e);
+                        }
+                      }
+                      img.src = URL.createObjectURL(file);
+                    }
+                  }}
                 />
+                <small class="text-gray-500 mt-1 block">
+                  L'immagine deve avere un rapporto di aspetto di 3:2 (come 600x400 pixel)
+                </small>
               </div>
             {:else}
               <div>
