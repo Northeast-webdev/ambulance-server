@@ -28,6 +28,7 @@ const carSchema = new Schema({
     { type: Schema.Types.ObjectId, ref: "MaterialChecklist" },
   ],
   car_checklists: [{ type: Schema.Types.ObjectId, ref: "CarChecklist" }],
+  image: { type: String },
 });
 const Car = mongoose.model("Car", carSchema);
 

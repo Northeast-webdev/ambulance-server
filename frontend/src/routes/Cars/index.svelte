@@ -101,7 +101,7 @@
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
       const data = await response.json();
       console.log("data: ", data);
@@ -124,7 +124,7 @@
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
       const data = await response.json();
       console.log("data: ", data);
@@ -179,7 +179,7 @@
 
   async function deleteCar(id) {
     const confirm = window.confirm(
-      "Sei sicuro di voler eliminare questo mezzo?"
+      "Sei sicuro di voler eliminare questo mezzo?",
     );
     if (!confirm) {
       return;
@@ -193,7 +193,7 @@
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        }
+        },
       );
       const data = await response.json();
       console.log("data: ", data);
@@ -220,7 +220,7 @@
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
             body: JSON.stringify({ meta, name }),
-          }
+          },
         );
         const data = await response.json();
         console.log("data: ", data);
@@ -248,7 +248,7 @@
               meta,
               name,
             }),
-          }
+          },
         );
         const data = await response.json();
         console.log("data: ", data);
@@ -274,7 +274,7 @@
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      }
+      },
     )
       .then((response) => response.json())
       .then((data) => {
@@ -298,7 +298,7 @@
   // Toggle point color when clicked
   const togglePointColor = (side, index) => {
     const confirmRemoval = window.confirm(
-      "Sei sicuro di voler rimuovere questo punto?"
+      "Sei sicuro di voler rimuovere questo punto?",
     );
     if (confirmRemoval)
       selectedCar.damages[side] = [
@@ -322,7 +322,7 @@
           body: JSON.stringify({
             damages: selectedCar.damages,
           }),
-        }
+        },
       );
       const data = await response.json();
       console.log("data: ", data);
@@ -344,7 +344,7 @@
       eager: true,
       query: "?url",
       import: "default",
-    })
+    }),
   );
 
   function createWebSocket() {
@@ -442,7 +442,9 @@
                 {car.name}
               </h3>
               <img
-                src={gallery.find((x) => x.includes(car.name)) || van}
+                src={car.image
+                  ? car.image
+                  : gallery.find((x) => x.includes(car.name)) || van}
                 alt={car.meta.brand}
                 class="w-full {gallery.find((x) => x.includes(car.name))
                   ? 'h-28 object-center object-cover'
