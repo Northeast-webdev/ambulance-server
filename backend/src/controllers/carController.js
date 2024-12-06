@@ -7,7 +7,7 @@ const { CarChecklist } = require("../schema/carChecklist.schema");
 const { MaterialChecklist } = require("../schema/materialChecklist.schema");
 
 const createCar = async (request, reply) => {
-  const { meta, name } = request.body;
+  const { meta, name, image } = request.body;
   const car = new Car({
     meta,
     name,
@@ -18,6 +18,7 @@ const createCar = async (request, reply) => {
       left: [],
       right: [],
     },
+    image,
   });
   try {
     await car.save();
@@ -54,8 +55,16 @@ const getCar = async (request, reply) => {
 };
 
 const updateCar = async (request, reply) => {
-  const { meta, status, user, last_location, shift_start, name, damages } =
-    request.body;
+  const {
+    meta,
+    status,
+    user,
+    last_location,
+    shift_start,
+    name,
+    damages,
+    image,
+  } = request.body;
   const updates = {};
   const carWithUser = await Car.findOne({ user });
 
@@ -73,7 +82,7 @@ const updateCar = async (request, reply) => {
   if (shift_start) updates.shift_start = shift_start;
   if (name) updates.name = name;
   if (damages) updates.damages = damages; // Update damages if provided
-
+  if (image) updates.image = image;
   updates.updated_at = new Date().toISOString();
 
   try {
@@ -82,7 +91,7 @@ const updateCar = async (request, reply) => {
       updates,
       {
         returnDocument: "after",
-      }
+      },
     );
     if (!carWithUser && user) {
       const existingUser = await User.findOne({ _id: user });
@@ -153,17 +162,17 @@ const carRoutes = () => {
   fastify.put(
     "/api/cars/:id",
     { preHandler: [fastify.authenticate] },
-    updateCar
+    updateCar,
   );
   fastify.delete(
     "/api/cars/:id",
     { preHandler: [fastify.authenticate] },
-    deleteCar
+    deleteCar,
   );
   fastify.get(
     "/api/cars/:id/checklists",
     { preHandler: [fastify.authenticate] },
-    getChecklistsForCar
+    getChecklistsForCar,
   );
 
   fastify.register(async (fastify) => {

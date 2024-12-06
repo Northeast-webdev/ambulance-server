@@ -42,6 +42,7 @@
     Modello: "model",
     Chilometri: "kilometers",
     Targa: "plate_number",
+    Immagine: "image",
   };
   let checklist_verifier = {
     Marca: "brand",
@@ -56,6 +57,7 @@
     kilometers: "",
     plate_number: "",
     name: "",
+    image: "",
   };
   let loadingCar = false;
   let material_checklists = [];
@@ -210,7 +212,7 @@
   async function newCar() {
     if (action === "new") {
       try {
-        const { name, ...meta } = new_car;
+        const { name, image, ...meta } = new_car;
         const response = await fetch(
           import.meta.env.VITE_API_URL + "/api/cars",
           {
@@ -219,7 +221,7 @@
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-            body: JSON.stringify({ meta, name }),
+            body: JSON.stringify({ meta, name, image }),
           },
         );
         const data = await response.json();
@@ -235,7 +237,7 @@
       }
     } else {
       try {
-        const { name, ...meta } = new_car;
+        const { name, image, ...meta } = new_car;
         const response = await fetch(
           import.meta.env.VITE_API_URL + "/api/cars/" + car_id,
           {
@@ -247,6 +249,7 @@
             body: JSON.stringify({
               meta,
               name,
+              image,
             }),
           },
         );
@@ -396,6 +399,17 @@
       socket.close();
     }
   });
+
+  function handleImageChange(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        new_car.image = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
 </script>
 
 {#if loading}
@@ -542,6 +556,7 @@
                       model: selectedCar.meta.model,
                       kilometers: selectedCar.meta.kilometers,
                       plate_number: selectedCar.meta.plate_number,
+                      image: selectedCar.image,
                     };
                     show_form = true;
                   }}
@@ -811,6 +826,22 @@
                     >
                   {/each}
                 </select>
+              </div>
+            {:else if key === "Immagine"}
+              <div>
+                <label
+                  for="field-{key}"
+                  class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  {key} <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="field-{key}"
+                  class="block w-full border valid:border-green-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-green-600 transition-all"
+                  on:change={handleImageChange}
+                />
               </div>
             {:else}
               <div>
