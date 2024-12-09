@@ -429,7 +429,7 @@
           if (run._id === data.run._id) {
             return { ...data.run, visibleInfo: true };
           }
-          return { ...run, visibleInfo: true };
+          return run;
         });
       }
     } catch (error) {
