@@ -85,7 +85,7 @@
       if (!isNaN(ongoingTime) && !isNaN(pickedUpTime)) {
         let pickupDuration = run.programmed
           ? Math.round((completedTime - pickedUpTime) / 1000)
-          : Math.round((completedTime - pickedUpTime) / 1000); // Difference in seconds
+          : Math.round((completedTime - ongoingTime) / 1000); // Difference in seconds
         if (!runData[runDate]) {
           runData[runDate] = { total: 0, count: 0 }; // Initialize
         }
@@ -194,7 +194,7 @@
       )
         .then((response) => response.json())
         .then((data) => {
-          runs = data.runs.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+          runs = data.runs.sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime());
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -228,7 +228,7 @@
     )
       .then((response) => response.json())
       .then((data) => {
-        runs = data.runs.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+        runs = data.runs.sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime());
       })
       .catch((error) => {
         console.error("Error:", error);

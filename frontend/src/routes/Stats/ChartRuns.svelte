@@ -23,7 +23,9 @@
 
   function getDayName(dateString) {
     const date = new Date(labels[dateString]);
-    return date.toLocaleDateString("it-IT").slice(0, 5); // Return the name of the day
+    const weekday = date.toLocaleDateString("it-IT", { weekday: "long" });
+    const capitalizedWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+    return date.toLocaleDateString("it-IT") + "\n" + capitalizedWeekday;
   }
 
   const drawData = () => {
@@ -65,8 +67,7 @@
             x: {
               ticks: {
                 callback: function (value) {
-                  // Convert raw values back to MM:SS for y-axis labels
-                  return getDayName(value);
+                  return getDayName(value).split("\n");  // Return array for multiline
                 },
               },
             },
@@ -123,7 +124,7 @@
       )
         .then((response) => response.json())
         .then((data) => {
-          runs = data.runs.reverse();
+          runs = data.runs.sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime());
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -151,7 +152,7 @@
     )
       .then((response) => response.json())
       .then((data) => {
-        runs = data.runs.reverse();
+        runs = data.runs.sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime());
       })
       .catch((error) => {
         console.error("Error:", error);
