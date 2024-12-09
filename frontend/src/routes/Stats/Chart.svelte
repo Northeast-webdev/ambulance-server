@@ -195,7 +195,7 @@
       )
         .then((response) => response.json())
         .then((data) => {
-          runs = data.runs.sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime());
+          runs = data.runs.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -229,8 +229,7 @@
     )
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-        runs = data.runs.reverse();
+        runs = data.runs.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
       })
       .catch((error) => {
         console.error("Error:", error);
