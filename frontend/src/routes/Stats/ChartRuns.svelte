@@ -88,7 +88,7 @@
     sRuns = [];
     bRuns = [];
     runs.forEach((run) => {
-      const date = run.meta.date;
+      let date = new Date(run.updated_at).toDateString();
       const csbType = run.meta.csb.toUpperCase(); // Uppercase to handle case insensitivity
 
       if (!runsByDate[date]) {
