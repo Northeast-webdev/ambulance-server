@@ -39,7 +39,8 @@
 
   function getDayName(dateString) {
     const date = new Date(chartLabels[dateString]);
-    return date.toLocaleDateString("it-IT").slice(0, 5); // Return the name of the day
+    // capitalize first letter
+    return date.toLocaleDateString("it-IT", { weekday: "long" }).charAt(0).toUpperCase() + date.toLocaleDateString("it-IT", { weekday: "long" }).slice(1);
   }
 
   // Process data for average pickup times

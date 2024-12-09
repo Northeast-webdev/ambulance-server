@@ -379,10 +379,10 @@
             </p>
             <div style="flex: 1; padding: 0 30px">
               <div style="display: flex; gap: 10px">
-                <p>Data fine: ___/___/____</p>
-                <p>Ora: _____:____</p>
+                <p id="data_fine">Data fine:</p>
+                <p id="ora">Ora: _____:____</p>
               </div>
-              <p><strong>Firma esecutore: ________________</strong></p>
+              <p id="firma_esecutore"><strong>Firma esecutore: </strong></p>
             </div>
           </div>
           <table class="main-table">
@@ -619,10 +619,16 @@
         });
 
         const dateTime = document.getElementById("date-time");
+        const dataFine = document.getElementById("data_fine");
+        const ora = document.getElementById("ora");
         dateTime.innerHTML = `Data inizio: <span style="text-decoration: underline">${checklist.date}</span> - Ora: <span style="text-decoration: underline">${checklist.time}</span>`;
+        dataFine.innerHTML = `Data fine: <span style="text-decoration: underline">${checklist.date}</span>`;
+        ora.innerHTML = `Ora: <span style="text-decoration: underline">${checklist.time}</span>`;
 
         const executor = document.getElementById("executor");
         executor.innerHTML = `Esecutore: <span style="text-decoration: underline">${checklist.user}</span>`;
+        const firma_esecutore = document.getElementById("firma_esecutore");
+        firma_esecutore.innerHTML = `<strong>Firma esecutore: <span style="text-decoration: underline; font-size: 1.2em">${checklist.user}</span></strong>`;
 
         const report = document.getElementById("report");
         report.innerHTML = `<p style="text-decoration: underline; font-size: 16px; line-height: 1.5">${checklist.report}</p>`;

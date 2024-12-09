@@ -64,19 +64,19 @@ const listRuns = async (request, reply) => {
     const startDate = new Date(date);
     const endDate = new Date(date);
     endDate.setDate(endDate.getDate() + 1);
-    q.created_at = { $gte: startDate, $lt: endDate };
+    q.created_at = { $gte: startDate, $lte: endDate };
   }
   if (updated_date) {
     const startDate = new Date(updated_date);
     const endDate = new Date(updated_date);
     endDate.setDate(endDate.getDate() + 1);
-    q.updated_at = { $gte: startDate, $lt: endDate };
+    q.updated_at = { $gte: startDate, $lte: endDate };
   }
   if (meta_date) {
     q["meta.date"] = meta_date;
   }
   if (start_date && end_date) {
-    q.updated_at = { $gte: new Date(start_date), $lt: new Date(end_date) };
+    q.updated_at = { $gte: new Date(start_date), $lte: new Date(end_date) };
   }
   if (patient) {
     q.patient = patient;
