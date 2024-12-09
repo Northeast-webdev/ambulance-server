@@ -195,7 +195,7 @@
       )
         .then((response) => response.json())
         .then((data) => {
-          runs = data.runs.sort((a, b) => new Date(a.meta.date).getTime() - new Date(b.meta.date).getTime());
+          runs = data.runs.sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime());
         })
         .catch((error) => {
           console.error("Error:", error);
