@@ -85,8 +85,7 @@
       if (!isNaN(ongoingTime) && !isNaN(pickedUpTime)) {
         let pickupDuration = run.programmed
           ? Math.round((completedTime - pickedUpTime) / 1000)
-          : Math.round((completedTime - ongoingTime) / 1000); // Difference in seconds
-        console.log(ongoingTime, pickedUpTime);
+          : Math.round((completedTime - pickedUpTime) / 1000); // Difference in seconds
         if (!runData[runDate]) {
           runData[runDate] = { total: 0, count: 0 }; // Initialize
         }
