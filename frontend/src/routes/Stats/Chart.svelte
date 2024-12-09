@@ -39,8 +39,9 @@
 
   function getDayName(dateString) {
     const date = new Date(chartLabels[dateString]);
-    // capitalize first letter
-    return date.toLocaleDateString("it-IT", { weekday: "long" }).charAt(0).toUpperCase() + date.toLocaleDateString("it-IT", { weekday: "long" }).slice(1);
+    const weekday = date.toLocaleDateString("it-IT", { weekday: "long" });
+    const capitalizedWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+    return date.toLocaleDateString("it-IT") + "\n" + capitalizedWeekday;
   }
 
   // Process data for average pickup times
@@ -170,8 +171,7 @@
             x: {
               ticks: {
                 callback: function (value) {
-                  // Convert raw values back to MM:SS for y-axis labels
-                  return getDayName(value);
+                  return getDayName(value).split("\n");  // Return array for multiline
                 },
               },
             },
@@ -195,7 +195,7 @@
       )
         .then((response) => response.json())
         .then((data) => {
-          runs = data.runs.reverse();
+          runs = data.runs.sort((a, b) => new Date(a.meta.date).getTime() - new Date(b.meta.date).getTime());
         })
         .catch((error) => {
           console.error("Error:", error);

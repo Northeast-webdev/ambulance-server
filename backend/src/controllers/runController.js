@@ -76,7 +76,7 @@ const listRuns = async (request, reply) => {
     q["meta.date"] = meta_date;
   }
   if (start_date && end_date) {
-    q["meta.date"] = { $gte: new Date(start_date), $lte: new Date(end_date) };
+    q.updated_at = { $gte: new Date(start_date), $lte: new Date(end_date) };
   }
   if (patient) {
     q.patient = patient;
