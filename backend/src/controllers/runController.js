@@ -355,8 +355,8 @@ const runRoutes = () => {
     deleteRun,
   );
 
-  fastify.register(async (f) => {
-    f.get("/api/runs/driver", 
+  fastify.register(async () => {
+    fastify.get("/api/runs/driver", 
       {
         websocket: true,
         onTimeout: () => {
@@ -370,7 +370,7 @@ const runRoutes = () => {
         websocketHandler(socket, req);
       },
     );
-    f.get(
+    fastify.get(
       "/api/runs/admin",
       {
         websocket: true,
