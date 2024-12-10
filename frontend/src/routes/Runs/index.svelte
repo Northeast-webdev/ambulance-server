@@ -55,12 +55,12 @@
   $: showPopup &&
     setTimeout(() => {
       getMapInfo();
-    }, 1000);
+    }, 300);
 
   $: showFinalPopup &&
     setTimeout(() => {
       getMapInfo();
-    }, 1000);
+    }, 300);
 
   $: (() => {
     if (!runs.length) return;
@@ -254,12 +254,14 @@
             icon: customIcon,
           },
         ).addTo(map);
-
-        map.setView(
-          [driver.last_location.latitude, driver.last_location.longitude],
-          16,
-        );
       });
+      map.setView(
+        [
+          drivers[0].last_location.latitude,
+          drivers[0].last_location.longitude,
+        ],
+        16,
+      );
     } catch (error) {
       console.error("Error:", error);
     }
@@ -267,6 +269,7 @@
 
   function openMapPopup(id) {
     driver_id = id;
+    map = null;
     showPopup = true;
   }
 
@@ -450,8 +453,7 @@
           ],
           16,
         );
-        selected_car = null;
-      }, 1500);
+      }, 500);
       showFinalPopup = true;
     }
   }
@@ -778,24 +780,7 @@
         <!-- Form Modal -->
         <div class="z-50 transform transition-all duration-500">
           <h2 class="text-3xl font-bold mb-6">Assegnazione a mezzo</h2>
-          <p class="text-gray-700 mb-6">
-            Vuoi assegnare già da ora la corsa ad un mezzo?
-          </p>
-          <div class="flex items-center gap-4 mb-6">
-            <button
-              on:click={() => updateRun(false)}
-              class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg"
-            >
-              Assegna mezzo
-            </button>
-            <button
-              on:click={() => updateRun(true)}
-              class="bg-purple-700 hover:bg-purple-900 text-white font-bold py-2 px-6 rounded-lg"
-            >
-              Programmata mezzo
-            </button>
-          </div>
-          <h2 class="text-3xl font-bold mb-6">Lista veicoli</h2>
+          <h2 class="text-2xl font-bold mb-6">Lista veicoli</h2>
           <div class="flex gap-10">
             <div class="flex-grow-0">
               <table
@@ -890,6 +875,23 @@
                   {/each}
                 </tbody>
               </table>
+              <p class="text-gray-700 my-6">
+                Vuoi assegnare già da ora la corsa ad un mezzo?
+              </p>
+              <div class="flex items-center gap-4 mb-6">
+                <button
+                  on:click={() => updateRun(false)}
+                  class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg"
+                >
+                  Assegna mezzo
+                </button>
+                <button
+                  on:click={() => updateRun(true)}
+                  class="bg-purple-700 hover:bg-purple-900 text-white font-bold py-2 px-6 rounded-lg"
+                >
+                  Programmata mezzo
+                </button>
+              </div>
             </div>
             <!-- Map Container -->
             <div class="{showMap ? '' : 'opacity-0'} flex-1">
@@ -917,7 +919,11 @@
 
           <button
             class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg mt-10 ml-auto block"
-            on:click={() => (showFinalPopup = false)}
+            on:click={() => {
+              showFinalPopup = false;
+              showPopup = false;
+              map = null;
+            }}
             aria-label="Close form"
           >
             Torna alla gestione trasporti
