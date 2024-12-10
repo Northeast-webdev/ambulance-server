@@ -273,6 +273,13 @@ const websocketHandler = (socket, req) => {
             returnDocument: "after",
           },
         );
+        console.log("Run accepted:", x);
+        socket.send(
+          JSON.stringify({
+            type: "run_accepted",
+            data: x._id.toString(),
+          }),
+        );
         break;
       case "refuse_run":
         await Run.findOneAndUpdate(
@@ -300,7 +307,6 @@ const websocketHandler = (socket, req) => {
           car.last_location = { latitude, longitude };
           await car.save();
         }
-
         break;
       default:
         break;
@@ -350,12 +356,35 @@ const runRoutes = () => {
   );
 
   fastify.register(async (fastify) => {
-    fastify.get("/api/runs/driver", { websocket: true }, (socket, req) => {
-      websocketHandler(socket, req);
-    });
-    fastify.get("/api/runs/admin", { websocket: true }, (socket, req) => {
-      websocketWatcher(socket, req);
-    });
+    fastify.get("/api/runs/driver", 
+      {
+        websocket: true,
+        onTimeout: () => {
+          console.log("Client timeout driver");
+        },
+        onError: (_socket, _req, error) => {
+          console.log("Error driver", error);
+        },
+      },
+      (socket, req) => {
+        websocketHandler(socket, req);
+      },
+    );
+    fastify.get(
+      "/api/runs/admin",
+      {
+        websocket: true,
+        onTimeout: () => {
+          console.log("Client timeout admin");
+        },
+        onError: (_socket, _req, error) => {
+          console.log("Error admin", error);
+        },
+      },
+      (socket, req) => {
+        websocketWatcher(socket, req);
+      },
+    );
   });
 };
 
