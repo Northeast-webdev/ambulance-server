@@ -244,7 +244,10 @@ const websocketHandler = (socket, req) => {
     return;
   }
 
-  // Store connection mapped by userId
+  if (userConnections.has(userId)) {
+    const existingConnection = userConnections.get(userId);
+    existingConnection.close(); // Optionally close existing connection
+  }
   userConnections.set(userId, socket);
 
   console.log(`User ${userId} connected`);
