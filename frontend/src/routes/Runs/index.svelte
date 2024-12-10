@@ -190,75 +190,79 @@
   });
 
   function getMapInfo() {
-    if (map) return;
-    // Initialize the Leaflet map
-    map = L.map("map").setView([40.7128, -74.006], 13);
+    if (map || !document.getElementById("map")) return;
+    try {
+      // Initialize the Leaflet map
+      map = L.map("map").setView([40.7128, -74.006], 13);
 
-    // Add OpenStreetMap tiles
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-      map,
-    );
-
-    if (selected_run.partenza && selected_run.arrivo) {
-      const partenzaIcon = L.divIcon({
-        className: "custom-marker", // Custom CSS class for styling
-        html: `<div class="marker-circle bg-indigo-500 text-indigo-100">A</div>`,
-        iconSize: [20, 20], // Size of the marker
-      });
-
-      const partenzaMarker = L.marker(
-        [selected_run.geometry.latitude, selected_run.geometry.longitude],
-        {
-          icon: partenzaIcon,
-        },
-      ).addTo(map);
-
-      const arrivoIcon = L.divIcon({
-        className: "custom-marker", // Custom CSS class for styling
-        html: `<div class="marker-circle bg-indigo-500 text-indigo-100">B</div>`,
-        iconSize: [20, 20], // Size of the marker
-      });
-
-      const arrivoMarker = L.marker(
-        [
-          selected_run.end_geometry.latitude,
-          selected_run.end_geometry.longitude,
-        ],
-        {
-          icon: arrivoIcon,
-        },
-      ).addTo(map);
-    }
-
-    // Add markers for drivers
-    drivers.forEach((driver, i) => {
-      // Create a custom DivIcon for each marker with the driver's ID
-      const customIcon = L.divIcon({
-        className: "custom-marker", // Custom CSS class for styling
-        html: `<div style="font-size: ${driver.name.length > 4 ? "10px" : "12px"}" class="marker-circle ${
-          driver.status === "free"
-            ? "bg-green-500 text-green-100 z-30"
-            : driver.status === "busy"
-              ? "bg-amber-500 text-amber-100 z-20"
-              : driver.status === "garage"
-                ? "bg-gray-500 text-gray-100 z-20"
-                : "bg-red-500 text-red-100 z-10"
-        }">${driver.name}</div>`, // Inner HTML to show the ID
-        iconSize: [20, 20], // Size of the marker
-      });
-
-      const marker = L.marker(
-        [driver.last_location.latitude, driver.last_location.longitude],
-        {
-          icon: customIcon,
-        },
-      ).addTo(map);
-
-      map.setView(
-        [driver.last_location.latitude, driver.last_location.longitude],
-        16,
+      // Add OpenStreetMap tiles
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
+        map,
       );
-    });
+
+      if (selected_run.partenza && selected_run.arrivo) {
+        const partenzaIcon = L.divIcon({
+          className: "custom-marker", // Custom CSS class for styling
+          html: `<div class="marker-circle bg-indigo-500 text-indigo-100">A</div>`,
+          iconSize: [20, 20], // Size of the marker
+        });
+
+        const partenzaMarker = L.marker(
+          [selected_run.geometry.latitude, selected_run.geometry.longitude],
+          {
+            icon: partenzaIcon,
+          },
+        ).addTo(map);
+
+        const arrivoIcon = L.divIcon({
+          className: "custom-marker", // Custom CSS class for styling
+          html: `<div class="marker-circle bg-indigo-500 text-indigo-100">B</div>`,
+          iconSize: [20, 20], // Size of the marker
+        });
+
+        const arrivoMarker = L.marker(
+          [
+            selected_run.end_geometry.latitude,
+            selected_run.end_geometry.longitude,
+          ],
+          {
+            icon: arrivoIcon,
+          },
+        ).addTo(map);
+      }
+
+      // Add markers for drivers
+      drivers.forEach((driver, i) => {
+        // Create a custom DivIcon for each marker with the driver's ID
+        const customIcon = L.divIcon({
+          className: "custom-marker", // Custom CSS class for styling
+          html: `<div style="font-size: ${driver.name.length > 4 ? "10px" : "12px"}" class="marker-circle ${
+            driver.status === "free"
+              ? "bg-green-500 text-green-100 z-30"
+              : driver.status === "busy"
+                ? "bg-amber-500 text-amber-100 z-20"
+                : driver.status === "garage"
+                  ? "bg-gray-500 text-gray-100 z-20"
+                  : "bg-red-500 text-red-100 z-10"
+          }">${driver.name}</div>`, // Inner HTML to show the ID
+          iconSize: [20, 20], // Size of the marker
+        });
+
+        const marker = L.marker(
+          [driver.last_location.latitude, driver.last_location.longitude],
+          {
+            icon: customIcon,
+          },
+        ).addTo(map);
+
+        map.setView(
+          [driver.last_location.latitude, driver.last_location.longitude],
+          16,
+        );
+      });
+    } catch (error) {
+      console.error("Error:", error);
+    }
   }
 
   function openMapPopup(id) {
@@ -284,7 +288,7 @@
             body: JSON.stringify({
               status: "pending",
               car: "",
-              run_cancelled: true
+              run_cancelled: true,
             }),
           },
         );
@@ -438,6 +442,7 @@
       showPopup = false;
       map = null;
       setTimeout(() => {
+        if (!map) return;
         map.setView(
           [
             cars.find((x) => x._id === selected_car).last_location.latitude,
@@ -446,7 +451,7 @@
           16,
         );
         selected_car = null;
-      }, 1250);
+      }, 1500);
       showFinalPopup = true;
     }
   }
@@ -830,15 +835,14 @@
                         ? 'bg-lime-100'
                         : 'bg-gray-50'}"
                       on:click={() => {
-                        setTimeout(() => {
-                          map.setView(
+                        if (!map) return;
+                        map.setView(
                           [
                             car.last_location.latitude,
                             car.last_location.longitude,
                           ],
                           16,
                         );
-                        }, 1000);
                         selected_car === car._id
                           ? (selected_car = null)
                           : (selected_car = car._id);
