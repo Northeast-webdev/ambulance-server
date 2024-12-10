@@ -319,6 +319,11 @@ const websocketHandler = (socket, req) => {
     console.log(`User ${userId} disconnected`);
     userConnections.delete(userId); // Remove connection when closed
   });
+
+  socket.on("error", (error) => {
+    console.log("Error driver websocket", error);
+    socket.close();
+  });
 };
 
 const websocketWatcher = (socket, req) => {
@@ -336,6 +341,11 @@ const websocketWatcher = (socket, req) => {
   socket.on("close", () => {
     console.log("Client disconnected");
     // Clean up change stream on disconnect
+    changeStream.close();
+  });
+
+  socket.on("error", (error) => {
+    console.log("Error admin websocket", error);
     changeStream.close();
   });
 };
