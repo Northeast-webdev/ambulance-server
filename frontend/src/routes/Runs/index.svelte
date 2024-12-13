@@ -640,38 +640,58 @@
                   colspan={Object.keys(meta_verifier).length}
                 >
                   <div
-                    class="flex items-center justify-between mx-auto max-w-5xl"
+                    class="flex items-center justify-between mx-auto max-w-[80%]"
                   >
                     <div class="flex items-center gap-4">
                       <p class="text-gray-800">Status paziente</p>
                       <div
+                        class="flex items-center gap-2 text-sm"
                         title="Annullata"
-                        class="bg-red-400 w-4 h-4 rounded-full {run.status ===
-                        'refused'
-                          ? 'ring-4 ring-red-600'
-                          : ''}"
-                      ></div>
+                      >
+                        <div
+                          class="bg-red-400 w-4 h-4 rounded-full {run.status ===
+                          'refused'
+                            ? 'ring-4 ring-red-600'
+                            : ''}"
+                        ></div>
+                        Annullata
+                      </div>
                       <div
                         title="In corso"
-                        class="bg-yellow-500 w-4 h-4 rounded-full {run.status ===
-                        'ongoing'
-                          ? 'ring-4 ring-yellow-600'
-                          : ''}"
-                      ></div>
+                        class="flex items-center gap-2 text-sm"
+                      >
+                        <div
+                          class="bg-yellow-500 w-4 h-4 rounded-full {run.status ===
+                          'ongoing'
+                            ? 'ring-4 ring-yellow-600'
+                            : ''}"
+                        ></div>
+                        In corso
+                      </div>
                       <div
                         title="Paziente preso"
-                        class="bg-sky-500 w-4 h-4 rounded-full {run.status ===
-                        'picked_up'
-                          ? 'ring-4 ring-sky-600'
-                          : ''}"
-                      ></div>
+                        class="flex items-center gap-2 text-sm"
+                      >
+                        <div
+                          class="bg-sky-500 w-4 h-4 rounded-full {run.status ===
+                          'picked_up'
+                            ? 'ring-4 ring-sky-600'
+                            : ''}"
+                        ></div>
+                        Paziente preso
+                      </div>
                       <div
                         title="Paziente consegnato"
-                        class="bg-green-500 w-4 h-4 rounded-full {run.status ===
-                        'completed'
-                          ? 'ring-4 ring-green-600'
-                          : ''}"
-                      ></div>
+                        class="flex items-center gap-2 text-sm"
+                      >
+                        <div
+                          class="bg-green-500 w-4 h-4 rounded-full {run.status ===
+                          'completed'
+                            ? 'ring-4 ring-green-600'
+                            : ''}"
+                        ></div>
+                        Paziente consegnato
+                      </div>
                     </div>
                     {#if run.status === "completed"}
                       <p class="text-gray-800 cursor-pointer py-2 px-6">
