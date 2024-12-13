@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import Chart from "./Chart.svelte";
   import ChartRuns from "./ChartRuns.svelte";
+  import ChartRunsServizio from "./ChartRunsServizio.svelte";
 
   let users = [];
   let cars = [];
@@ -122,6 +123,9 @@
   {#if type === "runs"}
     <div class="w-full mt-5">
       <ChartRuns label="C/S/B" />
+    </div>
+    <div class="w-full mt-5">
+      <ChartRunsServizio label="Servizio" />
     </div>
   {/if}
   {#if type === "cars"}

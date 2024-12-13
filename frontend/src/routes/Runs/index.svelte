@@ -9,9 +9,7 @@
   import LoadingList from "../../components/LoadingList.svelte";
 
   let runs = [];
-  let show_form = false;
   let showPopup = false;
-  let showFinalPopup = false;
   let loading = false;
   let showMap = true;
   let cars = [];
@@ -53,11 +51,6 @@
   const BASE_RECONNECT_TIMEOUT = 1000; // Start with 1 second and increase
 
   $: showPopup &&
-    setTimeout(() => {
-      getMapInfo();
-    }, 300);
-
-  $: showFinalPopup &&
     setTimeout(() => {
       getMapInfo();
     }, 300);
@@ -256,10 +249,7 @@
         ).addTo(map);
       });
       map.setView(
-        [
-          drivers[0].last_location.latitude,
-          drivers[0].last_location.longitude,
-        ],
+        [drivers[0].last_location.latitude, drivers[0].last_location.longitude],
         16,
       );
     } catch (error) {
@@ -454,7 +444,6 @@
           16,
         );
       }, 500);
-      showFinalPopup = true;
     }
   }
 
@@ -770,7 +759,7 @@
 {/if}
 
 <!-- Popup/Modal for additional information -->
-{#if showPopup || show_form || showFinalPopup}
+{#if showPopup}
   <div
     transition:fade={{ duration: 300 }}
     class="fixed inset-0 top-20 overflow-hidden z-40 pt-10 flex items-center flex-col gap-10 p-4 bg-white transition-opacity duration-500"
@@ -779,7 +768,15 @@
       {#if showPopup}
         <!-- Form Modal -->
         <div class="z-50 transform transition-all duration-500">
-          <h2 class="text-3xl font-bold mb-6">Assegnazione a mezzo</h2>
+          <div class="flex items-center justify-between">
+            <h2 class="text-3xl font-bold mb-6">Assegnazione a mezzo</h2>
+            <button
+              on:click={() => (showPopup = false)}
+              class="bg-red-600 hover:bg-red-700 transition text-white font-bold rounded-lg text-4xl aspect-square w-10 h-10 pb-1 leading-none flex items-center justify-center"
+            >
+              <span class="text-white">×</span>
+            </button>
+          </div>
           <h2 class="text-2xl font-bold mb-6">Lista veicoli</h2>
           <div class="flex gap-10">
             <div class="flex-grow-0">
@@ -889,7 +886,7 @@
                   on:click={() => updateRun(true)}
                   class="bg-purple-700 hover:bg-purple-900 text-white font-bold py-2 px-6 rounded-lg"
                 >
-                  Programmata mezzo
+                  Assegna giornaliera
                 </button>
               </div>
             </div>
@@ -901,33 +898,6 @@
               ></div>
             </div>
           </div>
-        </div>
-      {/if}
-      {#if showFinalPopup}
-        <div class="z-50 transform transition-all duration-500">
-          <h2 class="text-3xl font-bold mb-6">
-            Hai assegnato la corsa al mezzo
-          </h2>
-          <p class="text-gray-700 mb-6">
-            Il guidatore riceverà una notifica per l'accettazione della corsa
-          </p>
-          <!-- Map Container -->
-          <div
-            id="map"
-            class="aspect-[16/9] max-w-screen-lg rounded-lg shadow-md z-10"
-          ></div>
-
-          <button
-            class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg mt-10 ml-auto block"
-            on:click={() => {
-              showFinalPopup = false;
-              showPopup = false;
-              map = null;
-            }}
-            aria-label="Close form"
-          >
-            Torna alla gestione trasporti
-          </button>
         </div>
       {/if}
     </div>
