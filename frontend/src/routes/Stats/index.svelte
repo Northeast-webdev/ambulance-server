@@ -100,7 +100,7 @@
       <div class="w-full">
         <Chart userList={users} label="Numero di trasporti" />
       </div>
-      <div class="w-full mt-5">
+      <div class="w-full mt-10">
         <Chart
           backgroundColor="#34792866"
           borderColor="#347928"
@@ -109,7 +109,7 @@
           label="Durata media del trasporto"
         />
       </div>
-      <div class="w-full mt-5">
+      <div class="w-full mt-10">
         <Chart
           backgroundColor="#FCCD2A66"
           borderColor="#FCCD2A"
@@ -124,7 +124,7 @@
     <div class="w-full mt-5">
       <ChartRuns label="C/S/B" />
     </div>
-    <div class="w-full mt-5">
+    <div class="w-full mt-10">
       <ChartRunsServizio label="Servizio" />
     </div>
   {/if}
@@ -133,7 +133,7 @@
       <div class="w-full">
         <Chart isCar userList={cars} label="Numero di trasporti" />
       </div>
-      <div class="w-full mt-5">
+      <div class="w-full mt-10">
         <Chart
           backgroundColor="#34792866"
           borderColor="#347928"
@@ -143,7 +143,7 @@
           label="Durata media del trasporto"
         />
       </div>
-      <div class="w-full mt-5">
+      <div class="w-full mt-10">
         <Chart
           backgroundColor="#FCCD2A66"
           borderColor="#FCCD2A"
