@@ -255,13 +255,14 @@
     }
     navigate("/pazienti");
   }
+
   function extractFullAddress(data) {
     let streetNumber = "";
     let route = "";
     let subpremise = "";
     let locality = "";
     let formattedName = "";
-    console.log(data.address_components);
+
     // Check if the place is a hospital
     if (data.types.includes("hospital")) {
       formattedName = `${data.name}`;
@@ -282,12 +283,17 @@
       }
     });
 
-    // Combine the extracted parts into the desired format
-    let address = `${route} ${streetNumber || route ? streetNumber + ", " : ""}`;
+    // Construct the address string
+    let address = `${route}`;
+    if (streetNumber) {
+      address += ` ${streetNumber}`;
+    }
     if (subpremise) {
       address += `/${subpremise}`;
     }
-    address += `${locality}`;
+    if (locality) {
+      address += `, ${locality}`;
+    }
 
     // Prepend the hospital name if it exists
     if (formattedName) {
@@ -296,6 +302,7 @@
 
     return address.trim();
   }
+
   $: (() => {
     if (show_form && action !== "edit") {
       additionalRuns = Array.from({ length: new_run.viaggio * 2 }).map(
