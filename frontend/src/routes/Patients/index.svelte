@@ -257,16 +257,8 @@
   function extractFullAddress(data) {
     let streetNumber = "";
     let route = "";
-    let subpremise = "";
     let locality = "";
     let formattedName = "";
-
-    // Check if the place is a hospital
-    if (data.types.includes("hospital")) {
-      formattedName = `${data.name}`;
-    }
-
-    console.log(data)
 
     data.address_components.forEach((component) => {
       if (component.types.includes("street_number")) {
@@ -275,32 +267,40 @@
       if (component.types.includes("route")) {
         route = component.long_name;
       }
-      if (component.types.includes("subpremise")) {
-        subpremise = component.long_name;
-      }
       if (component.types.includes("locality")) {
         locality = component.long_name;
       }
     });
 
-    // Construct the address string
+    // Build the address
     let address = `${route}`;
     if (streetNumber) {
       address += ` ${streetNumber}`;
-    }
-    if (subpremise) {
-      address += `/${subpremise}`;
     }
     if (locality) {
       address += `, ${locality}`;
     }
 
-    // Prepend the hospital name if it exists
-    if (formattedName) {
-      address = `${formattedName}, ${address}`;
+    return address.trim();
+  }
+
+  /**
+  * Compare user input with API-formatted address and append missing parts.
+  */
+  function reconcileAddresses(userInput, apiAddress) {
+    // Check if user input contains extra parts not in the API address
+    if (!userInput.includes(apiAddress)) {
+      // Find the part of the user input that is missing
+      const missingPart = userInput.replace(apiAddress, "").trim();
+
+      // Append the missing part (likely the unit number) to the API address
+      if (missingPart) {
+        return `${apiAddress} ${missingPart}`.trim();
+      }
     }
 
-    return address.trim();
+    // If no difference, return the API address as-is
+    return apiAddress;
   }
 
   $: (() => {
@@ -325,14 +325,33 @@
             arrivoInput,
           );
 
+          // Save the raw user input
+          let rawPartenza = "";
+          partenzaInput.addEventListener("input", (event) => {
+            rawPartenza = event.target.value.trim();
+          });
+
+          let rawArrivo = "";
+          arrivoInput.addEventListener("input", (event) => {
+            rawArrivo = event.target.value.trim();
+          });
+
+
           partenzaAutocomplete.addListener("place_changed", () => {
             const place = partenzaAutocomplete.getPlace();
             if (!place.geometry || !place.geometry.location) {
               console.error("No geometry available for the selected place");
               return;
             }
-            const str = extractFullAddress(place);
-            additionalRuns[i].partenza = str;
+            // Extract the formatted address from the API response
+            const formattedAPIAddress = extractFullAddress(place);
+
+            // Compare user input with API response to detect a missing unit number
+            const enhancedAddress = reconcileAddresses(rawPartenza, formattedAPIAddress);
+
+            // Update the additionalRuns object
+            additionalRuns[i].partenza = enhancedAddress;
+              
             additionalRuns[i].geometry = {
               latitude: place.geometry.location.lat(),
               longitude: place.geometry.location.lng(),
@@ -350,8 +369,15 @@
               console.error("No geometry available for the selected place");
               return;
             }
-            const str = extractFullAddress(place);
-            additionalRuns[i].arrivo = str;
+            // Extract the formatted address from the API response
+            const formattedAPIAddress = extractFullAddress(place);
+
+            // Compare user input with API response to detect a missing unit number
+            const enhancedAddress = reconcileAddresses(rawArrivo, formattedAPIAddress);
+
+            // Update the additionalRuns object
+            additionalRuns[i].arrivo = enhancedAddress;
+
             additionalRuns[i].end_geometry = {
               latitude: place.geometry.location.lat(),
               longitude: place.geometry.location.lng(),
