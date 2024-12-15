@@ -298,9 +298,6 @@
     if (streetNumber) {
       address += ` ${streetNumber}`;
     }
-    if (subpremise) {
-      address += `/${subpremise}`;
-    }
     if (locality) {
       address += `, ${locality}`;
     }
