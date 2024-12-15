@@ -266,8 +266,6 @@
       formattedName = `${data.name}`;
     }
 
-    console.log(data)
-
     data.address_components.forEach((component) => {
       if (component.types.includes("street_number")) {
         const address = input.value; // input[text] value
