@@ -373,7 +373,7 @@
             if (formattedAddress) {
               formattedAddress = limitCommas(formattedAddress, 3);
             }
-            additionalRuns[i].arrivo = str;
+            additionalRuns[i].arrivo = formattedAddress;
             additionalRuns[i].end_geometry = {
               latitude: place.geometry.location.lat(),
               longitude: place.geometry.location.lng(),
@@ -440,7 +440,7 @@
           };
           console.log(
             "Selected place:",
-            str,
+            formattedAddress,
             place.geometry.location.lat(),
             place.geometry.location.lng(),
           );
@@ -462,7 +462,7 @@
           };
           console.log(
             "Selected place:",
-            str,
+            formattedAddress,
             place.geometry.location.lat(),
             place.geometry.location.lng(),
           );
