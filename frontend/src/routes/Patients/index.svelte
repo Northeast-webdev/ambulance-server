@@ -311,14 +311,6 @@
     return address.trim();
   }
 
-  function limitCommas(address, maxCommas) {
-    const parts = address.split(","); // Split the address by commas
-    if (parts.length > maxCommas + 1) {
-      return parts.slice(0, maxCommas + 1).join(",").trim(); // Rejoin only up to the allowed parts
-    }
-    return address.trim(); // Return the address as-is if it's within the limit
-  }
-
   $: (() => {
     if (show_form && action !== "edit") {
       additionalRuns = Array.from({ length: new_run.viaggio * 2 }).map(
@@ -346,19 +338,16 @@
             if (!place.geometry || !place.geometry.location) {
               console.error("No geometry available for the selected place");
               return;
-            }  
-            let formattedAddress = place.formatted_address;
-            if (formattedAddress) {
-              formattedAddress = limitCommas(formattedAddress, 3);
             }
-            additionalRuns[i].partenza = formattedAddress;
+            const str = extractFullAddress(place, partenzaInput);
+            additionalRuns[i].partenza = str;
             additionalRuns[i].geometry = {
               latitude: place.geometry.location.lat(),
               longitude: place.geometry.location.lng(),
             };
             console.log(
               "Selected place:",
-              formattedAddress,
+              str,
               place.geometry.location.lat(),
               place.geometry.location.lng(),
             );
@@ -369,18 +358,15 @@
               console.error("No geometry available for the selected place");
               return;
             }
-            let formattedAddress = place.formatted_address;
-            if (formattedAddress) {
-              formattedAddress = limitCommas(formattedAddress, 3);
-            }
-            additionalRuns[i].arrivo = formattedAddress;
+            const str = extractFullAddress(place, arrivoInput);
+            additionalRuns[i].arrivo = str;
             additionalRuns[i].end_geometry = {
               latitude: place.geometry.location.lat(),
               longitude: place.geometry.location.lng(),
             };
             console.log(
               "Selected place:",
-              formattedAddress,
+              str,
               place.geometry.location.lat(),
               place.geometry.location.lng(),
             );
@@ -429,18 +415,15 @@
             console.error("No geometry available for the selected place");
             return;
           }
-            let formattedAddress = place.formatted_address;
-            if (formattedAddress) {
-              formattedAddress = limitCommas(formattedAddress, 3);
-            }
-          edit_run.partenza = formattedAddress;
+          const str = extractFullAddress(place, partenzaInput);
+          edit_run.partenza = str;
           edit_run.geometry = {
             latitude: place.geometry.location.lat(),
             longitude: place.geometry.location.lng(),
           };
           console.log(
             "Selected place:",
-            formattedAddress,
+            str,
             place.geometry.location.lat(),
             place.geometry.location.lng(),
           );
@@ -451,18 +434,15 @@
             console.error("No geometry available for the selected place");
             return;
           }
-            let formattedAddress = place.formatted_address;
-            if (formattedAddress) {
-              formattedAddress = limitCommas(formattedAddress, 3);
-            }
-          edit_run.arrivo = formattedAddress;
+          const str = extractFullAddress(place, arrivoInput);
+          edit_run.arrivo = str;
           edit_run.end_geometry = {
             latitude: place.geometry.location.lat(),
             longitude: place.geometry.location.lng(),
           };
           console.log(
             "Selected place:",
-            formattedAddress,
+            str,
             place.geometry.location.lat(),
             place.geometry.location.lng(),
           );
