@@ -273,7 +273,7 @@
 
         // Regex Match associated
         if (streetNumber) {
-          const regex = RegExp(`[^\\s,]*(${streetNumber})(/[^\\s,]*)?`);
+          const regex = RegExp(`[^\\s,]*(${streetNumber})(/\\S*)?`);
           const foundStreetNumber = regex.exec(address);
           streetNumber = foundStreetNumber[0];
         }
