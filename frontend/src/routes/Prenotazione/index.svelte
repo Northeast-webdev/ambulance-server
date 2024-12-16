@@ -255,21 +255,32 @@
     }
     navigate("/pazienti");
   }
-  function extractFullAddress(data) {
+
+  function extractFullAddress(data, input) {
     let streetNumber = "";
     let route = "";
     let subpremise = "";
     let locality = "";
     let formattedName = "";
-    console.log(data.address_components);
+
     // Check if the place is a hospital
     if (data.types.includes("hospital")) {
       formattedName = `${data.name}`;
     }
 
+    console.log(data)
+
     data.address_components.forEach((component) => {
       if (component.types.includes("street_number")) {
+        const address = input.value; // input[text] value
         streetNumber = component.long_name;
+
+        // Regex Match associated
+        if (streetNumber) {
+          const regex = RegExp(`[^\\s,]*(${streetNumber})[^\\s,]*`);
+          const foundStreetNumber = regex.exec(address);
+          streetNumber = foundStreetNumber[0];
+        }
       }
       if (component.types.includes("route")) {
         route = component.long_name;
@@ -282,12 +293,14 @@
       }
     });
 
-    // Combine the extracted parts into the desired format
-    let address = `${route} ${streetNumber || route ? streetNumber + ", " : ""}`;
-    if (subpremise) {
-      address += `/${subpremise}`;
+    // Construct the address string
+    let address = `${route}`;
+    if (streetNumber) {
+      address += ` ${streetNumber}`;
     }
-    address += `${locality}`;
+    if (locality) {
+      address += `, ${locality}`;
+    }
 
     // Prepend the hospital name if it exists
     if (formattedName) {
@@ -296,6 +309,7 @@
 
     return address.trim();
   }
+
   $: (() => {
     if (show_form && action !== "edit") {
       additionalRuns = Array.from({ length: new_run.viaggio * 2 }).map(
@@ -324,7 +338,7 @@
               console.error("No geometry available for the selected place");
               return;
             }
-            const str = extractFullAddress(place);
+            const str = extractFullAddress(place, partenzaInput);
             additionalRuns[i].partenza = str;
             additionalRuns[i].geometry = {
               latitude: place.geometry.location.lat(),
@@ -343,7 +357,7 @@
               console.error("No geometry available for the selected place");
               return;
             }
-            const str = extractFullAddress(place);
+            const str = extractFullAddress(place, arrivoInput);
             additionalRuns[i].arrivo = str;
             additionalRuns[i].end_geometry = {
               latitude: place.geometry.location.lat(),
@@ -400,7 +414,7 @@
             console.error("No geometry available for the selected place");
             return;
           }
-          const str = extractFullAddress(place);
+          const str = extractFullAddress(place, partenzaInput);
           edit_run.partenza = str;
           edit_run.geometry = {
             latitude: place.geometry.location.lat(),
@@ -419,7 +433,7 @@
             console.error("No geometry available for the selected place");
             return;
           }
-          const str = extractFullAddress(place);
+          const str = extractFullAddress(place, arrivoInput);
           edit_run.arrivo = str;
           edit_run.end_geometry = {
             latitude: place.geometry.location.lat(),
