@@ -312,7 +312,7 @@
     }
     fetch(
       import.meta.env.VITE_API_URL +
-        `/api/runs?patient=${patient || ""}&meta_date=${date.toISOString().split("T")[0]}&status=${
+        `/api/runs?limit=1000&patient=${patient || ""}&meta_date=${date.toISOString().split("T")[0]}&status=${
           status || ""
         }`,
       {
@@ -372,7 +372,7 @@
     }
     fetch(
       import.meta.env.VITE_API_URL +
-        "/api/runs?meta_date=" +
+        "/api/runs?limit=1000&meta_date=" +
         date.toISOString().split("T")[0],
       {
         method: "GET",
