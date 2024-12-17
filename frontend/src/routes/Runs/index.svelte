@@ -515,6 +515,23 @@
     showPopup = true;
     selected_run = run._id;
   }
+
+  // Add this computed property to group and sort runs by patient
+  $: groupedRuns = runs.reduce((acc, run) => {
+    const patientId = run.patient._id;
+    if (!acc[patientId]) {
+      acc[patientId] = [];
+    }
+    acc[patientId].push(run);
+    return acc;
+  }, {});
+
+  // Function to get A/R based on patient's runs
+  function getARIndicator(run) {
+    const patientRuns = groupedRuns[run.patient._id];
+    const runIndex = patientRuns.findIndex((r) => r._id === run._id);
+    return runIndex % 2 === 0 ? "A" : "R";
+  }
 </script>
 
 {#if loading}
@@ -544,6 +561,9 @@
             <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
               >Pronto</th
             >
+            <th class="p-3 text-center font-semibold text-gray-700 border-b"
+              >A/R</th
+            >
             {#each Object.keys(meta_verifier) as key}
               {#if key === "Ora"}
                 <span></span>
@@ -562,7 +582,7 @@
           </tr>
         </thead>
         <tbody>
-          {#each runs as run}
+          {#each runs as run, index}
             <tr
               class="{run.status === 'refused'
                 ? 'bg-red-200 border-red-300'
@@ -587,6 +607,9 @@
                     }}
                   />
                 {/if}
+              </td>
+              <td class="p-3 border-r border-inherit text-center font-bold">
+                {getARIndicator(run)}
               </td>
               {#each Object.keys(meta_verifier) as key}
                 {#if key === "Ora"}
