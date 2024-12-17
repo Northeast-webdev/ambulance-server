@@ -539,7 +539,7 @@
 {:else}
   <div class="container mx-auto py-6 px-3">
     <div class="flex justify-between items-center mb-4">
-      <h1 class="text-3xl font-bold">Gestione Trasporti</h1>
+      <h1 class="text-3xl font-bold">Gestione Giornaliera</h1>
     </div>
 
     <div class="mb-8 flex items-center gap-4">

@@ -253,7 +253,7 @@
       }
     }
   }
-  
+
   function extractFullAddress(data, input) {
     let streetNumber = "";
     let route = "";
@@ -372,12 +372,15 @@
   })();
   const getPatients = async () => {
     loading = true;
-    fetch(import.meta.env.VITE_API_URL + "/api/patient?limit=50&surname=" + query, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+    fetch(
+      import.meta.env.VITE_API_URL + "/api/patient?limit=50&surname=" + query,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       },
-    })
+    )
       .then((response) => response.json())
       .then((data) => {
         patients = data.patients;
@@ -499,7 +502,7 @@
               N. viaggi A/R
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              N. trasporti eseguiti
+              N. giornaliere eseguiti
             </th>
           </tr>
         </thead>
@@ -707,7 +710,7 @@
         <!-- Form Modal -->
         <div class="z-50 transform transition-all duration-500">
           <h2 class="text-3xl font-bold mb-8">
-            {action === "add" ? "Nuova prenotazione" : "Modifica trasporti"}
+            {action === "add" ? "Nuova prenotazione" : "Modifica giornaliera"}
           </h2>
           <form
             on:submit|preventDefault={() => {

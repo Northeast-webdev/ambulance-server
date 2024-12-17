@@ -13,7 +13,7 @@
   let chartInstance; // To store chart instance
   let selected_user;
   let loading = false;
-  export let label = "Trasporti";
+  export let label = "Giornaliere";
   export let borderColor = "#60A5FA";
   export let backgroundColor = "#60A5FA66";
   export let userList = [];
@@ -40,7 +40,8 @@
   function getDayName(dateString) {
     const date = new Date(chartLabels[dateString]);
     const weekday = date.toLocaleDateString("it-IT", { weekday: "long" });
-    const capitalizedWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+    const capitalizedWeekday =
+      weekday.charAt(0).toUpperCase() + weekday.slice(1);
     return date.toLocaleDateString("it-IT") + "\n" + capitalizedWeekday;
   }
 
@@ -170,7 +171,7 @@
             x: {
               ticks: {
                 callback: function (value) {
-                  return getDayName(value).split("\n");  // Return array for multiline
+                  return getDayName(value).split("\n"); // Return array for multiline
                 },
               },
             },
@@ -194,7 +195,11 @@
       )
         .then((response) => response.json())
         .then((data) => {
-          runs = data.runs.sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime());
+          runs = data.runs.sort(
+            (a, b) =>
+              new Date(a.updated_at).getTime() -
+              new Date(b.updated_at).getTime(),
+          );
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -228,7 +233,10 @@
     )
       .then((response) => response.json())
       .then((data) => {
-        runs = data.runs.sort((a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime());
+        runs = data.runs.sort(
+          (a, b) =>
+            new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime(),
+        );
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -254,18 +262,14 @@
     <h2 class="text-xl text-gray-800 text-center font-bold">{label}</h2>
     <div class="mt-8 mb-4 flex items-center justify-between gap-4 mx-8">
       <div class="flex items-center gap-3">
-        <p class="text-black font-bold">
-          Dal
-        </p>
+        <p class="text-black font-bold">Dal</p>
         <DateInput
           bind:value={start_date}
           format="dd/MM/yyyy"
           class="stats"
           dynamicPositioning
         />
-        <p class="text-black font-bold">
-          Al
-        </p>
+        <p class="text-black font-bold">Al</p>
         <DateInput
           bind:value={end_date}
           format="dd/MM/yyyy"
@@ -327,7 +331,7 @@
         {:else}
           <p>
             {!isAverageLength && !isAveragePickup
-              ? "Trasporti nel periodo selezionato"
+              ? "Giornaliere nel periodo selezionato"
               : label}: {chartCounts.reduce((total, num) => total + num, 0)}
           </p>
         {/if}

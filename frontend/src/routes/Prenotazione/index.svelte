@@ -268,7 +268,7 @@
       formattedName = `${data.name}`;
     }
 
-    console.log(data)
+    console.log(data);
 
     data.address_components.forEach((component) => {
       if (component.types.includes("street_number")) {
@@ -511,7 +511,7 @@
               N. viaggi A/R
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              N. trasporti eseguiti
+              N. giornaliere eseguiti
             </th>
           </tr>
         </thead>
@@ -719,7 +719,7 @@
         <!-- Form Modal -->
         <div class="z-50 transform transition-all duration-500">
           <h2 class="text-3xl font-bold mb-8">
-            {action === "add" ? "Nuova prenotazione" : "Modifica trasporti"}
+            {action === "add" ? "Nuova prenotazione" : "Modifica giornaliera"}
           </h2>
           <form
             on:submit|preventDefault={() => {
