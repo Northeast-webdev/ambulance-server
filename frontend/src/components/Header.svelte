@@ -10,7 +10,6 @@
   const location = useLocation();
   const links = [
     { name: "Pazienti", path: "/pazienti" },
-    { name: "Nuova prenotazione", path: "/prenotazione" },
     { name: "Trasporti", path: "/runs" },
     { name: "Mappa", path: "/" },
     { name: "Utenti", path: "/users" },
@@ -44,6 +43,15 @@
       <!-- Navigation Links -->
       {#if $user.role === "administrator" || $user.role === "operator"}
         <nav class="flex-1 mx-6 space-x-2">
+          <Link
+            to="/prenotazione"
+            class="text-gray-100 bg-lime-600 hover:bg-lime-700 pl-4 pr-3 py-2 text-center rounded-xl {$location.pathname ===
+            '/prenotazione'
+              ? 'text-green-700 bg-white hover:bg-lime-100'
+              : 'hover:text-gray-50'} text-lg font-medium transition duration-200"
+          >
+            Nuova Prenotazione
+          </Link>
           {#each links as link}
             <Link
               to={link.path}

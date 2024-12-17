@@ -579,6 +579,9 @@
                 >
               {/if}
             {/each}
+            <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+              >Note particolari</th
+            >
           </tr>
         </thead>
         <tbody>
@@ -608,7 +611,9 @@
                   />
                 {/if}
               </td>
-              <td class="p-3 border-r border-inherit text-center font-bold">
+              <td
+                class="p-3 border-r border-inherit text-center font-bold min-w-14"
+              >
                 {getARIndicator(run)}
               </td>
               {#each Object.keys(meta_verifier) as key}
@@ -632,7 +637,7 @@
                 {:else if key === "Paziente"}
                   <td class="py-3 px-4 border-r border-inherit">
                     <button
-                      class="text-blue-800 font-semibold underline"
+                      class="text-blue-800 font-semibold underline mx-auto block"
                       on:click={() => {
                         run.visibleInfo = !run.visibleInfo;
                       }}
@@ -643,6 +648,9 @@
                   </td>
                 {/if}
               {/each}
+              <td class="py-3 px-4 border-r border-inherit"
+                >{run.meta.note_particolari}</td
+              >
             </tr>
             <!-- Patient and run status, with showing the assigned car that are revealed on name click -->
             {#if run.visibleInfo}

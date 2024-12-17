@@ -24,6 +24,8 @@ const printCarChecklist = async (request) => {
   };
   const filename =
     "checklist-" +
+    carChecklist.user.username +
+    "-" +
     carChecklist.car.name +
     "-" +
     carChecklist.created_at.toISOString().split("T")[0];
@@ -90,8 +92,8 @@ const printCarChecklist = async (request) => {
     return `
         <div style="position: relative; width: 375px; margin-bottom: 20px;">
           <img src="data:image/png;base64,${image.toString(
-            "base64"
-          )}" alt="${side}" 
+      "base64"
+    )}" alt="${side}" 
           style="
             width: 100%;
             height: 100%;
@@ -144,17 +146,15 @@ const printCarChecklist = async (request) => {
         </tr>
         <tr>
           <td>Autista</td>
-          <td>${carChecklist.user.first_name} ${
-    carChecklist.user.last_name
-  }</td>
+          <td>${carChecklist.user.first_name} ${carChecklist.user.last_name
+    }</td>
         </tr>
         <tr>
           <td>Inizio turno</td>
-          <td>${
-            carChecklist.car.shift_start.toLocaleDateString("it-IT") +
-            " " +
-            carChecklist.car.shift_start.toLocaleTimeString("it-IT")
-          }</td>
+          <td>${carChecklist.car.shift_start.toLocaleDateString("it-IT") +
+    " " +
+    carChecklist.car.shift_start.toLocaleTimeString("it-IT")
+    }</td>
         </tr>
         <tr>
           <td>Chilometri</td>
@@ -367,6 +367,8 @@ const printMaterialChecklist = async (request) => {
     .populate("car");
   const filename =
     "checklist_inf-" +
+    materialChecklist.user.username +
+    "-" +
     materialChecklist.car.name +
     "-" +
     materialChecklist.created_at.toISOString().split("T")[0];
@@ -379,10 +381,9 @@ const printMaterialChecklist = async (request) => {
 
   let newContent = htmlContent.replace(
     "</head>",
-    `<script>${
-      checklist
-        ? `const checklist = ${JSON.stringify(checklist)};`
-        : fs.readFileSync(`${process.cwd()}/backend/src/html/test.js`, "utf-8")
+    `<script>${checklist
+      ? `const checklist = ${JSON.stringify(checklist)};`
+      : fs.readFileSync(`${process.cwd()}/backend/src/html/test.js`, "utf-8")
     }</script></head>`
   );
 
@@ -415,9 +416,8 @@ const findPDF = async (request, reply) => {
   ).populate("car");
 
   if (carChecklist) {
-    const filePath = `/var/data/pdf/checklist-${carChecklist.car.name}-${
-      carChecklist.created_at.toISOString().split("T")[0]
-    }.pdf`;
+    const filePath = `/var/data/pdf/checklist-${carChecklist.user.username}-${carChecklist.car.name}-${carChecklist.created_at.toISOString().split("T")[0]
+      }.pdf`;
     const fileStream = fs.readFileSync(filePath);
     // download the PDF
     reply.header("Content-Type", "application/pdf");
@@ -427,9 +427,7 @@ const findPDF = async (request, reply) => {
     );
     reply.send(fileStream);
   } else if (materialChecklist) {
-    const filePath = `/var/data/pdf/checklist_inf-${
-      materialChecklist.car.name
-    }-${materialChecklist.created_at.toISOString().split("T")[0]}.pdf`;
+    const filePath = `/var/data/pdf/checklist_inf-${materialChecklist.user.username}-${materialChecklist.car.name}-${materialChecklist.created_at.toISOString().split("T")[0]}.pdf`;
     const fileStream = fs.readFileSync(filePath);
     // download the PDF
     reply.header("Content-Type", "application/pdf");
