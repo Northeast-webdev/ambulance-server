@@ -91,7 +91,7 @@
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-            body: JSON.stringify({ ...new_user, role: userType }),
+            body: JSON.stringify({ ...new_user, role: userType, username: new_user.username.toLowerCase() }),
           },
         );
         const data = await response.json();
