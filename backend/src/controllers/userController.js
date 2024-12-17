@@ -65,6 +65,7 @@ const updateUser = async (request, reply) => {
     car,
     last_location,
     password,
+    username
   } = request.body;
   const updates = {};
 
@@ -73,6 +74,7 @@ const updateUser = async (request, reply) => {
   if (first_name) updates.first_name = first_name;
   if (last_name) updates.last_name = last_name;
   if (dob) updates.dob = dob;
+  if (username) updates.username = username;
   if (phone) updates.phone = phone;
   if (last_location) updates.last_location = last_location;
   if (password) {
