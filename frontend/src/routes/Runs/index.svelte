@@ -7,6 +7,7 @@
   import { onDestroy, onMount } from "svelte";
   import { fade, fly } from "svelte/transition";
   import LoadingList from "../../components/LoadingList.svelte";
+  import { user } from "../../stores";
 
   let runs = [];
   let showPopup = false;
@@ -45,6 +46,7 @@
     "Note particolari": "note_particolari",
   };
 
+  let loadingCoordinatore = {};
   let carReconnectAttempts = 0;
   let isCarConnected = false;
   const MAX_RECONNECT_ATTEMPTS = 300;
@@ -532,6 +534,28 @@
     const runIndex = patientRuns.findIndex((r) => r._id === run._id);
     return runIndex % 2 === 0 ? "A" : "R";
   }
+
+  async function saveCoordinatore(run) {
+    loadingCoordinatore[run._id] = true;
+    const response = await fetch(
+      import.meta.env.VITE_API_URL + "/api/runs/" + run._id,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          meta: {
+            ...run.meta,
+            coordinatore: run.meta.coordinatore,
+          },
+        }),
+      },
+    );
+    const data = await response.json();
+    loadingCoordinatore[run._id] = false;
+  }
 </script>
 
 {#if loading}
@@ -558,6 +582,12 @@
       >
         <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
           <tr>
+            {#if $user.role === "operator"}
+              <th
+                class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                >Coordinatore</th
+              >
+            {/if}
             <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
               >Pronto</th
             >
@@ -599,6 +629,23 @@
                         ? 'bg-violet-200 border-violet-300'
                         : 'bg-gray-50'} border-b border-l"
             >
+              {#if $user.role === "operator"}
+                <td
+                  class="border-r border-inherit text-center font-bold min-w-[200px] flex flex-col"
+                >
+                  <textarea
+                    class="w-full h-full block border-2 border-gray-300 p-2 text-sm font-normal"
+                    bind:value={run.meta.coordinatore}
+                  ></textarea>
+                  <button
+                    class="bg-lime-600 text-white font-bold p-1 transition duration-200 text-sm disabled:bg-gray-600"
+                    on:click={() => saveCoordinatore(run)}
+                    disabled={loadingCoordinatore[run._id]}
+                  >
+                    {loadingCoordinatore[run._id] ? "Salvando..." : "Salva"}
+                  </button>
+                </td>
+              {/if}
               <td class="py-3 px-4 border-r border-inherit text-center">
                 {#if run.status === "pending"}
                   <input
