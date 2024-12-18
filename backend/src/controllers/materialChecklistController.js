@@ -8,7 +8,7 @@ const { printMaterialChecklist } = require("./pdfController");
 
 const createMaterialChecklist = async (request, reply) => {
   const { checklist, user, car } = request.body;
-  const materialChecklist = new MaterialChecklist({ user, car });
+  const materialChecklist = new MaterialChecklist({ user, car }).populate("user", "first_name last_name _id");
   const userExists = await User.findOne({ _id: user });
   const carExists = await Car.findOne({ _id: car });
   try {
