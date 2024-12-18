@@ -31,6 +31,8 @@ const createMaterialChecklist = async (request, reply) => {
       id: materialChecklist._id,
       checklist,
     });
+
+    materialChecklist.populate("user", "first_name last_name _id");
     reply.send(materialChecklist);
   } catch (err) {
     reply.code(500).send({ error: err });
