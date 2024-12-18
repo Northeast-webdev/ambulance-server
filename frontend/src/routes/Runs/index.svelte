@@ -668,7 +668,7 @@
               >
                 <td
                   class="py-3 px-4"
-                  colspan={Object.keys(meta_verifier).length}
+                  colspan={Object.keys(meta_verifier).length + 2}
                 >
                   <div
                     class="flex items-center justify-between mx-auto max-w-[80%]"
