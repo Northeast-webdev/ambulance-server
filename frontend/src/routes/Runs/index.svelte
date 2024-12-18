@@ -582,7 +582,7 @@
       >
         <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
           <tr>
-            {#if $user.role === "operator"}
+            {#if $user.role === "administrator" || $user.role === "operator"}
               <th
                 class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
                 >Coordinatore</th
@@ -629,7 +629,7 @@
                         ? 'bg-violet-200 border-violet-300'
                         : 'bg-gray-50'} border-b border-l"
             >
-              {#if $user.role === "operator"}
+              {#if $user.role === "administrator" || $user.role === "operator"}
                 <td
                   class="border-r border-inherit text-center font-bold min-w-[200px] flex flex-col"
                 >
