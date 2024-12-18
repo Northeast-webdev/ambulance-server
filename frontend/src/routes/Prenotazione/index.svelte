@@ -511,7 +511,7 @@
               N. viaggi A/R
             </th>
             <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
-              N. giornaliere eseguiti
+              N. trasporti eseguiti
             </th>
           </tr>
         </thead>
@@ -719,7 +719,7 @@
         <!-- Form Modal -->
         <div class="z-50 transform transition-all duration-500">
           <h2 class="text-3xl font-bold mb-8">
-            {action === "add" ? "Nuova prenotazione" : "Modifica giornaliera"}
+            {action === "add" ? "Nuova prenotazione" : "Modifica trasporti"}
           </h2>
           <form
             on:submit|preventDefault={() => {

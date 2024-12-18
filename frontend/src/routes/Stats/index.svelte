@@ -85,7 +85,7 @@
         : 'bg-gray-100 text-gray-400'} transition font-bold py-2 px-6 rounded-lg"
       on:click={() => getData("runs")}
     >
-      <span>Giornaliere</span>
+      <span>Trasporti</span>
     </button>
   </div>
 </div>
@@ -98,7 +98,7 @@
   {#if type === "users"}
     <div class="">
       <div class="w-full">
-        <Chart userList={users} label="Numero di giornaliere" />
+        <Chart userList={users} label="Numero di trasporti" />
       </div>
       <div class="w-full mt-10">
         <Chart
@@ -131,7 +131,7 @@
   {#if type === "cars"}
     <div class="">
       <div class="w-full">
-        <Chart isCar userList={cars} label="Numero di giornaliere" />
+        <Chart isCar userList={cars} label="Numero di trasporti" />
       </div>
       <div class="w-full mt-10">
         <Chart

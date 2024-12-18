@@ -9,7 +9,7 @@
   let runs = [];
   let chartInstance; // To store chart instance
   let loading = false;
-  export let label = "Giornaliera";
+  export let label = "Trasporti";
   let data = [];
   // Register the components required for the chart
   Chart.register(...registerables);

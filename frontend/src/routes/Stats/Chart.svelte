@@ -13,7 +13,7 @@
   let chartInstance; // To store chart instance
   let selected_user;
   let loading = false;
-  export let label = "Giornaliere";
+  export let label = "Trasporti";
   export let borderColor = "#60A5FA";
   export let backgroundColor = "#60A5FA66";
   export let userList = [];
@@ -331,7 +331,7 @@
         {:else}
           <p>
             {!isAverageLength && !isAveragePickup
-              ? "Giornaliere nel periodo selezionato"
+              ? "Trasporti nel periodo selezionato"
               : label}: {chartCounts.reduce((total, num) => total + num, 0)}
           </p>
         {/if}

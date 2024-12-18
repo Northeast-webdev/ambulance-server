@@ -28,7 +28,9 @@ const printCarChecklist = async (request) => {
     "-" +
     carChecklist.car.name +
     "-" +
-    carChecklist.created_at.toISOString().split("T")[0];
+    carChecklist.created_at.toLocaleDateString("it-IT") +
+    "-" +
+    carChecklist.created_at.toLocaleTimeString("it-IT");
   const logo = fs
     .readFileSync(`${process.cwd()}/backend/img/logo.png`)
     .toString("base64");
@@ -371,7 +373,9 @@ const printMaterialChecklist = async (request) => {
     "-" +
     materialChecklist.car.name +
     "-" +
-    materialChecklist.created_at.toISOString().split("T")[0];
+    materialChecklist.created_at.toLocaleDateString("it-IT") +
+    "-" +
+    materialChecklist.created_at.toLocaleTimeString("it-IT");
 
   // Read both HTML files
   const htmlContent = fs.readFileSync(
@@ -416,8 +420,7 @@ const findPDF = async (request, reply) => {
   ).populate("car");
 
   if (carChecklist) {
-    const filePath = `/var/data/pdf/checklist-${carChecklist.user.username}-${carChecklist.car.name}-${carChecklist.created_at.toISOString().split("T")[0]
-      }.pdf`;
+    const filePath = `/var/data/pdf/checklist-${carChecklist.user.username}-${carChecklist.car.name}-${carChecklist.created_at.toLocaleDateString("it-IT")}-${carChecklist.created_at.toLocaleTimeString("it-IT")}.pdf`;
     const fileStream = fs.readFileSync(filePath);
     // download the PDF
     reply.header("Content-Type", "application/pdf");
@@ -427,7 +430,7 @@ const findPDF = async (request, reply) => {
     );
     reply.send(fileStream);
   } else if (materialChecklist) {
-    const filePath = `/var/data/pdf/checklist_inf-${materialChecklist.user.username}-${materialChecklist.car.name}-${materialChecklist.created_at.toISOString().split("T")[0]}.pdf`;
+    const filePath = `/var/data/pdf/checklist_inf-${materialChecklist.user.username}-${materialChecklist.car.name}-${materialChecklist.created_at.toLocaleDateString("it-IT")}-${materialChecklist.created_at.toLocaleTimeString("it-IT")}.pdf`;
     const fileStream = fs.readFileSync(filePath);
     // download the PDF
     reply.header("Content-Type", "application/pdf");
