@@ -35,8 +35,8 @@ const createCarChecklist = async (request, reply) => {
     carChecklist.populate("user", "first_name last_name _id");
     reply.send(carChecklist);
   } catch (err) {
-    console.log(err);
-    reply.code(500).send({ error: err });
+    console.log("Error creating car checklist", err);
+    reply.code(500).send({ error: err.message });
   }
 };
 

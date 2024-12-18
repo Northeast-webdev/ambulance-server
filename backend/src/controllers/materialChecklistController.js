@@ -8,7 +8,7 @@ const { printMaterialChecklist } = require("./pdfController");
 
 const createMaterialChecklist = async (request, reply) => {
   const { checklist, user, car } = request.body;
-  const materialChecklist = new MaterialChecklist({ user, car }).populate("user", "first_name last_name _id");
+  const materialChecklist = new MaterialChecklist({ user, car });
   const userExists = await User.findOne({ _id: user });
   const carExists = await Car.findOne({ _id: car });
   try {
@@ -35,7 +35,8 @@ const createMaterialChecklist = async (request, reply) => {
     materialChecklist.populate("user", "first_name last_name _id");
     reply.send(materialChecklist);
   } catch (err) {
-    reply.code(500).send({ error: err });
+    console.log("Error creating material checklist", err);
+    reply.code(500).send({ error: err.message });
   }
 };
 
