@@ -35,6 +35,11 @@ const getUser = async (request, reply) => {
           {
             path: "car_checklists",
             model: "CarChecklist",
+            populate: {
+              path: "user",
+              model: "User",
+              select: "first_name last_name _id",
+            },
             options: {
               sort: { created_at: -1 },
             },
@@ -42,6 +47,11 @@ const getUser = async (request, reply) => {
           {
             path: "material_checklists",
             model: "MaterialChecklist",
+            populate: {
+              path: "user",
+              model: "User",
+              select: "first_name last_name _id",
+            },
             options: {
               sort: { created_at: -1 },
             },
