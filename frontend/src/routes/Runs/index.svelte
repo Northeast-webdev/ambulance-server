@@ -868,12 +868,6 @@
         <div class="z-50 transform transition-all duration-500">
           <div class="flex items-center justify-between">
             <h2 class="text-3xl font-bold mb-6">Assegnazione a mezzo</h2>
-            <button
-              on:click={() => (showPopup = false)}
-              class="bg-red-600 hover:bg-red-700 transition text-white font-bold rounded-lg text-4xl aspect-square w-10 h-10 pb-1 leading-none flex items-center justify-center"
-            >
-              <span class="text-white">×</span>
-            </button>
           </div>
           <h2 class="text-2xl font-bold mb-6">Lista veicoli</h2>
           <div class="flex gap-10">
@@ -985,6 +979,13 @@
                   class="bg-purple-700 hover:bg-purple-900 text-white font-bold py-2 px-6 rounded-lg"
                 >
                   Assegna giornaliera
+                </button>
+
+                <button
+                  on:click={() => (showPopup = false)}
+                  class="bg-red-700 hover:bg-red-900 text-white font-bold py-2 px-6 rounded-lg"
+                >
+                  <span class="text-white">Salta per ora</span>
                 </button>
               </div>
             </div>

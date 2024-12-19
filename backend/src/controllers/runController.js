@@ -17,14 +17,14 @@ admin.initializeApp({
 
 const sendNotification = async (deviceToken, type, data) => {
   const message = {
-    data: {
+    notification: {
       body: type === "new_run" ? data.programmed ? 'Corsa programmata' : 'Richiesta di guida in arrivo' : 'La corsa seguente è stata annullata',
       title: `${data.patient.name} ${data.patient.surname}`,
-      sound: type === "new_run" ? data.programmed ? "alert" : "program" : "notification",
     },
     android: {
       notification: {
-        color: '#16a34a'
+        color: '#16a34a',
+        sound: type === "new_run" ? data.programmed ? "alert" : "program" : "notification",
       },
       priority: 'high',
     },
