@@ -555,6 +555,7 @@
     );
     const data = await response.json();
     loadingCoordinatore[run._id] = false;
+    run.show_coordinatore = false;
   }
 </script>
 
@@ -631,19 +632,35 @@
             >
               {#if $user.role === "administrator" || $user.role === "operator"}
                 <td
-                  class="border-r border-inherit text-center font-bold min-w-[200px] flex flex-col"
+                  class="border-r border-inherit text-center font-bold {run.show_coordinatore
+                    ? 'min-w-[200px]'
+                    : 'min-w-[100px]'}"
                 >
-                  <textarea
-                    class="w-full h-full block border-2 border-gray-300 p-2 text-sm font-normal"
-                    bind:value={run.meta.coordinatore}
-                  ></textarea>
-                  <button
-                    class="bg-lime-600 text-white font-bold p-1 transition duration-200 text-sm disabled:bg-gray-600"
-                    on:click={() => saveCoordinatore(run)}
-                    disabled={loadingCoordinatore[run._id]}
-                  >
-                    {loadingCoordinatore[run._id] ? "Salvando..." : "Salva"}
-                  </button>
+                  {#if !run.show_coordinatore}
+                    <p class="text-sm font-normal">
+                      {run.meta.coordinatore || "-"}
+                    </p>
+                    <button
+                      class="bg-slate-600 text-white font-bold py-1 px-2 transition duration-200 text-sm hover:bg-slate-700 mt-1"
+                      on:click={() => {
+                        run.show_coordinatore = true;
+                      }}
+                    >
+                      Modifica
+                    </button>
+                  {:else}
+                    <textarea
+                      class="w-full h-full block border-2 border-gray-300 p-2 text-sm font-normal"
+                      bind:value={run.meta.coordinatore}
+                    ></textarea>
+                    <button
+                      class="bg-lime-600 text-white font-bold p-1 transition duration-200 text-sm disabled:bg-gray-600 w-full"
+                      on:click={() => saveCoordinatore(run)}
+                      disabled={loadingCoordinatore[run._id]}
+                    >
+                      {loadingCoordinatore[run._id] ? "Salvando..." : "Salva"}
+                    </button>
+                  {/if}
                 </td>
               {/if}
               <td class="py-3 px-4 border-r border-inherit text-center">
