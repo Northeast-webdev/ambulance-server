@@ -23,7 +23,7 @@ const sendNotification = async (deviceToken, type, data) => {
     },
     android: {
       notification: {
-        sound: type === "new_run" ? data.programmed ? "alert" : "program" : "notification",
+        sound: type === "new_run" ? data.programmed ? "alert.mp3" : "program.wav" : "notification.wav",
       }
     },
     token: deviceToken, // The FCM token of the target device
