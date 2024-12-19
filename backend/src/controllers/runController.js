@@ -24,7 +24,8 @@ const sendNotification = async (deviceToken, type, data) => {
     android: {
       notification: {
         color: '#16a34a',
-        sound: type === "new_run" ? data.programmed ? "alert" : "program" : "notification",
+        sound: type === "new_run" ? data.programmed ? "program" : "alert" : "notification",
+        channelId: type === "new_run" ? data.programmed ? "programmed_run" : "new_run" : "stop_run",
       },
       priority: 'high',
     },
