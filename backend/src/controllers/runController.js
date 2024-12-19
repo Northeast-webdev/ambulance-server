@@ -24,7 +24,7 @@ const sendNotification = async (deviceToken, type, data) => {
     android: {
       notification: {
         sound: type === "new_run" ? data.programmed ? "alert" : "program" : "notification",
-        color: '#7e55c3',
+        color: '#16a34a',
         channelId: "wave_remote_notifications_priority"
       },
       priority: 'high',
