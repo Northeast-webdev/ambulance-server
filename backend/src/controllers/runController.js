@@ -18,8 +18,8 @@ admin.initializeApp({
 const sendNotification = async (deviceToken, type, data) => {
   const message = {
     notification: {
-      title: type === "new_run" ? data.programmed ? 'Corsa programmata' : 'Richiesta di guida in arrivo' : 'La corsa seguente è stata annullata',
-      body: `${data.patient.name} ${data.patient.surname}`,
+      body: type === "new_run" ? data.programmed ? 'Corsa programmata' : 'Richiesta di guida in arrivo' : 'La corsa seguente è stata annullata',
+      title: `${data.patient.name} ${data.patient.surname}`,
     },
     android: {
       notification: {
