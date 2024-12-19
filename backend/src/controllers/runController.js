@@ -20,7 +20,11 @@ const sendNotification = async (deviceToken, type, data) => {
     notification: {
       title: type === "new_run" ? data.programmed ? 'Corsa programmata' : 'Richiesta di guida in arrivo' : 'La corsa seguente è stata annullata',
       body: `${data.patient.name} ${data.patient.surname}`,
-      sound: type === "new_run" ? data.programmed ? "alert" : "program" : "notification",
+    },
+    android: {
+      notification: {
+        sound: type === "new_run" ? data.programmed ? "alert" : "program" : "notification",
+      }
     },
     token: deviceToken, // The FCM token of the target device
   };
