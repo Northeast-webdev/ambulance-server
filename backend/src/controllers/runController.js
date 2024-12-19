@@ -5,8 +5,31 @@ const { Car } = require("../schema/car.schema");
 const { Patient } = require("../schema/patient.schema");
 const { Run } = require("../schema/run.schema");
 require("dotenv").config();
+const admin = require("firebase-admin");
 // Store WebSocket connections per user
 const userConnections = new Map();
+
+const serviceAccount = require("../cvsphub-firebase-adminsdk-jgvr0-510f6077d1.json");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const sendNotification = async (deviceToken, type, data) => {
+  const message = {
+    notification: {
+      title: type === "new_run" ? 'Richiesta di guida in arrivo' : 'La corsa seguente è stata annullata',
+      body: `${data.patient.name} ${data.patient.surname}`,
+    },
+    token: deviceToken, // The FCM token of the target device
+  };
+
+  try {
+    const response = await admin.messaging().send(message);
+    console.log('Successfully sent message:', response);
+  } catch (error) {
+    console.error('Error sending message:', error);
+  }
+};
 
 const createRun = async (request, reply) => {
   const { additionalRuns, name, surname } = request.body;
@@ -157,7 +180,7 @@ const updateRun = async (request, reply) => {
       updates.length = Math.floor(
         (new Date(run.checkpoints.completed).getTime() -
           new Date(run.checkpoints.ongoing).getTime()) /
-          1000,
+        1000,
       );
     }
     if (status === "picked_up") {
@@ -195,7 +218,11 @@ const updateRun = async (request, reply) => {
     });
     console.log("Existing car:", existingCar);
     const assignedUserId = existingCar.user.toString();
-
+    const assignedUser = await User.findOne({ _id: assignedUserId });
+    const assignedUserToken = assignedUser.fcm_token;
+    if (assignedUserToken) {
+      await sendNotification(assignedUserToken, run_cancelled ? "stop_run" : "new_run", result);
+    }
     // Send new run to the assigned user via WebSocket
     const assignedUserConnection = userConnections.get(assignedUserId);
     console.log("Assigned user connection:", typeof assignedUserConnection);
@@ -369,7 +396,7 @@ const runRoutes = () => {
   );
 
   fastify.register(async () => {
-    fastify.get("/api/runs/driver", 
+    fastify.get("/api/runs/driver",
       {
         websocket: true,
         onTimeout: () => {

@@ -75,7 +75,8 @@ const updateUser = async (request, reply) => {
     car,
     last_location,
     password,
-    username
+    username,
+    fcm_token,
   } = request.body;
   const updates = {};
 
@@ -87,6 +88,7 @@ const updateUser = async (request, reply) => {
   if (username) updates.username = username;
   if (phone) updates.phone = phone;
   if (last_location) updates.last_location = last_location;
+  if (fcm_token) updates.fcm_token = fcm_token;
   if (password) {
     const hashedPassword = await bcrypt.hash(password, 10);
     updates.password = hashedPassword;
