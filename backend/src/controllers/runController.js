@@ -10,6 +10,7 @@ const admin = require("firebase-admin");
 const userConnections = new Map();
 
 const serviceAccount = require("../cvsphub-firebase-adminsdk-jgvr0-510f6077d1.json");
+const { User } = require("../schema/user.schema");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
