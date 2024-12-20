@@ -16,10 +16,13 @@ const createPatient = async (request, reply) => {
 };
 
 const listPatients = async (request, reply) => {
-  const { page = 1, limit = 10, surname } = request.query;
+  const { page = 1, limit = 10, surname, name } = request.query;
   const query = {};
   if (surname) {
     query.surname = { $regex: surname || "", $options: "i" };
+  }
+  if (name) {
+    query.name = { $regex: name || "", $options: "i" };
   }
   try {
     const patients = await Patient.find(query)

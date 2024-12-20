@@ -315,7 +315,7 @@
     fetch(
       import.meta.env.VITE_API_URL +
         `/api/runs?limit=1000&patient=${patient || ""}&meta_date=${date.toISOString().split("T")[0]}&status=${
-          status || ""
+          status || "ACTIVE"
         }`,
       {
         method: "GET",
@@ -474,6 +474,14 @@
           body: JSON.stringify({ status: "refused" }),
         },
       );
+
+      localStorage.setItem(
+        "run_pinged",
+        JSON.stringify({
+          run: run._id,
+          count: 0,
+        }),
+      );
       return;
     }
 
@@ -585,7 +593,7 @@
         type="button"
         class="bg-sky-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
       >
-        Get all runs
+        Giornaliera in corso
       </button>
       <button
         on:click={() => {
@@ -594,7 +602,7 @@
         type="button"
         class="bg-sky-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
       >
-        Get completed runs
+        Giornaliera completata
       </button>
     </div>
     <!-- Table Container with Overflow for Responsiveness -->
@@ -832,6 +840,14 @@
                       </button>
                     {:else}
                       <button
+                        on:click={openPopup(run)}
+                        class="bg-lime-700 hover:bg-lime-800 disabled:bg-gray-600 transition text-white font-bold py-2 px-6 rounded-lg"
+                        >Riassegna corsa
+                      </button>
+                    {/if}
+                    <!--
+                    {:else}
+                      <button
                         disabled={currentTime.getTime() <
                           new Date(run.updated_at).getTime() + 60000}
                         on:click={() =>
@@ -863,7 +879,7 @@
                             : pingDriver(run)}
                         class="bg-lime-700 hover:bg-lime-800 disabled:bg-gray-600 transition text-white font-bold py-2 px-6 rounded-lg"
                       >
-                        {currentTime.getTime() <
+                        { currentTime.getTime() <
                         new Date(run.updated_at).getTime() + 60000
                           ? Math.floor(
                               (new Date(run.updated_at).getTime() +
@@ -872,6 +888,14 @@
                                 1000,
                             )
                           : "Notifica autista"}
+                      </button>
+                    {/if}
+                    !-->
+                    {#if run.status === "pending" && run.car}
+                      <button
+                        on:click={() => pingDriver(run)}
+                        class="bg-lime-700 hover:bg-lime-800 disabled:bg-gray-600 transition text-white font-bold py-2 px-6 rounded-lg"
+                        >Notifica autista
                       </button>
                     {/if}
 
