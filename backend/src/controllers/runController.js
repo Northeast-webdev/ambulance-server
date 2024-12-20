@@ -113,8 +113,10 @@ const listRuns = async (request, reply) => {
   if (patient) {
     q.patient = patient;
   }
-  if (status) {
+  if (status && status !== "ACTIVE") {
     q.status = status;
+  } else if (status === "ACTIVE") {
+    q.status = { $ne: "COMPLETED" };
   }
   if (car) {
     q.car = car;

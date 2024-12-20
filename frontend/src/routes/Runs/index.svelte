@@ -361,7 +361,7 @@
       });
   };
 
-  const getRunsByDate = async () => {
+  const getRunsByDate = async (status = "ACTIVE") => {
     loading = true;
     if (date.toLocaleDateString() !== new Date().toLocaleDateString()) {
       window.history.replaceState(
@@ -375,7 +375,8 @@
     fetch(
       import.meta.env.VITE_API_URL +
         "/api/runs?limit=1000&meta_date=" +
-        date.toISOString().split("T")[0],
+        date.toISOString().split("T")[0] +
+        (status !== "" ? "&status=" + status : ""),
       {
         method: "GET",
         headers: {
@@ -567,13 +568,33 @@
       <h1 class="text-3xl font-bold">Gestione Giornaliera</h1>
     </div>
 
-    <div class="mb-8 flex items-center gap-4">
+    <div class="mb-4 flex items-center gap-4">
       <DateInput bind:value={date} format="dd/MM/yyyy" />
       <button
-        on:click={getRunsByDate}
+        on:click={() => getRunsByDate()}
         class="bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
       >
         Scegli data
+      </button>
+    </div>
+    <div class="mb-4 flex items-center gap-4">
+      <button
+        on:click={() => {
+          getRunsByDate();
+        }}
+        type="button"
+        class="bg-sky-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+      >
+        Get all runs
+      </button>
+      <button
+        on:click={() => {
+          getRunsByDate("completed");
+        }}
+        type="button"
+        class="bg-sky-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+      >
+        Get completed runs
       </button>
     </div>
     <!-- Table Container with Overflow for Responsiveness -->

@@ -13,8 +13,8 @@
   let action = "add";
   let selected_run = null;
   let meta_verifier = {
-    Nome: "nome",
     Cognome: "cognome",
+    Nome: "nome",
     "C/S/B": "csb",
     Servizio: "servizio",
     Tel: "tel",
