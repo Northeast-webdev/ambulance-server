@@ -116,7 +116,7 @@ const listRuns = async (request, reply) => {
   if (status && status !== "ACTIVE") {
     q.status = status;
   } else if (status === "ACTIVE") {
-    q.status = { $ne: "COMPLETED" };
+    q.status = { $ne: "completed" };
   }
   if (car) {
     q.car = car;
