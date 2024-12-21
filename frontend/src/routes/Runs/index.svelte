@@ -592,7 +592,7 @@
           getRunsByDate();
         }}
         type="button"
-        class="bg-sky-800 text-white font-bold py-2 px-4 transition duration-200"
+        class="bg-gray-300 text-black border border-gray-500 font-bold py-2 px-4 transition duration-200 text-sm"
       >
         Giornaliera in corso
       </button>
@@ -601,7 +601,7 @@
           getRunsByDate("completed");
         }}
         type="button"
-        class="bg-sky-800 text-white font-bold py-2 px-4 transition duration-200"
+        class="bg-gray-300 text-black border border-gray-500 font-bold py-2 px-4 transition duration-200 text-sm"
       >
         Giornaliera completata
       </button>
