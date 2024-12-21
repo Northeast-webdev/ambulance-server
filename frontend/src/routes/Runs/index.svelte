@@ -8,6 +8,7 @@
   import { fade, fly } from "svelte/transition";
   import LoadingList from "../../components/LoadingList.svelte";
   import { user } from "../../stores";
+  import { Link } from "svelte-navigator";
 
   let runs = [];
   let showPopup = false;
@@ -729,15 +730,24 @@
                   >
                 {:else if key === "Paziente"}
                   <td class="py-3 px-4 border-r border-inherit">
-                    <button
-                      class="text-blue-800 font-semibold underline mx-auto block"
-                      on:click={() => {
-                        run.visibleInfo = !run.visibleInfo;
-                      }}
-                    >
-                      {run.patient.name + " " + (run.patient.surname || "") ||
-                        "Nessun paziente"}
-                    </button>
+                    <div class="flex flex-col gap-2">
+                      <button
+                        class="text-blue-700 font-semibold underline mx-auto block"
+                        on:click={() => {
+                          run.visibleInfo = !run.visibleInfo;
+                        }}
+                      >
+                        {run.patient.name + " " + (run.patient.surname || "") ||
+                          "Nessun paziente"}
+                      </button>
+
+                      <Link
+                        class="bg-stone-600 text-white font-bold py-1 px-2 transition duration-200 text-xs hover:bg-stone-700 text-center mx-auto block"
+                        to={`/pazienti?name=${run.patient.name}&surname=${run.patient.surname}`}
+                      >
+                        Vedi dettagli
+                      </Link>
+                    </div>
                   </td>
                 {/if}
               {/each}

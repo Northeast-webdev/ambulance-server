@@ -371,9 +371,18 @@
     }
   })();
   const getPatients = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const name = urlParams.get("name") || "";
+    const surname = urlParams.get("surname") || "";
+    console.log(name, surname, query);
+
     loading = true;
+
     fetch(
-      import.meta.env.VITE_API_URL + "/api/patient?limit=50&surname=" + query,
+      import.meta.env.VITE_API_URL +
+        "/api/patient?limit=50&surname=" +
+        (surname || query) +
+        (name ? "&name=" + name : ""),
       {
         method: "GET",
         headers: {
