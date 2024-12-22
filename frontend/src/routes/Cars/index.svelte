@@ -359,16 +359,43 @@
       console.log("WebSocket connection established");
     };
 
-    socket.onmessage = (event) => {
+    socket.onmessage = async (event) => {
       const data = JSON.parse(event.data);
+      let newUser = {};
+
       if (!data.documentKey || !data.updateDescription.updatedFields) return;
       const id = data.documentKey._id;
       const status = data.updateDescription.updatedFields.status;
+      const u = data.updateDescription.updatedFields.user;
+      if (u) {
+        const response = await fetch(
+          import.meta.env.VITE_API_URL + "/api/users/" + u,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          },
+        );
+        const data = await response.json();
+        newUser = {
+          first_name: data.first_name,
+          last_name: data.last_name,
+          _id: data._id,
+        };
+      }
 
       if (status) {
         cars = cars.map((car) => {
           if (car._id === id) {
             car.status = status || car.status;
+            if (!u) {
+              car.user = null;
+            }
+            if (newUser._id) {
+              car.user = newUser;
+            }
           }
           return car;
         });
@@ -420,10 +447,8 @@
       <div>
         <h1 class="text-3xl font-bold">Deposito</h1>
         <p class="text-gray-500">
-          {cars.filter((x) => x.status === "free").length} {cars.length >
-          1
-            ? "mezzi"
-            : "mezzo"} disponibili
+          {cars.filter((x) => x.status === "free").length}
+          {cars.length > 1 ? "mezzi" : "mezzo"} disponibili
         </p>
       </div>
       {#if $user.role !== "meccanico" && $user.role !== "direzione"}
@@ -844,21 +869,24 @@
                     const file = e.target.files[0];
                     if (file) {
                       const img = new Image();
-                      img.onload = function() {
+                      img.onload = function () {
                         const ratio = img.width / img.height;
-                        if (Math.abs(ratio - (600/400)) > 0.01) {
-                          alert('L\'immagine deve avere un rapporto di aspetto di 3:2 (come 600x400 pixel)');
-                          e.target.value = '';
+                        if (Math.abs(ratio - 600 / 400) > 0.01) {
+                          alert(
+                            "L'immagine deve avere un rapporto di aspetto di 3:2 (come 600x400 pixel)",
+                          );
+                          e.target.value = "";
                         } else {
                           handleImageChange(e);
                         }
-                      }
+                      };
                       img.src = URL.createObjectURL(file);
                     }
                   }}
                 />
                 <small class="text-gray-500 mt-1 block">
-                  L'immagine deve avere un rapporto di aspetto di 3:2 (come 600x400 pixel)
+                  L'immagine deve avere un rapporto di aspetto di 3:2 (come
+                  600x400 pixel)
                 </small>
               </div>
             {:else}

@@ -142,17 +142,39 @@
       console.log("WebSocket connection established");
     };
 
-    carSocket.onmessage = (event) => {
+    carSocket.onmessage = async (event) => {
       const data = JSON.parse(event.data);
+      let newUser = {};
       if (!data.documentKey || !data.updateDescription.updatedFields) return;
       const id = data.documentKey._id;
       const status = data.updateDescription.updatedFields.status;
-
+      const u = data.updateDescription.updatedFields.user;
+      if (u) {
+        const response = await fetch(
+          import.meta.env.VITE_API_URL + "/api/users/" + u,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          },
+        );
+        const data = await response.json();
+        newUser = {
+          first_name: data.first_name,
+          last_name: data.last_name,
+          _id: data._id,
+        };
+      }
       if (status) {
         freeCars = cars
           .map((car) => {
             if (car._id === id) {
               car.status = status || car.status;
+              if (newUser._id) {
+                car.user = newUser;
+              }
             }
             return car;
           })
