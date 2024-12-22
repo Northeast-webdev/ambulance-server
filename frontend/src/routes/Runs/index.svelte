@@ -106,7 +106,12 @@
       runs = runs.map((run) => {
         if (run._id === id) {
           run.status = status || run.status;
-          run.car = car ? cars.find((c) => c._id === car) : null;
+          run.car =
+            car === null
+              ? null
+              : run.car
+                ? run.car
+                : cars.find((c) => c._id === car);
         }
         return run;
       });
