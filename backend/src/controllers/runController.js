@@ -314,7 +314,7 @@ const websocketHandler = (socket, req) => {
             returnDocument: "after",
           },
         );
-        console.log("Run accepted:", x);
+        console.log("Run accepted:", x._id.toString());
         socket.send(
           JSON.stringify({
             type: "run_accepted",
@@ -337,9 +337,6 @@ const websocketHandler = (socket, req) => {
         break;
       case "location_update":
         const { carID, latitude, longitude } = data.data;
-        console.log(
-          `Location update from car ${carID}: ${latitude}, ${longitude}`,
-        );
         // Implement location update logic here
         const car = await Car.findOne({
           _id: carID,
@@ -352,7 +349,6 @@ const websocketHandler = (socket, req) => {
       default:
         break;
     }
-    console.log("Received message:", data);
   });
 
   // Handle connection close
@@ -375,7 +371,7 @@ const websocketWatcher = (socket, req) => {
 
   changeStream.on("change", (change) => {
     // Broadcast the change event to the connected WebSocket client
-    console.log("change for run");
+    console.log("change for run: ", JSON.stringify(change));
     socket.send(JSON.stringify(change));
   });
 
