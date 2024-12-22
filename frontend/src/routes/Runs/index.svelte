@@ -95,27 +95,21 @@
       const status = data.updateDescription.updatedFields.status;
       const car = data.updateDescription.updatedFields.car;
       const raw = localStorage.getItem("run_pinged");
+      console.log(data.updateDescription);
       if (raw && status) {
         const run_pinged = JSON.parse(raw);
         if (run_pinged && run_pinged.run === id) {
           localStorage.removeItem("run_pinged");
         }
       }
-      if (status) {
-        const found_run = runs.find((x) => x._id === id);
-        console.log(found_run);
-        runs = runs.map((run) => {
-          if (run._id === id) {
-            run.status = status || run.status;
-            run.car = car
-              ? cars.find((c) => c._id === car) || run.car
-              : car === null
-                ? null
-                : run.car;
-          }
-          return run;
-        });
-      }
+      const found_run = runs.find((x) => x._id === id);
+      runs = runs.map((run) => {
+        if (run._id === id) {
+          run.status = status || run.status;
+          run.car = car ? cars.find((c) => c._id === car) : null;
+        }
+        return run;
+      });
     };
 
     socket.onclose = () => {
