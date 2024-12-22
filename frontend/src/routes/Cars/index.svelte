@@ -923,7 +923,9 @@
 
 <style>
   .van-diagram-container {
-    @apply flex gap-4 items-center;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
   }
   .van-image {
     width: 100%;
