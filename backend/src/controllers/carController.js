@@ -94,7 +94,7 @@ const updateCar = async (request, reply) => {
   if (status) updates.status = status;
   if (user !== undefined) updates.user = user;
   if (last_location) updates.last_location = last_location;
-  if (shift_start) updates.shift_start = shift_start;
+  if (shift_start !== undefined) updates.shift_start = shift_start;
   if (name) updates.name = name;
   if (damages) updates.damages = damages; // Update damages if provided
   if (image) updates.image = image;
@@ -115,23 +115,21 @@ const updateCar = async (request, reply) => {
         const update = { car: result._id };
         if (last_location) {
           const isInZone = isUserInZone(last_location);
-
-          const oneHourAgo = new Date(Date.now() - 1 * 60 * 60 * 1000); // 1 hour ago
           const recentAlarm = await Alarm.findOne({
             user: existingUser._id,
             car: result._id,
-            created_at: { $gte: oneHourAgo }, // Find alarms within the last 1 hour
+            created_at: { $gte: result.shift_start },
           });
           if (!isInZone && !recentAlarm) {
             const car_checklist_done = await CarChecklist.exists({
               car: result._id,
               user: existingUser._id,
-              created_at: { $gte: oneHourAgo },
+              created_at: { $gte: result.shift_start },
             });
             const material_checklist_done = await MaterialChecklist.exists({
               car: result._id,
               user: existingUser._id,
-              created_at: { $gte: oneHourAgo },
+              created_at: { $gte: result.shift_start },
             });
             const alarm = new Alarm({
               user: existingUser._id,
