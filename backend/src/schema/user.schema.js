@@ -19,6 +19,7 @@ const userSchema = new Schema({
   ],
   car_checklists: [{ type: Schema.Types.ObjectId, ref: "CarChecklist" }],
   fcm_token: { type: String, default: "" },
+  alarms: [{ type: Schema.Types.ObjectId, ref: "Alarm" }],
 });
 const User = mongoose.model("User", userSchema);
 

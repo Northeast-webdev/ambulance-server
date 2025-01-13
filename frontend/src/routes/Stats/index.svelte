@@ -61,8 +61,8 @@
   onMount(getData);
 </script>
 
-<div class=" mb-6 shadow-lg">
-  <div class="container mx-auto p-4 flex gap-4">
+<div class="mb-6 shadow-lg">
+  <div class="container flex gap-4 p-4 mx-auto">
     <button
       class="{type === 'users'
         ? 'bg-emerald-200  text-emerald-700'
@@ -89,8 +89,8 @@
     </button>
   </div>
 </div>
-<div class="container mx-auto py-6 px-3">
-  <div class="flex justify-between items-center mb-6">
+<div class="container px-3 py-6 mx-auto">
+  <div class="flex items-center justify-between mb-6">
     <h1 class="text-3xl font-bold">Statistiche</h1>
   </div>
 

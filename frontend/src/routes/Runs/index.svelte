@@ -11,6 +11,11 @@
   import { Link } from "svelte-navigator";
 
   let runs = [];
+  let sortedRuns = [];
+  let sortedBy = {
+    key: null,
+    direction: null,
+  }; // {key: "asc" | "desc"}
   let showPopup = false;
   let loading = false;
   let showMap = true;
@@ -50,6 +55,45 @@
   let loadingCoordinatore = {};
   let carReconnectAttempts = 0;
   let isCarConnected = false;
+
+  let presetAddresses = [
+    {
+      label: "HO",
+      full: "Sestri Levante Hospital, Via A. Terzi 37",
+    },
+    {
+      label: "HM",
+      full: "Ospedale Padre Antero Micone, Largo Nevio Rosso 2",
+    },
+    {
+      label: "HSC",
+      full: "Ospedale San Carlo, P.le Efisio Gianasso 4",
+    },
+    {
+      label: "HCA",
+      full: "Ospedale La Colletta, Via Giappone 5",
+    },
+    {
+      label: "HGLR",
+      full: "Ente Ospedaliero Galliera, Via Alessandro Volta 6",
+    },
+    {
+      label: "HVS",
+      full: "Ospedale Villa Scassi, Corso Onofrio Scassi 1",
+    },
+    {
+      label: "HSM",
+      full: "Ospedale San Martino, Largo Rosanna Benzi 10",
+    },
+    {
+      label: "IST",
+      full: "IST Sud, Largo Rosanna Benzi",
+    },
+    {
+      label: "HGSL",
+      full: "Ospedale Gaslini, Via Gerolamo Gaslini 5",
+    },
+  ];
   const MAX_RECONNECT_ATTEMPTS = 300;
   const BASE_RECONNECT_TIMEOUT = 1000; // Start with 1 second and increase
 
@@ -115,6 +159,7 @@
         }
         return run;
       });
+      sortedRuns = runs;
     };
 
     socket.onclose = () => {
@@ -157,7 +202,7 @@
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-          },
+          }
         );
         const data = await response.json();
         newUser = {
@@ -214,13 +259,13 @@
 
       // Add OpenStreetMap tiles
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-        map,
+        map
       );
 
       if (selected_run.partenza && selected_run.arrivo) {
         const partenzaIcon = L.divIcon({
           className: "custom-marker", // Custom CSS class for styling
-          html: `<div class="marker-circle bg-indigo-500 text-indigo-100">A</div>`,
+          html: `<div class="text-indigo-100 bg-indigo-500 marker-circle">A</div>`,
           iconSize: [20, 20], // Size of the marker
         });
 
@@ -228,12 +273,12 @@
           [selected_run.geometry.latitude, selected_run.geometry.longitude],
           {
             icon: partenzaIcon,
-          },
+          }
         ).addTo(map);
 
         const arrivoIcon = L.divIcon({
           className: "custom-marker", // Custom CSS class for styling
-          html: `<div class="marker-circle bg-indigo-500 text-indigo-100">B</div>`,
+          html: `<div class="text-indigo-100 bg-indigo-500 marker-circle">B</div>`,
           iconSize: [20, 20], // Size of the marker
         });
 
@@ -244,7 +289,7 @@
           ],
           {
             icon: arrivoIcon,
-          },
+          }
         ).addTo(map);
       }
 
@@ -269,12 +314,12 @@
           [driver.last_location.latitude, driver.last_location.longitude],
           {
             icon: customIcon,
-          },
+          }
         ).addTo(map);
       });
       map.setView(
         [drivers[0].last_location.latitude, drivers[0].last_location.longitude],
-        16,
+        16
       );
     } catch (error) {
       console.error("Error:", error);
@@ -307,7 +352,7 @@
               car: "",
               run_cancelled: true,
             }),
-          },
+          }
         );
         const data = await response.json();
         if (data.run) {
@@ -317,6 +362,7 @@
             }
             return run;
           });
+          sortedRuns = runs;
         }
       } catch (error) {
         console.error("Error:", error);
@@ -344,7 +390,7 @@
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      },
+      }
     )
       .then((response) => response.json())
       .then((data) => {
@@ -358,6 +404,7 @@
             };
           });
         } else runs = data.runs;
+        sortedRuns = runs;
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -389,7 +436,7 @@
       window.history.replaceState(
         {},
         "",
-        window.location.pathname + `?date=${date.toISOString().split("T")[0]}`,
+        window.location.pathname + `?date=${date.toISOString().split("T")[0]}`
       );
     } else {
       window.history.replaceState({}, "", window.location.pathname);
@@ -404,11 +451,12 @@
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      },
+      }
     )
       .then((response) => response.json())
       .then((data) => {
         runs = data.runs;
+        sortedRuns = runs;
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -443,7 +491,7 @@
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify(query),
-        },
+        }
       );
       const data = await response.json();
       if (data.run) {
@@ -453,6 +501,7 @@
           }
           return run;
         });
+        sortedRuns = runs;
       }
     } catch (error) {
       console.error("Error:", error);
@@ -466,7 +515,7 @@
             cars.find((x) => x._id === selected_car).last_location.latitude,
             cars.find((x) => x._id === selected_car).last_location.longitude,
           ],
-          16,
+          16
         );
       }, 500);
     }
@@ -478,7 +527,7 @@
     if (!exists_ping) {
       localStorage.setItem(
         "run_pinged",
-        JSON.stringify({ run: run._id, count: 1 }),
+        JSON.stringify({ run: run._id, count: 1 })
       );
     }
     const raw = localStorage.getItem("run_pinged");
@@ -494,7 +543,7 @@
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({ status: "refused" }),
-        },
+        }
       );
 
       localStorage.setItem(
@@ -502,7 +551,7 @@
         JSON.stringify({
           run: run._id,
           count: 0,
-        }),
+        })
       );
       return;
     }
@@ -512,7 +561,7 @@
       JSON.stringify({
         run: run._id,
         count: run._id === run_pinged.run ? parseInt(run_pinged.count) + 1 : 1,
-      }),
+      })
     );
     try {
       const response = await fetch(
@@ -524,7 +573,7 @@
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({ notification_sent: true, car: run.car._id }),
-        },
+        }
       );
       const data = await response.json();
       runs = runs.map((r) => {
@@ -539,6 +588,7 @@
         }
         return r;
       });
+      sortedRuns = runs;
     } catch (error) {
       console.error("Error:", error);
     }
@@ -582,7 +632,7 @@
             coordinatore: run.meta.coordinatore,
           },
         }),
-      },
+      }
     );
     const data = await response.json();
     loadingCoordinatore[run._id] = false;
@@ -593,27 +643,27 @@
 {#if loading}
   <LoadingList />
 {:else}
-  <div class="container mx-auto py-6 px-3">
-    <div class="flex justify-between items-center mb-4">
+  <div class="container px-3 py-6 mx-auto">
+    <div class="flex items-center justify-between mb-4">
       <h1 class="text-3xl font-bold">Gestione Giornaliera</h1>
     </div>
 
-    <div class="mb-4 flex items-center gap-4">
+    <div class="flex items-center gap-4 mb-4">
       <DateInput bind:value={date} format="dd/MM/yyyy" />
       <button
         on:click={() => getRunsByDate()}
-        class="bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+        class="px-4 py-2 font-bold text-white transition duration-200 rounded-lg bg-lime-600 hover:bg-lime-800"
       >
         Scegli data
       </button>
     </div>
-    <div class="mb-4 flex items-center gap-4">
+    <div class="flex items-center gap-4 mb-4">
       <button
         on:click={() => {
           getRunsByDate();
         }}
         type="button"
-        class="bg-gray-300 text-black border border-gray-500 font-bold py-2 px-4 transition duration-200 text-sm"
+        class="px-4 py-2 text-sm font-bold text-black transition duration-200 bg-gray-300 border border-gray-500"
       >
         Giornaliera in corso
       </button>
@@ -622,28 +672,28 @@
           getRunsByDate("completed");
         }}
         type="button"
-        class="bg-gray-300 text-black border border-gray-500 font-bold py-2 px-4 transition duration-200 text-sm"
+        class="px-4 py-2 text-sm font-bold text-black transition duration-200 bg-gray-300 border border-gray-500"
       >
         Giornaliera completata
       </button>
     </div>
     <!-- Table Container with Overflow for Responsiveness -->
     <div class="overflow-x-auto">
-      <table
-        class="min-w-full border-collapse shadow-lg rounded-lg overflow-hidden"
-      >
-        <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
+      <table class="min-w-full overflow-hidden border-collapse shadow-lg">
+        <thead class="text-sm bg-gradient-to-l from-gray-200 to-gray-300">
           <tr>
             {#if $user.role === "administrator" || $user.role === "operator"}
               <th
-                class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                class="px-4 py-3 font-semibold text-left text-gray-700 border border-gray-400"
                 >Coordinatore</th
               >
             {/if}
-            <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+            <th
+              class="px-4 py-3 font-semibold text-left text-gray-700 border border-gray-400"
               >Pronto</th
             >
-            <th class="p-3 text-center font-semibold text-gray-700 border-b"
+            <th
+              class="p-3 font-semibold text-center text-gray-700 border border-gray-400"
               >A/R</th
             >
             {#each Object.keys(meta_verifier) as key}
@@ -651,23 +701,67 @@
                 <span></span>
               {:else if key === "Data"}
                 <th
-                  class="py-3 px-4 text-left w-48 font-semibold text-gray-700 border-b"
+                  class="w-48 px-4 py-3 font-semibold text-left text-gray-700 border border-gray-400"
                   >{key} / Ora</th
                 >
               {:else if key !== "Titolo" && key !== "Note particolari"}
                 <th
-                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b min-w-20"
-                  >{key}</th
+                  class={"px-4 py-3 font-semibold text-left text-gray-700 border border-gray-400 min-w-24 " +
+                    (key === "Paziente" ||
+                    key === "Arrivo" ||
+                    key === "Partenza" ||
+                    key === "Servizio"
+                      ? "cursor-pointer bg-slate-300 border-gray-500"
+                      : "")}
+                  on:click={() => {
+                    if (
+                      key === "Paziente" ||
+                      key === "Arrivo" ||
+                      key === "Partenza" ||
+                      key === "Servizio"
+                    ) {
+                      sortedBy.key = key;
+                      sortedBy.direction =
+                        sortedBy.direction === "asc" ? "desc" : "asc";
+                      sortedRuns = [...runs].sort((a, b) => {
+                        if (key === "Paziente") {
+                          return sortedBy.direction === "asc"
+                            ? a.patient.name.localeCompare(b.patient.name)
+                            : b.patient.name.localeCompare(a.patient.name);
+                        } else {
+                          return sortedBy.direction === "asc"
+                            ? a.meta[meta_verifier[sortedBy.key]].localeCompare(
+                                b.meta[meta_verifier[sortedBy.key]]
+                              )
+                            : b.meta[meta_verifier[sortedBy.key]].localeCompare(
+                                a.meta[meta_verifier[sortedBy.key]]
+                              );
+                        }
+                      });
+                    }
+                  }}
                 >
+                  <span class="flex items-center justify-between gap-2">
+                    {key}
+                    <span class="text-sm">
+                      {sortedBy.key === key
+                        ? sortedBy.direction === "asc"
+                          ? "▲"
+                          : "▼"
+                        : ""}
+                    </span>
+                  </span>
+                </th>
               {/if}
             {/each}
-            <th class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+            <th
+              class="px-4 py-3 font-semibold text-left text-gray-700 border border-gray-400"
               >Note particolari</th
             >
           </tr>
         </thead>
-        <tbody>
-          {#each runs as run, index}
+        <tbody class="text-sm">
+          {#each sortedRuns as run, index}
             <tr
               class="{run.status === 'refused'
                 ? 'bg-red-200 border-red-300'
@@ -692,7 +786,7 @@
                       {run.meta.coordinatore || "-"}
                     </p>
                     <button
-                      class="bg-slate-600 text-white font-bold py-1 px-2 transition duration-200 text-sm hover:bg-slate-700 mt-1"
+                      class="px-2 py-1 mt-1 text-sm font-bold text-white transition duration-200 bg-slate-600 hover:bg-slate-700"
                       on:click={() => {
                         run.show_coordinatore = true;
                       }}
@@ -701,11 +795,11 @@
                     </button>
                   {:else}
                     <textarea
-                      class="w-full h-full block border-2 border-gray-300 p-2 text-sm font-normal"
+                      class="block w-full h-full p-2 text-sm font-normal border-2 border-gray-300"
                       bind:value={run.meta.coordinatore}
                     ></textarea>
                     <button
-                      class="bg-lime-600 text-white font-bold p-1 transition duration-200 text-sm disabled:bg-gray-600 w-full"
+                      class="w-full p-1 text-sm font-bold text-white transition duration-200 bg-lime-600 disabled:bg-gray-600"
                       on:click={() => saveCoordinatore(run)}
                       disabled={loadingCoordinatore[run._id]}
                     >
@@ -714,11 +808,11 @@
                   {/if}
                 </td>
               {/if}
-              <td class="py-3 px-4 border-r border-inherit text-center">
+              <td class="px-4 py-3 text-center border-r border-inherit">
                 {#if run.status === "pending"}
                   <input
                     type="checkbox"
-                    class="w-6 h-6 inline-block cursor-pointer accent-purple-600"
+                    class="inline-block w-6 h-6 cursor-pointer accent-purple-600"
                     checked={run.readyToGo}
                     on:click={() => {
                       run.readyToGo = !run.readyToGo;
@@ -727,7 +821,7 @@
                 {/if}
               </td>
               <td
-                class="p-3 border-r border-inherit text-center font-bold min-w-14"
+                class="p-3 font-bold text-center border-r border-inherit min-w-14"
               >
                 {getARIndicator(run)}
               </td>
@@ -736,24 +830,30 @@
                   <span></span>
                 {:else if key !== "Titolo" && key !== "Paziente" && key !== "Note particolari" && key !== "Data"}
                   <td
-                    class="py-3 px-4 border-r border-inherit {key ===
+                    class="py-3 px-4 border-r border-inherit break-words {key ===
                       'Partenza' || key === 'Arrivo'
                       ? 'w-56'
                       : key === 'C/S/B'
                         ? 'uppercase'
-                        : ''}">{run.meta[meta_verifier[key]]}</td
+                        : 'max-w-40'}"
+                    >{key === "Partenza" || key === "Arrivo"
+                      ? presetAddresses.find(
+                          (address) =>
+                            address.full === run.meta[meta_verifier[key]]
+                        )?.label || run.meta[meta_verifier[key]]
+                      : run.meta[meta_verifier[key]]}</td
                   >
                 {:else if key === "Data"}
-                  <td class="py-3 px-4 border-r border-inherit"
+                  <td class="px-4 py-3 border-r border-inherit"
                     >{new Date(run.meta[meta_verifier[key]]).toLocaleDateString(
-                      "it-IT",
+                      "it-IT"
                     ) ?? run.created_at}<br />{run.meta.ora || "-"}</td
                   >
                 {:else if key === "Paziente"}
-                  <td class="py-3 px-4 border-r border-inherit">
+                  <td class="px-4 py-3 border-r border-inherit">
                     <div class="flex flex-col gap-2">
                       <button
-                        class="text-blue-700 font-semibold underline mx-auto block"
+                        class="block mx-auto font-semibold text-blue-700 underline"
                         on:click={() => {
                           run.visibleInfo = !run.visibleInfo;
                         }}
@@ -763,7 +863,7 @@
                       </button>
 
                       <Link
-                        class="bg-stone-600 text-white font-bold py-1 px-2 transition duration-200 text-xs hover:bg-stone-700 text-center mx-auto block"
+                        class="block px-2 py-1 mx-auto text-xs font-bold text-center text-white transition duration-200 bg-stone-600 hover:bg-stone-700"
                         to={`/pazienti?name=${run.patient.name}&surname=${run.patient.surname}`}
                       >
                         Vedi dettagli
@@ -772,7 +872,7 @@
                   </td>
                 {/if}
               {/each}
-              <td class="py-3 px-4 border-r border-inherit"
+              <td class="px-4 py-3 border-r border-inherit"
                 >{run.meta.note_particolari}</td
               >
             </tr>
@@ -791,7 +891,7 @@
                         : "bg-gray-100"}
               >
                 <td
-                  class="py-3 px-4"
+                  class="px-4 py-3"
                   colspan={Object.keys(meta_verifier).length + 3}
                 >
                   <div
@@ -849,7 +949,7 @@
                       </div>
                     </div>
                     {#if run.status === "completed"}
-                      <p class="text-gray-800 cursor-pointer py-2 px-6">
+                      <p class="px-6 py-2 text-gray-800 cursor-pointer">
                         Corsa completata
                       </p>
                     {:else if run.car}
@@ -865,14 +965,14 @@
                     {:else if run.status !== "refused"}
                       <button
                         on:click={() => openPopup(run)}
-                        class="bg-lime-500 hover:bg-lime-600 transition text-white font-bold py-2 px-6 rounded-lg"
+                        class="px-6 py-2 font-bold text-white transition rounded-lg bg-lime-500 hover:bg-lime-600"
                       >
                         Assegna corsa
                       </button>
                     {:else}
                       <button
                         on:click={openPopup(run)}
-                        class="bg-lime-700 hover:bg-lime-800 disabled:bg-gray-600 transition text-white font-bold py-2 px-6 rounded-lg"
+                        class="px-6 py-2 font-bold text-white transition rounded-lg bg-lime-700 hover:bg-lime-800 disabled:bg-gray-600"
                         >Riassegna corsa
                       </button>
                     {/if}
@@ -886,7 +986,7 @@
                           new Date(run.updated_at).getTime() + 60000
                             ? null
                             : openPopup(run)}
-                        class="bg-lime-700 hover:bg-lime-800 disabled:bg-gray-600 transition text-white font-bold py-2 px-6 rounded-lg"
+                        class="px-6 py-2 font-bold text-white transition rounded-lg bg-lime-700 hover:bg-lime-800 disabled:bg-gray-600"
                       >
                         {currentTime.getTime() <
                         new Date(run.updated_at).getTime() + 60000
@@ -908,7 +1008,7 @@
                           new Date(run.updated_at).getTime() + 60000
                             ? null
                             : pingDriver(run)}
-                        class="bg-lime-700 hover:bg-lime-800 disabled:bg-gray-600 transition text-white font-bold py-2 px-6 rounded-lg"
+                        class="px-6 py-2 font-bold text-white transition rounded-lg bg-lime-700 hover:bg-lime-800 disabled:bg-gray-600"
                       >
                         { currentTime.getTime() <
                         new Date(run.updated_at).getTime() + 60000
@@ -925,7 +1025,7 @@
                     {#if run.status === "pending" && run.car}
                       <button
                         on:click={() => pingDriver(run)}
-                        class="bg-lime-700 hover:bg-lime-800 disabled:bg-gray-600 transition text-white font-bold py-2 px-6 rounded-lg"
+                        class="px-6 py-2 font-bold text-white transition rounded-lg bg-lime-700 hover:bg-lime-800 disabled:bg-gray-600"
                         >Notifica autista
                       </button>
                     {/if}
@@ -933,7 +1033,7 @@
                     {#if run.status !== "completed" && run.status !== "picked_up" && run.car}
                       <button
                         on:click={() => cancelRun(run)}
-                        class="bg-red-500 hover:bg-red-600 transition text-white font-bold py-2 px-6 rounded-lg"
+                        class="px-6 py-2 font-bold text-white transition bg-red-500 rounded-lg hover:bg-red-600"
                       >
                         Annulla corsa
                       </button>
@@ -953,44 +1053,44 @@
 {#if showPopup}
   <div
     transition:fade={{ duration: 300 }}
-    class="fixed inset-0 top-20 overflow-hidden z-40 pt-10 flex items-center flex-col gap-10 p-4 bg-white transition-opacity duration-500"
+    class="fixed inset-0 z-40 flex flex-col items-center gap-10 p-4 pt-10 overflow-hidden transition-opacity duration-500 bg-white top-20"
   >
     <div class="container w-full overflow-y-auto">
       {#if showPopup}
         <!-- Form Modal -->
-        <div class="z-50 transform transition-all duration-500">
+        <div class="z-50 transition-all duration-500 transform">
           <div class="flex items-center justify-between">
-            <h2 class="text-3xl font-bold mb-6">Assegnazione a mezzo</h2>
+            <h2 class="mb-6 text-3xl font-bold">Assegnazione a mezzo</h2>
           </div>
-          <h2 class="text-2xl font-bold mb-6">Lista veicoli</h2>
+          <h2 class="mb-6 text-2xl font-bold">Lista veicoli</h2>
           <div class="flex gap-10">
             <div class="flex-grow-0">
               <table
-                class="min-w-full border-collapse shadow-lg rounded-lg overflow-hidden"
+                class="min-w-full overflow-hidden border-collapse rounded-lg shadow-lg"
               >
                 <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
                   <tr>
                     <th
-                      class="py-2 px-4 text-left font-semibold text-gray-700 border-b"
+                      class="px-4 py-2 font-semibold text-left text-gray-700 border-b"
                     ></th>
                     <th
-                      class="py-2 px-4 text-left font-semibold text-gray-700 border-b"
+                      class="px-4 py-2 font-semibold text-left text-gray-700 border-b"
                       >Nome</th
                     >
                     <th
-                      class="py-2 px-4 text-left font-semibold text-gray-700 border-b"
+                      class="px-4 py-2 font-semibold text-left text-gray-700 border-b"
                       >Modello</th
                     >
                     <th
-                      class="py-2 px-4 text-left font-semibold text-gray-700 border-b"
+                      class="px-4 py-2 font-semibold text-left text-gray-700 border-b"
                       >Marca</th
                     >
                     <th
-                      class="py-2 px-4 text-left font-semibold text-gray-700 border-b"
+                      class="px-4 py-2 font-semibold text-left text-gray-700 border-b"
                       >Status</th
                     >
                     <th
-                      class="py-2 px-4 text-left font-semibold text-gray-700 border-b"
+                      class="px-4 py-2 font-semibold text-left text-gray-700 border-b"
                       >Driver</th
                     >
                   </tr>
@@ -1008,47 +1108,47 @@
                             car.last_location.latitude,
                             car.last_location.longitude,
                           ],
-                          16,
+                          16
                         );
                         selected_car === car._id
                           ? (selected_car = null)
                           : (selected_car = car._id);
                       }}
                     >
-                      <td class="border-r text-center">
+                      <td class="text-center border-r">
                         <input
                           type="radio"
-                          class="bg-gray-200 checked:bg-lime-600 checked:border-transparent checked:text-white rounded-full appearance-none w-4 h-4 border pointer-events-none border-gray-300 checked:ring-2 checked:ring-lime-600 checked:ring-offset-2 checked:ring-offset-gray-200"
+                          class="w-4 h-4 bg-gray-200 border border-gray-300 rounded-full appearance-none pointer-events-none checked:bg-lime-600 checked:border-transparent checked:text-white checked:ring-2 checked:ring-lime-600 checked:ring-offset-2 checked:ring-offset-gray-200"
                           checked={selected_car === car._id}
                         />
                       </td>
-                      <td class="py-2 px-4 border-r">{car.name}</td>
-                      <td class="py-2 px-4 border-r">{car.meta.model}</td>
-                      <td class="py-2 px-4 border-r">{car.meta.brand}</td>
-                      <td class="py-2 px-4 border-r font-bold">
+                      <td class="px-4 py-2 border-r">{car.name}</td>
+                      <td class="px-4 py-2 border-r">{car.meta.model}</td>
+                      <td class="px-4 py-2 border-r">{car.meta.brand}</td>
+                      <td class="px-4 py-2 font-bold border-r">
                         {#if car.status === "free"}
                           <span
-                            class="text-green-900 bg-green-300 px-4 rounded-full inline-block text-sm py-1"
+                            class="inline-block px-4 py-1 text-sm text-green-900 bg-green-300 rounded-full"
                             >Disponibile</span
                           >
                         {:else if car.status === "on_break"}
                           <span
-                            class="text-yellow-900 bg-yellow-200 px-4 rounded-full inline-block text-sm py-1"
+                            class="inline-block px-4 py-1 text-sm text-yellow-900 bg-yellow-200 rounded-full"
                             >Pausa</span
                           >
                         {:else if car.status === "garage"}
                           <span
-                            class="text-gray-900 bg-gray-300 px-4 rounded-full inline-block text-sm py-1"
+                            class="inline-block px-4 py-1 text-sm text-gray-900 bg-gray-300 rounded-full"
                             >Al deposito</span
                           >
                         {:else}
                           <span
-                            class="text-red-900 bg-red-200 px-4 rounded-full inline-block text-sm py-1"
+                            class="inline-block px-4 py-1 text-sm text-red-900 bg-red-200 rounded-full"
                             >Non disponibile</span
                           >
                         {/if}
                       </td>
-                      <td class="py-2 px-4"
+                      <td class="px-4 py-2"
                         >{car.user
                           ? `${car.user.first_name} ${car.user.last_name}`
                           : "Nessun driver"}</td
@@ -1057,26 +1157,26 @@
                   {/each}
                 </tbody>
               </table>
-              <p class="text-gray-700 my-6">
+              <p class="my-6 text-gray-700">
                 Vuoi assegnare già da ora la corsa ad un mezzo?
               </p>
               <div class="flex items-center gap-4 mb-6">
                 <button
                   on:click={() => updateRun(false)}
-                  class="bg-lime-700 hover:bg-lime-900 text-white font-bold py-2 px-6 rounded-lg"
+                  class="px-6 py-2 font-bold text-white rounded-lg bg-lime-700 hover:bg-lime-900"
                 >
                   Assegna mezzo
                 </button>
                 <button
                   on:click={() => updateRun(true)}
-                  class="bg-purple-700 hover:bg-purple-900 text-white font-bold py-2 px-6 rounded-lg"
+                  class="px-6 py-2 font-bold text-white bg-purple-700 rounded-lg hover:bg-purple-900"
                 >
                   Assegna giornaliera
                 </button>
 
                 <button
                   on:click={() => (showPopup = false)}
-                  class="bg-red-700 hover:bg-red-900 text-white font-bold py-2 px-6 rounded-lg"
+                  class="px-6 py-2 font-bold text-white bg-red-700 rounded-lg hover:bg-red-900"
                 >
                   <span class="text-white">Salta per ora</span>
                 </button>

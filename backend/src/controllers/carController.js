@@ -5,6 +5,21 @@ const { Car } = require("../schema/car.schema");
 const { User } = require("../schema/user.schema");
 const { CarChecklist } = require("../schema/carChecklist.schema");
 const { MaterialChecklist } = require("../schema/materialChecklist.schema");
+const { Alarm } = require("../schema/alarm.schema");
+
+const zoneCenter = { lat: 44.42600757181744, lng: 8.850815866176998 }; // Example coordinates
+const radiusInKm = 0.12;
+
+function isUserInZone(last_location) {
+  const distance = calculateDistance(
+    zoneCenter.lat,
+    zoneCenter.lng,
+    last_location.latitude,
+    last_location.longitude
+  );
+
+  return distance <= radiusInKm;
+}
 
 const createCar = async (request, reply) => {
   const { meta, name, image } = request.body;
@@ -91,12 +106,44 @@ const updateCar = async (request, reply) => {
       updates,
       {
         returnDocument: "after",
-      },
+      }
     );
     if (!carWithUser && user) {
-      const existingUser = await User.findOne({ _id: user });
+      const existingUser = await User.findOne({ _id: user }).populate("alarms");
       if (existingUser) {
-        await User.updateOne({ _id: existingUser._id }, { car: result._id });
+        const query = { _id: existingUser._id };
+        const update = { car: result._id };
+        if (last_location) {
+          const isInZone = isUserInZone(last_location);
+
+          const oneHourAgo = new Date(Date.now() - 1 * 60 * 60 * 1000); // 1 hour ago
+          const recentAlarm = await Alarm.findOne({
+            user: existingUser._id,
+            car: result._id,
+            created_at: { $gte: oneHourAgo }, // Find alarms within the last 1 hour
+          });
+          if (!isInZone && !recentAlarm) {
+            const car_checklist_done = await CarChecklist.exists({
+              car: result._id,
+              user: existingUser._id,
+              created_at: { $gte: oneHourAgo },
+            });
+            const material_checklist_done = await MaterialChecklist.exists({
+              car: result._id,
+              user: existingUser._id,
+              created_at: { $gte: oneHourAgo },
+            });
+            const alarm = new Alarm({
+              user: existingUser._id,
+              car: result._id,
+              car_checklist_done: !!car_checklist_done,
+              material_checklist_done: !!material_checklist_done,
+            });
+            await alarm.save();
+            update.alarms = [...existingUser.alarms, alarm._id];
+          }
+        }
+        await User.updateOne(query, update);
       }
     }
     reply.send(result);
@@ -162,17 +209,17 @@ const carRoutes = () => {
   fastify.put(
     "/api/cars/:id",
     { preHandler: [fastify.authenticate] },
-    updateCar,
+    updateCar
   );
   fastify.delete(
     "/api/cars/:id",
     { preHandler: [fastify.authenticate] },
-    deleteCar,
+    deleteCar
   );
   fastify.get(
     "/api/cars/:id/checklists",
     { preHandler: [fastify.authenticate] },
-    getChecklistsForCar,
+    getChecklistsForCar
   );
 
   fastify.register(async (fastify) => {

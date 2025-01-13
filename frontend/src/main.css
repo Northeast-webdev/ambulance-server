@@ -8,9 +8,9 @@
   }
 }
 
-@media screen and (min-width: 1920px) {
+@media screen and (min-width: 1600px) {
   .container {
-    @apply max-w-none px-10;
+    @apply px-10 max-w-none;
   }
 }
 .leaflet-interactive,
