@@ -741,7 +741,9 @@
                     }
                   }}
                 >
-                  <span class="flex items-center justify-between gap-2">
+                  <span
+                    class="flex items-center justify-between gap-2 select-none"
+                  >
                     {key}
                     <span class="text-sm">
                       {sortedBy.key === key
