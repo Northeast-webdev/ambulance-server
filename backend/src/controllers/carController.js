@@ -135,6 +135,7 @@ const updateCar = async (request, reply) => {
         await User.updateOne(query, update);
       }
     }
+    console.log("result user", result.user);
     if (result.user) {
       const carUser = await User.findOne({ _id: result.user._id }).populate(
         "alarms"
