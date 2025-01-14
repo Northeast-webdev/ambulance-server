@@ -16,8 +16,9 @@ const createPatient = async (request, reply) => {
 };
 
 const listPatients = async (request, reply) => {
-  const { page = 1, limit = 10, surname, name } = request.query;
+  const { page = 1, limit = 10, surname, name, sortBySurname } = request.query;
   const query = {};
+  const sort = sortBySurname ? { surname: 1 } : { created_at: -1 };
   if (surname) {
     query.surname = { $regex: surname || "", $options: "i" };
   }
@@ -38,7 +39,7 @@ const listPatients = async (request, reply) => {
           },
         },
       })
-      .sort({ created_at: -1 })
+      .sort(sort)
       .exec();
     return { patients, page, limit };
   } catch (err) {
@@ -63,7 +64,7 @@ const updatePatient = async (request, reply) => {
     const patient = await Patient.findOneAndUpdate(
       { _id: request.params.id },
       { name },
-      { new: true },
+      { new: true }
     ).exec();
     return patient;
   } catch (err) {

@@ -701,25 +701,39 @@
                 <span></span>
               {:else if key === "Data"}
                 <th
-                  class="w-48 px-4 py-3 font-semibold text-left text-gray-700 border border-gray-400"
-                  >{key} / Ora</th
+                  class="w-48 px-4 py-3 font-semibold text-left text-gray-700 border border-gray-500 cursor-pointer bg-slate-300"
+                  on:click={() => {
+                    sortedBy.key = key;
+                    sortedBy.direction =
+                      sortedBy.direction === "asc" ? "desc" : "asc";
+                    sortedRuns = [...runs].sort((a, b) => {
+                      return sortedBy.direction === "asc"
+                        ? a.meta.ora.localeCompare(b.meta.ora)
+                        : b.meta.ora.localeCompare(a.meta.ora);
+                    });
+                  }}
                 >
+                  <span
+                    class="flex items-center justify-between gap-2 select-none"
+                  >
+                    {key} / Ora
+                    <span class="text-sm">
+                      {sortedBy.key === key
+                        ? sortedBy.direction === "asc"
+                          ? "▲"
+                          : "▼"
+                        : ""}
+                    </span>
+                  </span>
+                </th>
               {:else if key !== "Titolo" && key !== "Note particolari"}
                 <th
                   class={"px-4 py-3 font-semibold text-left text-gray-700 border border-gray-400 min-w-24 " +
-                    (key === "Paziente" ||
-                    key === "Arrivo" ||
-                    key === "Partenza" ||
-                    key === "Servizio"
+                    (key === "Paziente" || key === "Servizio"
                       ? "cursor-pointer bg-slate-300 border-gray-500"
                       : "")}
                   on:click={() => {
-                    if (
-                      key === "Paziente" ||
-                      key === "Arrivo" ||
-                      key === "Partenza" ||
-                      key === "Servizio"
-                    ) {
+                    if (key === "Paziente" || key === "Servizio") {
                       sortedBy.key = key;
                       sortedBy.direction =
                         sortedBy.direction === "asc" ? "desc" : "asc";

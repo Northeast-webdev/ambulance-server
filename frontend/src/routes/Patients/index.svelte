@@ -229,7 +229,7 @@
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
             body: JSON.stringify({ meta: newR, geometry }),
-          },
+          }
         );
         show_form = false;
         getPatients();
@@ -315,17 +315,17 @@
             partenza: "",
             arrivo: "",
             date: "",
-          },
+          }
       );
       setTimeout(() => {
         for (let i = 0; i < new_run.viaggio * 2; i++) {
           const partenzaInput = document.getElementById(`field-Partenza-${i}`);
           const arrivoInput = document.getElementById(`field-Arrivo-${i}`);
           const partenzaAutocomplete = new google.maps.places.Autocomplete(
-            partenzaInput,
+            partenzaInput
           );
           const arrivoAutocomplete = new google.maps.places.Autocomplete(
-            arrivoInput,
+            arrivoInput
           );
 
           partenzaAutocomplete.addListener("place_changed", () => {
@@ -344,7 +344,7 @@
               "Selected place:",
               str,
               place.geometry.location.lat(),
-              place.geometry.location.lng(),
+              place.geometry.location.lng()
             );
           });
           arrivoAutocomplete.addListener("place_changed", () => {
@@ -363,7 +363,7 @@
               "Selected place:",
               str,
               place.geometry.location.lat(),
-              place.geometry.location.lng(),
+              place.geometry.location.lng()
             );
           });
         }
@@ -388,7 +388,7 @@
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      },
+      }
     )
       .then((response) => response.json())
       .then((data) => {
@@ -410,10 +410,10 @@
         const partenzaInput = document.getElementById("field-Partenza");
         const arrivoInput = document.getElementById("field-Arrivo");
         const partenzaAutocomplete = new google.maps.places.Autocomplete(
-          partenzaInput,
+          partenzaInput
         );
         const arrivoAutocomplete = new google.maps.places.Autocomplete(
-          arrivoInput,
+          arrivoInput
         );
 
         partenzaAutocomplete.addListener("place_changed", () => {
@@ -432,7 +432,7 @@
             "Selected place:",
             str,
             place.geometry.location.lat(),
-            place.geometry.location.lng(),
+            place.geometry.location.lng()
           );
         });
         arrivoAutocomplete.addListener("place_changed", () => {
@@ -451,7 +451,7 @@
             "Selected place:",
             str,
             place.geometry.location.lat(),
-            place.geometry.location.lng(),
+            place.geometry.location.lng()
           );
         });
       }, 1000);
@@ -463,21 +463,21 @@
 {#if loading}
   <LoadingList />
 {:else}
-  <div class="container mx-auto py-6 px-3">
-    <div class="flex justify-between items-center mb-6">
+  <div class="container px-3 py-6 mx-auto">
+    <div class="flex items-center justify-between mb-6">
       <h1 class="text-3xl font-bold">Prenotazioni</h1>
     </div>
 
-    <div class="mb-8 flex items-center gap-4">
+    <div class="flex items-center gap-4 mb-8">
       <input
         bind:value={query}
-        class="border border-gray-400 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 outline-none transition-all"
+        class="p-3 transition-all border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-lime-600"
         type="text"
         placeholder="Cerca cognome..."
       />
       <button
         on:click={getPatients}
-        class="bg-lime-600 hover:bg-lime-800 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
+        class="px-4 py-3 font-bold text-white transition duration-200 rounded-lg bg-lime-600 hover:bg-lime-800"
       >
         Cerca
       </button>
@@ -485,32 +485,32 @@
     <!-- Table Container with Overflow for Responsiveness -->
     <div class="overflow-x-auto">
       <table
-        class="min-w-full border-collapse shadow-lg rounded-lg overflow-hidden"
+        class="min-w-full overflow-hidden border-collapse rounded-lg shadow-lg"
       >
         <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
           <tr>
-            <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
+            <th class="px-6 py-3 text-sm font-semibold text-left uppercase">
               Cognome Nome
             </th>
-            <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
+            <th class="px-6 py-3 text-sm font-semibold text-left uppercase">
               C/S/B
             </th>
-            <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
+            <th class="px-6 py-3 text-sm font-semibold text-left uppercase">
               Tipo di servizio
             </th>
-            <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
+            <th class="px-6 py-3 text-sm font-semibold text-left uppercase">
               Tel
             </th>
-            <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
+            <th class="px-6 py-3 text-sm font-semibold text-left uppercase">
               N. Richiesta
             </th>
-            <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
+            <th class="px-6 py-3 text-sm font-semibold text-left uppercase">
               Ricevuta
             </th>
-            <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
+            <th class="px-6 py-3 text-sm font-semibold text-left uppercase">
               N. viaggi A/R
             </th>
-            <th class="py-3 px-6 text-left uppercase font-semibold text-sm">
+            <th class="px-6 py-3 text-sm font-semibold text-left uppercase">
               N. trasporti eseguiti
             </th>
           </tr>
@@ -518,59 +518,59 @@
         <tbody>
           {#each patients as patient}
             <tr class="border-b border-gray-200">
-              <td class="py-3 px-6 text-left whitespace-nowrap">
+              <td class="px-6 py-3 text-left whitespace-nowrap">
                 <div class="flex items-center">
                   <button
-                    class="font-bold underline text-green-700"
+                    class="font-bold text-green-700 underline"
                     on:click={() =>
                       (patient.visibleInfo = !patient.visibleInfo)}
                     >{(patient.surname || "") + " " + patient.name}</button
                   >
                 </div>
               </td>
-              <td class="py-3 px-6 text-left whitespace-nowrap">
+              <td class="px-6 py-3 text-left whitespace-nowrap">
                 <div class="flex items-center">
                   <span class="font-medium uppercase"
                     >{patient.runs[0]?.meta?.csb || "-"}</span
                   >
                 </div>
               </td>
-              <td class="py-3 px-6 text-left whitespace-nowrap">
+              <td class="px-6 py-3 text-left whitespace-nowrap">
                 <div class="flex items-center">
                   <span class="font-medium"
                     >{patient.runs[0]?.meta?.servizio || "-"}</span
                   >
                 </div>
               </td>
-              <td class="py-3 px-6 text-left whitespace-nowrap">
+              <td class="px-6 py-3 text-left whitespace-nowrap">
                 <div class="flex items-center">
                   <span class="font-medium"
                     >{patient.runs[0]?.meta?.tel || "-"}</span
                   >
                 </div>
               </td>
-              <td class="py-3 px-6 text-left whitespace-nowrap">
+              <td class="px-6 py-3 text-left whitespace-nowrap">
                 <div class="flex items-center">
                   <span class="font-medium"
                     >{patient.runs[0]?.meta?.n_richiesta || "-"}</span
                   >
                 </div>
               </td>
-              <td class="py-3 px-6 text-left whitespace-nowrap">
+              <td class="px-6 py-3 text-left whitespace-nowrap">
                 <div class="flex items-center">
                   <span class="font-medium"
                     >{patient.runs[0]?.meta?.ricevuta || "-"}</span
                   >
                 </div>
               </td>
-              <td class="py-3 px-6 text-left whitespace-nowrap">
+              <td class="px-6 py-3 text-left whitespace-nowrap">
                 <div class="flex items-center gap-2">
                   <span class="font-bold"
                     >{Math.floor(patient.runs.length / 2)}</span
                   >
                 </div>
               </td>
-              <td class="py-3 px-6 text-left whitespace-nowrap">
+              <td class="px-6 py-3 text-left whitespace-nowrap">
                 <div class="flex items-center gap-2">
                   <span class="font-bold"
                     >{patient.runs.filter((run) => run.status === "completed")
@@ -582,42 +582,42 @@
             {#if patient.visibleInfo}
               <tr
                 transition:fade={{ duration: 300 }}
-                class="border-b border-gray-200 bg-green-100"
+                class="bg-green-100 border-b border-gray-200"
               >
-                <td class="py-3 px-6" colspan="8">
-                  <table class="border-collapse w-full">
+                <td class="px-6 py-3" colspan="8">
+                  <table class="w-full border-collapse">
                     <thead class="bg-green-300">
                       <tr>
                         <th
-                          class="text-left uppercase font-semibold text-sm py-2 px-4"
+                          class="px-4 py-2 text-sm font-semibold text-left uppercase"
                           >N</th
                         >
                         <th
-                          class="text-left uppercase font-semibold text-sm py-2 px-4"
+                          class="px-4 py-2 text-sm font-semibold text-left uppercase"
                           >A/R</th
                         >
                         <th
-                          class="text-left uppercase font-semibold text-sm py-2 px-4"
+                          class="px-4 py-2 text-sm font-semibold text-left uppercase"
                           >Data</th
                         >
                         <th
-                          class="text-left uppercase font-semibold text-sm py-2 px-4"
+                          class="px-4 py-2 text-sm font-semibold text-left uppercase"
                           >Ora</th
                         >
                         <th
-                          class="text-left uppercase font-semibold text-sm py-2 px-4"
+                          class="px-4 py-2 text-sm font-semibold text-left uppercase"
                           >Partenza</th
                         >
                         <th
-                          class="text-left uppercase font-semibold text-sm py-2 px-4"
+                          class="px-4 py-2 text-sm font-semibold text-left uppercase"
                           >Arrivo</th
                         >
                         <th
-                          class="text-left uppercase font-semibold text-sm py-2 px-4"
+                          class="px-4 py-2 text-sm font-semibold text-left uppercase"
                           >Status trasporto</th
                         >
                         <th
-                          class="text-left uppercase font-semibold text-sm py-2 px-4"
+                          class="px-4 py-2 text-sm font-semibold text-left uppercase"
                           >Azioni</th
                         >
                       </tr>
@@ -632,30 +632,30 @@
                           {#if (index + 1) % 2}
                             <td
                               rowspan="2"
-                              class="py-2 px-4 h-5 bg-green-100 text-center border border-green-300"
+                              class="h-5 px-4 py-2 text-center bg-green-100 border border-green-300"
                               >{(index + 1 * 2) / 2}</td
                             >
                           {/if}
-                          <td class="py-2 px-4"
+                          <td class="px-4 py-2"
                             >{(index + 1) % 2 ? "A" : "R"}</td
                           >
-                          <td class="py-2 px-4 border-l border-green-300"
+                          <td class="px-4 py-2 border-l border-green-300"
                             >{run.meta.ora
                               ? new Date(run.meta.date).toLocaleDateString(
-                                  "it-IT",
+                                  "it-IT"
                                 )
                               : "Da assegnare"}</td
                           >
-                          <td class="py-2 px-4 border-l border-green-300"
+                          <td class="px-4 py-2 border-l border-green-300"
                             >{run.meta.ora}</td
                           >
-                          <td class="py-2 px-4 border-l border-green-300"
+                          <td class="px-4 py-2 border-l border-green-300"
                             >{run.meta.partenza}</td
                           >
-                          <td class="py-2 px-4 border-l border-green-300"
+                          <td class="px-4 py-2 border-l border-green-300"
                             >{run.meta.arrivo}</td
                           >
-                          <td class="py-2 px-4 border-l border-green-300"
+                          <td class="px-4 py-2 border-l border-green-300"
                             >{run.status === "refused"
                               ? "Annullata"
                               : run.status === "ongoing"
@@ -666,7 +666,7 @@
                                     ? "Paziente consegnato"
                                     : "In attesa"}</td
                           >
-                          <td class="py-2 px-4 border-l border-green-300">
+                          <td class="px-4 py-2 border-l border-green-300">
                             {#if run.status === "pending" || run.status === "refused"}
                               <button
                                 on:click={() => {
@@ -688,7 +688,7 @@
                                   };
                                   newRunToggle("edit");
                                 }}
-                                class="border-amber-600 border hover:bg-amber-600 text-amber-600 hover:text-amber-100 font-bold py-1 px-4 rounded-lg transition duration-200"
+                                class="px-4 py-1 font-bold transition duration-200 border rounded-lg border-amber-600 hover:bg-amber-600 text-amber-600 hover:text-amber-100"
                               >
                                 <span>Modifica</span>
                               </button>
@@ -712,13 +712,13 @@
 {#if show_form}
   <div
     transition:fade={{ duration: 300 }}
-    class="fixed inset-0 z-40 flex overflow-y-scroll items-center flex-col gap-10 top-20 p-4 pt-8 bg-white transition-opacity duration-500"
+    class="fixed inset-0 z-40 flex flex-col items-center gap-10 p-4 pt-8 overflow-y-scroll transition-opacity duration-500 bg-white top-20"
   >
     <div class="container px-3 w-full max-h-[800px] pb-8">
       {#if show_form}
         <!-- Form Modal -->
-        <div class="z-50 transform transition-all duration-500">
-          <h2 class="text-3xl font-bold mb-8">
+        <div class="z-50 transition-all duration-500 transform">
+          <h2 class="mb-8 text-3xl font-bold">
             {action === "add" ? "Nuova prenotazione" : "Modifica trasporti"}
           </h2>
           <form
@@ -728,7 +728,7 @@
             }}
             class="space-y-6"
           >
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
               {#if action !== "edit"}
                 {#each Object.keys(meta_verifier) as key}
                   {#if key === "Data"}
@@ -738,7 +738,7 @@
                     {#if types[key] !== "textarea"}
                       <label
                         for="field-{key}"
-                        class="block text-sm font-medium text-gray-700 mb-1"
+                        class="block mb-1 text-sm font-medium text-gray-700"
                       >
                         {key}
                         <span
@@ -756,7 +756,7 @@
                       <select
                         required
                         id="field-{key}"
-                        class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 bg-white transition-all"
+                        class="block w-full p-3 transition-all bg-white border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                         bind:value={new_run[meta_verifier[key]]}
                       >
                         <option value="" disabled>Seleziona</option>
@@ -770,7 +770,7 @@
                         type={types[key]}
                         id="field-{key}-autocomplete"
                         placeholder="Cerca..."
-                        class="autocomplete-input block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
+                        class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none autocomplete-input valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                         value={new_run[meta_verifier[key]]}
                         on:input={(e) =>
                           (new_run[meta_verifier[key]] = e.target.value)}
@@ -789,7 +789,7 @@
                         autocomplete="off"
                         required
                         id="field-{key}"
-                        class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
+                        class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                         value={new_run[meta_verifier[key]]}
                         on:input={(e) => {
                           if (action === "edit" && key === "Viaggi") return;
@@ -810,7 +810,7 @@
                             ? true
                             : false}
                         id="field-{key}"
-                        class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
+                        class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                         value={new_run[meta_verifier[key]]}
                         on:input={(e) =>
                           (new_run[meta_verifier[key]] = e.target.value)}
@@ -820,7 +820,7 @@
                 {/each}
                 {#each Array.from({ length: new_run.viaggio * 2 }) as _, i}
                   <div
-                    class="md:col-span-2 lg:col-span-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative"
+                    class="relative grid grid-cols-1 gap-6 md:col-span-2 lg:col-span-4 md:grid-cols-2 lg:grid-cols-4"
                   >
                     {#each Object.keys(additionalRunsMeta) as key}
                       <div
@@ -830,13 +830,13 @@
                       >
                         {#if key === "Data"}
                           <span
-                            class="absolute block -left-6 top-9 z-10 text-gray-500"
+                            class="absolute z-10 block text-gray-500 -left-6 top-9"
                             >{(i + 1) % 2 ? "A" : "R"}</span
                           >
                         {/if}
                         <label
                           for="field-{key}-{i}"
-                          class="block text-sm font-medium text-gray-700 mb-1"
+                          class="block mb-1 text-sm font-medium text-gray-700"
                         >
                           {key}
                           <span
@@ -852,7 +852,7 @@
                               ? "Cerca..."
                               : ""}
                             id="field-{key}-{i}"
-                            class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
+                            class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                             value={additionalRuns[i][additionalRunsMeta[key]]}
                             on:input={(e) =>
                               (additionalRuns[i] = {
@@ -861,7 +861,7 @@
                               })}
                           />
                           {#if (i + 1) % 2 && (key === "Partenza" || key === "Arrivo")}
-                            <div class="mt-2 flex gap-2 flex-wrap">
+                            <div class="flex flex-wrap gap-2 mt-2">
                               {#each presetAddresses as address}
                                 <button
                                   type="button"
@@ -876,7 +876,7 @@
                                         address.geometry;
                                     }
                                   }}
-                                  class="bg-gray-200 hover:bg-gray-400 rounded-md px-2 py-1"
+                                  class="px-2 py-1 bg-gray-200 rounded-md hover:bg-gray-400"
                                 >
                                   {address.label}
                                 </button>
@@ -901,7 +901,7 @@
                           console.log(additionalRuns[i]);
                           console.log(additionalRuns[i - 1]);
                         }}
-                        class="absolute -top-8 p-2 bg-gray-200 rounded-md flex items-center justify-center -right-11 lock"
+                        class="absolute flex items-center justify-center p-2 bg-gray-200 rounded-md -top-8 -right-11 lock"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -923,7 +923,7 @@
                   </div>
                   {#if i % 2}
                     <div
-                      class="border-t border-gray-300 pt-2 mt-4 md:col-span-2 lg:col-span-4"
+                      class="pt-2 mt-4 border-t border-gray-300 md:col-span-2 lg:col-span-4"
                     ></div>
                   {/if}
                 {/each}
@@ -936,7 +936,7 @@
                     {#if types[key] !== "textarea"}
                       <label
                         for="field-{key}"
-                        class="block text-sm font-medium text-gray-700 mb-1"
+                        class="block mb-1 text-sm font-medium text-gray-700"
                       >
                         {key}
                         <span
@@ -954,7 +954,7 @@
                       <select
                         required
                         id="field-{key}"
-                        class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 bg-white transition-all"
+                        class="block w-full p-3 transition-all bg-white border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                         bind:value={edit_run[meta_verifier[key]]}
                       >
                         <option value="" disabled>Seleziona</option>
@@ -968,7 +968,7 @@
                         type={types[key]}
                         id="field-{key}-autocomplete"
                         placeholder="Cerca..."
-                        class="autocomplete-input block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
+                        class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none autocomplete-input valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                         value={edit_run[meta_verifier[key]]}
                         on:input={(e) =>
                           (edit_run[meta_verifier[key]] = e.target.value)}
@@ -987,7 +987,7 @@
                         autocomplete="off"
                         required
                         id="field-{key}"
-                        class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
+                        class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                         value={edit_run[meta_verifier[key]]}
                         on:input={(e) => {
                           if (action === "edit" && key === "Viaggi") return;
@@ -1008,7 +1008,7 @@
                             ? true
                             : false}
                         id="field-{key}"
-                        class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
+                        class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                         value={edit_run[meta_verifier[key]]}
                         on:input={(e) =>
                           (edit_run[meta_verifier[key]] = e.target.value)}
@@ -1017,7 +1017,7 @@
                   </div>
                 {/each}
                 <div
-                  class="md:col-span-2 lg:col-span-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                  class="grid grid-cols-1 gap-6 md:col-span-2 lg:col-span-4 md:grid-cols-2 lg:grid-cols-4"
                 >
                   {#each Object.keys(additionalRunsMeta) as key}
                     <div
@@ -1027,7 +1027,7 @@
                     >
                       <label
                         for="field-{key}"
-                        class="block text-sm font-medium text-gray-700 mb-1"
+                        class="block mb-1 text-sm font-medium text-gray-700"
                       >
                         {key}
                         <span
@@ -1042,7 +1042,7 @@
                           ? "Cerca..."
                           : ""}
                         id="field-{key}"
-                        class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
+                        class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                         value={edit_run[additionalRunsMeta[key]]}
                         on:input={(e) => {
                           console.log(edit_run);
@@ -1051,7 +1051,7 @@
                       />
 
                       {#if key === "Partenza" || key === "Arrivo"}
-                        <div class="mt-2 flex gap-2 flex-wrap">
+                        <div class="flex flex-wrap gap-2 mt-2">
                           {#each presetAddresses as address}
                             <button
                               type="button"
@@ -1064,7 +1064,7 @@
                                   edit_run.end_geometry = address.end_geometry;
                                 }
                               }}
-                              class="bg-gray-200 hover:bg-gray-400 rounded-md px-2 py-1"
+                              class="px-2 py-1 bg-gray-200 rounded-md hover:bg-gray-400"
                             >
                               {address.label}
                             </button>
@@ -1078,20 +1078,20 @@
               <div class="md:col-span-2 lg:col-span-4">
                 <label
                   for="field-note_particolari"
-                  class="block text-sm font-medium text-gray-700 mb-1"
+                  class="block mb-1 text-sm font-medium text-gray-700"
                 >
                   Note particolari
                 </label>
                 <textarea
                   id="field-note_particolari"
-                  class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
+                  class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                   bind:value={edit_run["note_particolari"]}
                 ></textarea>
               </div>
             </div>
-            <div class="flex gap-4 justify-between mt-4">
+            <div class="flex justify-between gap-4 mt-4">
               <button
-                class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200"
+                class="px-6 py-3 font-bold text-white transition duration-200 rounded-lg bg-amber-600 hover:bg-amber-700"
                 type="button"
                 on:click={() => {
                   show_form = false;
@@ -1129,7 +1129,7 @@
               <button
                 aria-label="Submit form"
                 type="submit"
-                class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
+                class="px-4 py-3 font-bold text-white transition duration-200 rounded-lg bg-lime-600 hover:bg-lime-700"
               >
                 Conferma dettagli
               </button>
