@@ -17,6 +17,7 @@
   import Stats from "./routes/Stats/index.svelte";
   import Users from "./routes/Users/index.svelte";
   import { token, user } from "./stores";
+  import UserStats from "./routes/Stats/UserStats.svelte";
 
   let loading = true;
 
@@ -113,6 +114,9 @@
       </PrivateRoute>
       <PrivateRoute path="/stats">
         <Stats />
+      </PrivateRoute>
+      <PrivateRoute path="/stats/user/:id">
+        <UserStats />
       </PrivateRoute>
       <Route path="login">
         <Login />

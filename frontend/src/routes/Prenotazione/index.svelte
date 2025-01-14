@@ -180,7 +180,7 @@
   let location = useLocation();
 
   async function getPatientsAutoComplete(e) {
-    const surname = e.target.value;
+    const surname = e.target.value.trim();
     if (surname.length === 0) return;
     fetch(
       import.meta.env.VITE_API_URL +
@@ -851,6 +851,11 @@
                         id="field-{key}"
                         class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                         value={new_run[meta_verifier[key]]}
+                        on:blur={() => {
+                          setTimeout(() => {
+                            patients_autocomplete = [];
+                          }, 500);
+                        }}
                         on:input={(e) => {
                           if (key === "Cognome") {
                             debounce(getPatientsAutoComplete(e), 500);
