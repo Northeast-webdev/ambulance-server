@@ -122,7 +122,7 @@
       // Create a custom DivIcon for each marker with the driver's ID
       const customIcon = L.divIcon({
         className: "custom-marker", // Custom CSS class for styling
-        html: `<div style="font-size: ${driver.name.length > 4 ? "10px" : "12px"}" class="marker-circle ${
+        html: `<div style="font-size: ${driver.name.length > 4 ? "10px" : "12px"}" class="marker-circle custom-marker ${
           driver.status === "free"
             ? "bg-green-500 text-green-100 z-30"
             : driver.status === "busy"
@@ -255,13 +255,13 @@
       ? 'max-w-full'
       : 'container'} mx-auto py-6 transition-[max-width]"
   >
-    <div class="flex mb-4 justify-between items-center">
-      <h1 class="text-3xl font-bold mb-6">Mappa</h1>
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="mb-6 text-3xl font-bold">Mappa</h1>
       <button
         on:click={() => (fullScreen = !fullScreen)}
-        class="bg-lime-600 hover:bg-lime-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200"
+        class="px-4 py-3 font-bold text-white transition duration-200 rounded-lg bg-lime-600 hover:bg-lime-700"
       >
-      Mostra schermo intero
+        Mostra schermo intero
       </button>
     </div>
     <!-- Search Bar -->
@@ -269,7 +269,7 @@
       <input
         id="search-input"
         type="text"
-        class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
+        class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
         placeholder="Cerca un luogo..."
       />
     </div>

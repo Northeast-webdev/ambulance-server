@@ -38,6 +38,10 @@
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
 }
 
+.marker-circle.custom-marker {
+  transform: translate(50%, 50%);
+}
+
 input.svelte-1vabmef {
   @apply text-center font-bold text-green-700 border-green-700 border rounded-lg py-[0.45rem] !important;
 }
