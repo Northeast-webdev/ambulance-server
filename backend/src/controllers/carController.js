@@ -99,6 +99,7 @@ const updateCar = async (request, reply) => {
     damages,
     image,
   } = request.body;
+  console.log("request body", request.body);
   const updates = {};
   const carWithUser = await Car.findOne({ user });
 
@@ -135,18 +136,14 @@ const updateCar = async (request, reply) => {
         await User.updateOne(query, update);
       }
     }
-    console.log("result user", result.user);
     if (result.user) {
-      const carUser = await User.findOne({ _id: result.user._id }).populate(
-        "alarms"
-      );
-      const query = { _id: carUser._id };
+      const query = { _id: result.user._id };
       const update = {};
       if (last_location) {
         const isInZone = isUserInZone(last_location);
         console.log("isInZone", isInZone);
         const recentAlarm = await Alarm.findOne({
-          user: carUser._id,
+          user: result.user._id,
           car: result._id,
           created_at: { $gte: result.shift_start },
         });
@@ -154,25 +151,25 @@ const updateCar = async (request, reply) => {
         if (!isInZone && !recentAlarm) {
           const car_checklist_done = await CarChecklist.exists({
             car: result._id,
-            user: carUser._id,
+            user: result.user._id,
             created_at: { $gte: result.shift_start },
           });
           console.log("car_checklist_done", car_checklist_done);
           const material_checklist_done = await MaterialChecklist.exists({
             car: result._id,
-            user: carUser._id,
+            user: result.user._id,
             created_at: { $gte: result.shift_start },
           });
           console.log("material_checklist_done", material_checklist_done);
           const alarm = new Alarm({
-            user: carUser._id,
+            user: result.user._id,
             car: result._id,
             car_checklist_done: !!car_checklist_done,
             material_checklist_done: !!material_checklist_done,
           });
           console.log("alarm", alarm);
           await alarm.save();
-          update.alarms = [...(carUser.alarms || []), alarm._id];
+          update.alarms = [...(result.user.alarms || []), alarm._id];
         }
       }
       await User.updateOne(query, update);
