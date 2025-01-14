@@ -315,43 +315,45 @@
     <div class="my-20" />
     <h2 class="mb-8 text-lg font-bold">WARNINGS RICEVUTI CHECKLIST MEZZO</h2>
     <!-- Table Container with Overflow for Responsiveness -->
-    <div class="grid w-full grid-cols-2 gap-4">
+    <div class="flex flex-wrap items-start w-full gap-4">
       {#each run_car_count as car}
-        <table
-          class="flex-1 overflow-hidden border-collapse rounded-lg shadow-lg"
-        >
-          <thead class="bg-sky-300">
-            <tr>
-              <th
-                class="px-4 py-3 font-semibold text-left border-b"
-                colspan={2}
-              >
-                <div class="flex items-center justify-center gap-2">
-                  <MdiAmbulance class="w-6 h-6 text-gray-800" />
-                  {car.name}
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="text-center border-b">
-              <td class="px-4 py-3 font-bold border-r">Data</td>
-              <td class="px-4 py-3 font-bold border-r">Ora</td>
-            </tr>
-            {#if user.alarms}
-              {#each user.alarms.filter((alarm) => alarm.car === car._id && !alarm.car_checklist_done) as alarm}
-                <tr class="text-center border-b">
-                  <td class="px-4 py-3 border-r">
-                    {moment(alarm.created_at).format("DD/MM/YYYY")}
-                  </td>
-                  <td class="px-4 py-3 border-r">
-                    {moment(alarm.created_at).format("HH:mm")}
-                  </td>
-                </tr>
-              {/each}
-            {/if}
-          </tbody>
-        </table>
+        {#if user.alarms.filter((alarm) => alarm.car === car._id && !alarm.car_checklist_done).length > 0}
+          <table
+            class="w-1/4 overflow-hidden border-collapse rounded-lg shadow-lg"
+          >
+            <thead class="bg-sky-300">
+              <tr>
+                <th
+                  class="px-4 py-3 font-semibold text-left border-b"
+                  colspan={2}
+                >
+                  <div class="flex items-center justify-center gap-2">
+                    <MdiAmbulance class="w-6 h-6 text-gray-800" />
+                    {car.name}
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="text-center border-b">
+                <td class="px-4 py-3 font-bold border-r">Data</td>
+                <td class="px-4 py-3 font-bold border-r">Ora</td>
+              </tr>
+              {#if user.alarms}
+                {#each user.alarms.filter((alarm) => alarm.car === car._id && !alarm.car_checklist_done) as alarm}
+                  <tr class="text-center border-b">
+                    <td class="px-4 py-3 border-r">
+                      {moment(alarm.created_at).format("DD/MM/YYYY")}
+                    </td>
+                    <td class="px-4 py-3 border-r">
+                      {moment(alarm.created_at).format("HH:mm")}
+                    </td>
+                  </tr>
+                {/each}
+              {/if}
+            </tbody>
+          </table>
+        {/if}
       {/each}
     </div>
 
@@ -360,43 +362,45 @@
       WARNINGS RICEVUTI CHECKLIST MATERIALI
     </h2>
     <!-- Table Container with Overflow for Responsiveness -->
-    <div class="grid w-full grid-cols-2 gap-4">
+    <div class="flex flex-wrap items-start w-full gap-4">
       {#each run_car_count as car}
-        <table
-          class="flex-1 overflow-hidden border-collapse rounded-lg shadow-lg"
-        >
-          <thead class="bg-sky-300">
-            <tr>
-              <th
-                class="px-4 py-3 font-semibold text-left border-b"
-                colspan={2}
-              >
-                <div class="flex items-center justify-center gap-2">
-                  <MdiAmbulance class="w-6 h-6 text-gray-800" />
-                  {car.name}
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="text-center border-b">
-              <td class="px-4 py-3 font-bold border-r">Data</td>
-              <td class="px-4 py-3 font-bold border-r">Ora</td>
-            </tr>
-            {#if user.alarms}
-              {#each user.alarms.filter((alarm) => alarm.car === car._id && !alarm.material_checklist_done) as alarm}
-                <tr class="text-center border-b">
-                  <td class="px-4 py-3 border-r">
-                    {moment(alarm.created_at).format("DD/MM/YYYY")}
-                  </td>
-                  <td class="px-4 py-3 border-r">
-                    {moment(alarm.created_at).format("HH:mm")}
-                  </td>
-                </tr>
-              {/each}
-            {/if}
-          </tbody>
-        </table>
+        {#if user.alarms.filter((alarm) => alarm.car === car._id && !alarm.material_checklist_done).length > 0}
+          <table
+            class="w-1/4 overflow-hidden border-collapse rounded-lg shadow-lg"
+          >
+            <thead class="bg-sky-300">
+              <tr>
+                <th
+                  class="px-4 py-3 font-semibold text-left border-b"
+                  colspan={2}
+                >
+                  <div class="flex items-center justify-center gap-2">
+                    <MdiAmbulance class="w-6 h-6 text-gray-800" />
+                    {car.name}
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="text-center border-b">
+                <td class="px-4 py-3 font-bold border-r">Data</td>
+                <td class="px-4 py-3 font-bold border-r">Ora</td>
+              </tr>
+              {#if user.alarms}
+                {#each user.alarms.filter((alarm) => alarm.car === car._id && !alarm.material_checklist_done) as alarm}
+                  <tr class="text-center border-b">
+                    <td class="px-4 py-3 border-r">
+                      {moment(alarm.created_at).format("DD/MM/YYYY")}
+                    </td>
+                    <td class="px-4 py-3 border-r">
+                      {moment(alarm.created_at).format("HH:mm")}
+                    </td>
+                  </tr>
+                {/each}
+              {/if}
+            </tbody>
+          </table>
+        {/if}
       {/each}
     </div>
   </div>
