@@ -58,6 +58,7 @@ const getUser = async (request, reply) => {
           },
         ],
       })
+      .populate("alarms")
       .exec();
     return user;
   } catch (err) {
