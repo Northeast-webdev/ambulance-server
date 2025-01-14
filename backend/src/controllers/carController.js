@@ -128,45 +128,51 @@ const updateCar = async (request, reply) => {
       }
     );
     if (!carWithUser && user) {
-      const existingUser = await User.findOne({ _id: user }).populate("alarms");
+      const existingUser = await User.findOne({ _id: user });
       if (existingUser) {
         const query = { _id: existingUser._id };
         const update = { car: result._id };
-        if (last_location) {
-          const isInZone = isUserInZone(last_location);
-          console.log("isInZone", isInZone);
-          const recentAlarm = await Alarm.findOne({
-            user: existingUser._id,
-            car: result._id,
-            created_at: { $gte: result.shift_start },
-          });
-          console.log("recentAlarm", recentAlarm);
-          if (!isInZone && !recentAlarm) {
-            const car_checklist_done = await CarChecklist.exists({
-              car: result._id,
-              user: existingUser._id,
-              created_at: { $gte: result.shift_start },
-            });
-            console.log("car_checklist_done", car_checklist_done);
-            const material_checklist_done = await MaterialChecklist.exists({
-              car: result._id,
-              user: existingUser._id,
-              created_at: { $gte: result.shift_start },
-            });
-            console.log("material_checklist_done", material_checklist_done);
-            const alarm = new Alarm({
-              user: existingUser._id,
-              car: result._id,
-              car_checklist_done: !!car_checklist_done,
-              material_checklist_done: !!material_checklist_done,
-            });
-            console.log("alarm", alarm);
-            await alarm.save();
-            update.alarms = [...existingUser.alarms, alarm._id];
-          }
-        }
         await User.updateOne(query, update);
       }
+    }
+    const carUser = await User.findOne({ _id: result.user }).populate("alarms");
+    if (carUser) {
+      const query = { _id: carUser._id };
+      const update = {};
+      if (last_location) {
+        const isInZone = isUserInZone(last_location);
+        console.log("isInZone", isInZone);
+        const recentAlarm = await Alarm.findOne({
+          user: carUser._id,
+          car: result._id,
+          created_at: { $gte: result.shift_start },
+        });
+        console.log("recentAlarm", recentAlarm);
+        if (!isInZone && !recentAlarm) {
+          const car_checklist_done = await CarChecklist.exists({
+            car: result._id,
+            user: carUser._id,
+            created_at: { $gte: result.shift_start },
+          });
+          console.log("car_checklist_done", car_checklist_done);
+          const material_checklist_done = await MaterialChecklist.exists({
+            car: result._id,
+            user: carUser._id,
+            created_at: { $gte: result.shift_start },
+          });
+          console.log("material_checklist_done", material_checklist_done);
+          const alarm = new Alarm({
+            user: carUser._id,
+            car: result._id,
+            car_checklist_done: !!car_checklist_done,
+            material_checklist_done: !!material_checklist_done,
+          });
+          console.log("alarm", alarm);
+          await alarm.save();
+          update.alarms = [...(carUser.alarms || []), alarm._id];
+        }
+      }
+      await User.updateOne(query, update);
     }
     reply.send(result);
   } catch (error) {
