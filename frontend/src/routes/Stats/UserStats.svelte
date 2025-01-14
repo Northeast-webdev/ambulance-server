@@ -17,7 +17,7 @@
     { value: "Oblazione", text: "Oblazione" },
     { value: "Servizio navetta comune", text: "Servizio navetta comune" },
   ];
-  let start_date = new Date(new Date().setDate(new Date().getDate() - 60));
+  let start_date = new Date(new Date().setDate(new Date().getDate() - 30));
   let end_date = new Date();
 
   let loading = false;
