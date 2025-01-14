@@ -20,6 +20,7 @@ admin.initializeApp({
 
 const zoneCenter = { lat: 44.42600757181744, lng: 8.850815866176998 }; // Example coordinates
 const radiusInKm = 120 / 1000;
+const ALARM_COOLDOWN_MS = 5000; // 5 seconds cooldown
 
 function calculateDistance(lat1, lng1, lat2, lng2) {
   const R = 6371; // Earth's radius in kilometers
@@ -412,9 +413,16 @@ const websocketHandler = (socket, req) => {
               user: car.user._id,
               car: car._id,
               created_at: { $gte: car.shift_start },
-            });
+            }).sort({ created_at: -1 }); // Get the most recent alarm
             console.log("recentAlarm", recentAlarm);
-            if (!isInZone && !recentAlarm) {
+
+            const now = new Date();
+
+            if (
+              !isInZone &&
+              (!recentAlarm ||
+                now - new Date(recentAlarm.created_at) > ALARM_COOLDOWN_MS)
+            ) {
               const car_checklist_done = await CarChecklist.exists({
                 car: car._id,
                 user: car.user._id,
