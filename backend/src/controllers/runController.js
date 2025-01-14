@@ -402,7 +402,7 @@ const websocketHandler = (socket, req) => {
         if (car.user) {
           const query = { _id: car.user._id };
           const update = {};
-          if (last_location) {
+          if (latitude && longitude) {
             const isInZone = isUserInZone({
               latitude,
               longitude,
