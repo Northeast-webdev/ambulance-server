@@ -126,7 +126,7 @@ const updateCar = async (request, reply) => {
       {
         returnDocument: "after",
       }
-    );
+    ).populate("user");
     if (!carWithUser && user) {
       const existingUser = await User.findOne({ _id: user });
       if (existingUser) {
@@ -135,8 +135,10 @@ const updateCar = async (request, reply) => {
         await User.updateOne(query, update);
       }
     }
-    const carUser = await User.findOne({ _id: result.user }).populate("alarms");
-    if (carUser) {
+    if (result.user) {
+      const carUser = await User.findOne({ _id: result.user._id }).populate(
+        "alarms"
+      );
       const query = { _id: carUser._id };
       const update = {};
       if (last_location) {
