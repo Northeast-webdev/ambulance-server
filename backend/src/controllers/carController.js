@@ -8,7 +8,26 @@ const { MaterialChecklist } = require("../schema/materialChecklist.schema");
 const { Alarm } = require("../schema/alarm.schema");
 
 const zoneCenter = { lat: 44.42600757181744, lng: 8.850815866176998 }; // Example coordinates
-const radiusInKm = 0.12;
+const radiusInKm = 120 / 1000;
+
+function calculateDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371; // Earth's radius in kilometers
+  const toRadians = (degrees) => (degrees * Math.PI) / 180;
+
+  const dLat = toRadians(lat2 - lat1);
+  const dLng = toRadians(lng2 - lng1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // Distance in kilometers
+}
 
 function isUserInZone(last_location) {
   const distance = calculateDistance(
