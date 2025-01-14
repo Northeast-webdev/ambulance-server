@@ -134,28 +134,33 @@ const updateCar = async (request, reply) => {
         const update = { car: result._id };
         if (last_location) {
           const isInZone = isUserInZone(last_location);
+          console.log("isInZone", isInZone);
           const recentAlarm = await Alarm.findOne({
             user: existingUser._id,
             car: result._id,
             created_at: { $gte: result.shift_start },
           });
+          console.log("recentAlarm", recentAlarm);
           if (!isInZone && !recentAlarm) {
             const car_checklist_done = await CarChecklist.exists({
               car: result._id,
               user: existingUser._id,
               created_at: { $gte: result.shift_start },
             });
+            console.log("car_checklist_done", car_checklist_done);
             const material_checklist_done = await MaterialChecklist.exists({
               car: result._id,
               user: existingUser._id,
               created_at: { $gte: result.shift_start },
             });
+            console.log("material_checklist_done", material_checklist_done);
             const alarm = new Alarm({
               user: existingUser._id,
               car: result._id,
               car_checklist_done: !!car_checklist_done,
               material_checklist_done: !!material_checklist_done,
             });
+            console.log("alarm", alarm);
             await alarm.save();
             update.alarms = [...existingUser.alarms, alarm._id];
           }
