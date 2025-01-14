@@ -5,40 +5,6 @@ const { Car } = require("../schema/car.schema");
 const { User } = require("../schema/user.schema");
 const { CarChecklist } = require("../schema/carChecklist.schema");
 const { MaterialChecklist } = require("../schema/materialChecklist.schema");
-const { Alarm } = require("../schema/alarm.schema");
-
-const zoneCenter = { lat: 44.42600757181744, lng: 8.850815866176998 }; // Example coordinates
-const radiusInKm = 120 / 1000;
-
-function calculateDistance(lat1, lng1, lat2, lng2) {
-  const R = 6371; // Earth's radius in kilometers
-  const toRadians = (degrees) => (degrees * Math.PI) / 180;
-
-  const dLat = toRadians(lat2 - lat1);
-  const dLng = toRadians(lng2 - lng1);
-
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRadians(lat1)) *
-      Math.cos(toRadians(lat2)) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return R * c; // Distance in kilometers
-}
-
-function isUserInZone(last_location) {
-  const distance = calculateDistance(
-    zoneCenter.lat,
-    zoneCenter.lng,
-    last_location.latitude,
-    last_location.longitude
-  );
-
-  return distance <= radiusInKm;
-}
 
 const createCar = async (request, reply) => {
   const { meta, name, image } = request.body;
@@ -99,7 +65,6 @@ const updateCar = async (request, reply) => {
     damages,
     image,
   } = request.body;
-  console.log("request body", request.body);
   const updates = {};
   const carWithUser = await Car.findOne({ user });
 
@@ -127,7 +92,7 @@ const updateCar = async (request, reply) => {
       {
         returnDocument: "after",
       }
-    ).populate("user");
+    );
     if (!carWithUser && user) {
       const existingUser = await User.findOne({ _id: user });
       if (existingUser) {
@@ -135,44 +100,6 @@ const updateCar = async (request, reply) => {
         const update = { car: result._id };
         await User.updateOne(query, update);
       }
-    }
-    if (result.user) {
-      const query = { _id: result.user._id };
-      const update = {};
-      if (last_location) {
-        const isInZone = isUserInZone(last_location);
-        console.log("isInZone", isInZone);
-        const recentAlarm = await Alarm.findOne({
-          user: result.user._id,
-          car: result._id,
-          created_at: { $gte: result.shift_start },
-        });
-        console.log("recentAlarm", recentAlarm);
-        if (!isInZone && !recentAlarm) {
-          const car_checklist_done = await CarChecklist.exists({
-            car: result._id,
-            user: result.user._id,
-            created_at: { $gte: result.shift_start },
-          });
-          console.log("car_checklist_done", car_checklist_done);
-          const material_checklist_done = await MaterialChecklist.exists({
-            car: result._id,
-            user: result.user._id,
-            created_at: { $gte: result.shift_start },
-          });
-          console.log("material_checklist_done", material_checklist_done);
-          const alarm = new Alarm({
-            user: result.user._id,
-            car: result._id,
-            car_checklist_done: !!car_checklist_done,
-            material_checklist_done: !!material_checklist_done,
-          });
-          console.log("alarm", alarm);
-          await alarm.save();
-          update.alarms = [...(result.user.alarms || []), alarm._id];
-        }
-      }
-      await User.updateOne(query, update);
     }
     reply.send(result);
   } catch (error) {

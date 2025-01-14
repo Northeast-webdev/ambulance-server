@@ -4,6 +4,9 @@ const { fastify } = require("../init");
 const { Car } = require("../schema/car.schema");
 const { Patient } = require("../schema/patient.schema");
 const { Run } = require("../schema/run.schema");
+const { Alarm } = require("../schema/alarm.schema");
+const { CarChecklist } = require("../schema/carChecklist.schema");
+const { MaterialChecklist } = require("../schema/materialChecklist.schema");
 require("dotenv").config();
 const admin = require("firebase-admin");
 // Store WebSocket connections per user
@@ -15,28 +18,76 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
+const zoneCenter = { lat: 44.42600757181744, lng: 8.850815866176998 }; // Example coordinates
+const radiusInKm = 120 / 1000;
+
+function calculateDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371; // Earth's radius in kilometers
+  const toRadians = (degrees) => (degrees * Math.PI) / 180;
+
+  const dLat = toRadians(lat2 - lat1);
+  const dLng = toRadians(lng2 - lng1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) *
+      Math.cos(toRadians(lat2)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // Distance in kilometers
+}
+
+function isUserInZone(last_location) {
+  const distance = calculateDistance(
+    zoneCenter.lat,
+    zoneCenter.lng,
+    last_location.latitude,
+    last_location.longitude
+  );
+
+  return distance <= radiusInKm;
+}
+
 const sendNotification = async (deviceToken, type, data) => {
   const message = {
     notification: {
-      body: type === "new_run" ? data.programmed ? 'Corsa programmata' : 'Richiesta di guida in arrivo' : 'La corsa seguente è stata annullata',
+      body:
+        type === "new_run"
+          ? data.programmed
+            ? "Corsa programmata"
+            : "Richiesta di guida in arrivo"
+          : "La corsa seguente è stata annullata",
       title: `${data.patient.name} ${data.patient.surname}`,
     },
     android: {
       notification: {
-        color: '#16a34a',
-        sound: type === "new_run" ? data.programmed ? "program" : "alert" : "notification",
-        channelId: type === "new_run" ? data.programmed ? "programmed_run" : "new_run" : "stop_run",
+        color: "#16a34a",
+        sound:
+          type === "new_run"
+            ? data.programmed
+              ? "program"
+              : "alert"
+            : "notification",
+        channelId:
+          type === "new_run"
+            ? data.programmed
+              ? "programmed_run"
+              : "new_run"
+            : "stop_run",
       },
-      priority: 'high',
+      priority: "high",
     },
     token: deviceToken, // The FCM token of the target device
   };
 
   try {
     const response = await admin.messaging().send(message);
-    console.log('Successfully sent message:', response);
+    console.log("Successfully sent message:", response);
   } catch (error) {
-    console.error('Error sending message:', error);
+    console.error("Error sending message:", error);
   }
 };
 
@@ -65,7 +116,7 @@ const createRun = async (request, reply) => {
         await newRun.save();
         await Patient.updateOne(
           { _id: patID },
-          { $push: { runs: newRun._id } },
+          { $push: { runs: newRun._id } }
         );
       }
     }
@@ -108,7 +159,10 @@ const listRuns = async (request, reply) => {
     q["meta.date"] = meta_date;
   }
   if (start_date && end_date) {
-    q.updated_at = { $gte: new Date(start_date), $lte: new Date(end_date).setDate(new Date(end_date).getDate() + 1) };
+    q.updated_at = {
+      $gte: new Date(start_date),
+      $lte: new Date(end_date).setDate(new Date(end_date).getDate() + 1),
+    };
   }
   if (patient) {
     q.patient = patient;
@@ -191,7 +245,7 @@ const updateRun = async (request, reply) => {
       updates.length = Math.floor(
         (new Date(run.checkpoints.completed).getTime() -
           new Date(run.checkpoints.ongoing).getTime()) /
-        1000,
+          1000
       );
     }
     if (status === "picked_up") {
@@ -232,7 +286,11 @@ const updateRun = async (request, reply) => {
     const assignedUser = await User.findOne({ _id: assignedUserId });
     const assignedUserToken = assignedUser.fcm_token;
     if (assignedUserToken) {
-      await sendNotification(assignedUserToken, run_cancelled ? "stop_run" : "new_run", result);
+      await sendNotification(
+        assignedUserToken,
+        run_cancelled ? "stop_run" : "new_run",
+        result
+      );
     }
     // Send new run to the assigned user via WebSocket
     const assignedUserConnection = userConnections.get(assignedUserId);
@@ -242,7 +300,7 @@ const updateRun = async (request, reply) => {
         JSON.stringify({
           type: run_cancelled ? "stop_run" : "new_run",
           data: result,
-        }),
+        })
       );
       console.log(`Run sent to user ${assignedUserId}`);
     }
@@ -276,7 +334,7 @@ const websocketHandler = (socket, req) => {
     socket.send(
       JSON.stringify({
         error: "Unauthorized",
-      }),
+      })
     );
     socket.close();
     return;
@@ -298,7 +356,7 @@ const websocketHandler = (socket, req) => {
           JSON.stringify({
             type: "pong",
             data: "pong",
-          }),
+          })
         );
         break;
       case "accept_run":
@@ -312,14 +370,14 @@ const websocketHandler = (socket, req) => {
           },
           {
             returnDocument: "after",
-          },
+          }
         );
         console.log("Run accepted:", x._id.toString());
         socket.send(
           JSON.stringify({
             type: "run_accepted",
             data: x._id.toString(),
-          }),
+          })
         );
         break;
       case "refuse_run":
@@ -332,7 +390,7 @@ const websocketHandler = (socket, req) => {
           },
           {
             returnDocument: "after",
-          },
+          }
         );
         break;
       case "location_update":
@@ -340,7 +398,48 @@ const websocketHandler = (socket, req) => {
         // Implement location update logic here
         const car = await Car.findOne({
           _id: carID,
-        });
+        }).populate("user");
+        if (car.user) {
+          const query = { _id: car.user._id };
+          const update = {};
+          if (last_location) {
+            const isInZone = isUserInZone({
+              latitude,
+              longitude,
+            });
+            console.log("isInZone", isInZone);
+            const recentAlarm = await Alarm.findOne({
+              user: car.user._id,
+              car: car._id,
+              created_at: { $gte: car.shift_start },
+            });
+            console.log("recentAlarm", recentAlarm);
+            if (!isInZone && !recentAlarm) {
+              const car_checklist_done = await CarChecklist.exists({
+                car: car._id,
+                user: car.user._id,
+                created_at: { $gte: car.shift_start },
+              });
+              console.log("car_checklist_done", car_checklist_done);
+              const material_checklist_done = await MaterialChecklist.exists({
+                car: car._id,
+                user: car.user._id,
+                created_at: { $gte: car.shift_start },
+              });
+              console.log("material_checklist_done", material_checklist_done);
+              const alarm = new Alarm({
+                user: car.user._id,
+                car: car._id,
+                car_checklist_done: !!car_checklist_done,
+                material_checklist_done: !!material_checklist_done,
+              });
+              console.log("alarm", alarm);
+              await alarm.save();
+              update.alarms = [...(car.user.alarms || []), alarm._id];
+            }
+          }
+          await User.updateOne(query, update);
+        }
         if (car) {
           car.last_location = { latitude, longitude };
           await car.save();
@@ -394,16 +493,17 @@ const runRoutes = () => {
   fastify.put(
     "/api/runs/:id",
     { preHandler: [fastify.authenticate] },
-    updateRun,
+    updateRun
   );
   fastify.delete(
     "/api/runs/:id",
     { preHandler: [fastify.authenticate] },
-    deleteRun,
+    deleteRun
   );
 
   fastify.register(async () => {
-    fastify.get("/api/runs/driver",
+    fastify.get(
+      "/api/runs/driver",
       {
         websocket: true,
         onTimeout: () => {
@@ -415,7 +515,7 @@ const runRoutes = () => {
       },
       (socket, req) => {
         websocketHandler(socket, req);
-      },
+      }
     );
     fastify.get(
       "/api/runs/admin",
@@ -430,7 +530,7 @@ const runRoutes = () => {
       },
       (socket, req) => {
         websocketWatcher(socket, req);
-      },
+      }
     );
   });
 };
