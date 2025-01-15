@@ -5,6 +5,8 @@ const patientSchema = new Schema({
   name: { type: String, required: true },
   surname: { type: String, required: true },
   runs: [{ type: Schema.Types.ObjectId, ref: "Run", default: [] }],
+  phone: { type: String },
+  address: { type: String },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });

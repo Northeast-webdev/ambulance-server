@@ -4,8 +4,8 @@ const { fastify } = require("../init");
 const { Patient } = require("../schema/patient.schema");
 
 const createPatient = async (request, reply) => {
-  const { name } = request.body;
-  const patient = new Patient({ name });
+  const { name, surname, phone, address } = request.body;
+  const patient = new Patient({ name, surname, phone, address });
   try {
     await patient.save();
     reply.send(patient);
@@ -59,11 +59,11 @@ const getPatient = async (request, reply) => {
 };
 
 const updatePatient = async (request, reply) => {
-  const { name } = request.body;
+  const { name, surname, phone, address } = request.body;
   try {
     const patient = await Patient.findOneAndUpdate(
       { _id: request.params.id },
-      { name },
+      { name, surname, phone, address },
       { new: true }
     ).exec();
     return patient;
