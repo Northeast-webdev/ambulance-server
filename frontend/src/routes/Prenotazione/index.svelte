@@ -16,12 +16,13 @@
   let meta_verifier = {
     Cognome: "cognome",
     Nome: "nome",
-    "C/S/B": "csb",
-    Servizio: "servizio",
     Tel: "tel",
+    "Indirizzo paziente": "indirizzo",
+    "C/S/B": "csb",
+    Viaggi: "viaggio",
+    Servizio: "servizio",
     "N. Richiesta": "n_richiesta",
     Ricevuta: "ricevuta",
-    Viaggi: "viaggio",
     "Note particolari": "note_particolari",
   };
   let types = {
@@ -39,6 +40,7 @@
     Data: "date",
     Nome: "text",
     Cognome: "text",
+    Indirizzo: "text",
   };
 
   let new_run = {
@@ -51,6 +53,7 @@
     ricevuta: "",
     viaggio: "1",
     note_particolari: "",
+    indirizzo: "",
   };
 
   let edit_run = {
@@ -67,6 +70,7 @@
     arrivo: "",
     viaggio: "1",
     note_particolari: "",
+    indirizzo: "",
   };
   let options = {
     servizio: [
@@ -219,7 +223,8 @@
   async function newRun() {
     if (action === "add") {
       try {
-        const { geometry, end_geometry, nome, cognome, ...newR } = new_run;
+        const { geometry, end_geometry, nome, cognome, indirizzo, ...newR } =
+          new_run;
         await fetch(import.meta.env.VITE_API_URL + "/api/runs", {
           method: "POST",
           headers: {
@@ -239,6 +244,8 @@
             })),
             name: nome,
             surname: cognome,
+            phone: new_run.tel,
+            address: indirizzo,
           }),
         });
         show_form = false;
@@ -767,13 +774,14 @@
             }}
             class="space-y-6"
           >
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-8">
               {#if action !== "edit"}
                 {#each Object.keys(meta_verifier) as key}
-                  {#if key === "Data"}
-                    <div></div>
-                  {/if}
-                  <div class="relative">
+                  <div
+                    class="relative {key === 'C/S/B' || key === 'Viaggi'
+                      ? 'col-span-1'
+                      : 'col-span-2'}"
+                  >
                     {#if types[key] !== "textarea"}
                       <label
                         for="field-{key}"
@@ -873,6 +881,10 @@
                               on:click={() => {
                                 new_run[meta_verifier[key]] = patient.surname;
                                 new_run[meta_verifier["Nome"]] = patient.name;
+                                new_run[meta_verifier["Indirizzo paziente"]] =
+                                  patient.address || "";
+                                new_run[meta_verifier["Tel"]] =
+                                  patient.phone || "";
                                 patients_autocomplete = [];
                               }}
                               class="block w-full p-2 text-left rounded-md hover:bg-green-100"
@@ -888,7 +900,7 @@
                 {/each}
                 {#each Array.from({ length: new_run.viaggio * 2 }) as _, i}
                   <div
-                    class="relative grid grid-cols-1 gap-6 md:col-span-2 lg:col-span-4 md:grid-cols-2 lg:grid-cols-4"
+                    class="relative grid grid-cols-2 gap-6 md:col-span-2 lg:col-span-8 md:grid-cols-2 lg:grid-cols-4"
                   >
                     {#each Object.keys(additionalRunsMeta) as key}
                       <div

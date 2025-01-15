@@ -12,6 +12,7 @@
   let query = "";
   let action = "add";
   let selected_run = null;
+
   let meta_verifier = {
     Cognome: "cognome",
     Nome: "nome",
@@ -67,6 +68,16 @@
     viaggio: "1",
     note_particolari: "",
   };
+
+  let show_patient_form = false;
+  let selected_patient = null;
+  let edit_patient = {
+    name: "",
+    surname: "",
+    phone: "",
+    address: "",
+  };
+
   let options = {
     servizio: [
       { value: "Ordinario", text: "Ordinario" },
@@ -458,6 +469,22 @@
     }
   }
   onMount(getPatients);
+
+  async function savePatient() {
+    await fetch(
+      import.meta.env.VITE_API_URL + "/api/patient/" + selected_patient,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(edit_patient),
+      }
+    );
+    show_patient_form = false;
+    getPatients();
+  }
 </script>
 
 {#if loading}
@@ -513,6 +540,9 @@
             <th class="px-6 py-3 text-sm font-semibold text-left uppercase">
               N. trasporti eseguiti
             </th>
+            <th class="px-6 py-3 text-sm font-semibold text-left uppercase">
+              Azioni
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -545,7 +575,7 @@
               <td class="px-6 py-3 text-left whitespace-nowrap">
                 <div class="flex items-center">
                   <span class="font-medium"
-                    >{patient.runs[0]?.meta?.tel || "-"}</span
+                    >{patient.phone || patient.runs[0]?.meta?.tel || "-"}</span
                   >
                 </div>
               </td>
@@ -578,13 +608,32 @@
                   >
                 </div>
               </td>
+              <td class="px-6 py-3 text-left whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <button
+                    class="px-4 py-2 font-bold bg-indigo-600 rounded-lg text-indigo-50 hover:bg-indigo-800"
+                    on:click={() => {
+                      selected_patient = patient._id;
+                      edit_patient = {
+                        name: patient.name,
+                        surname: patient.surname,
+                        phone: patient.phone,
+                        address: patient.address,
+                      };
+                      show_patient_form = true;
+                    }}
+                  >
+                    Modifica
+                  </button>
+                </div>
+              </td>
             </tr>
             {#if patient.visibleInfo}
               <tr
                 transition:fade={{ duration: 300 }}
                 class="bg-green-100 border-b border-gray-200"
               >
-                <td class="px-6 py-3" colspan="8">
+                <td class="px-6 py-3" colspan="9">
                   <table class="w-full border-collapse">
                     <thead class="bg-green-300">
                       <tr>
@@ -1137,6 +1186,91 @@
           </form>
         </div>
       {/if}
+    </div>
+  </div>
+{/if}
+
+{#if show_patient_form}
+  <div
+    class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+  >
+    <div class="p-6 bg-white rounded-lg">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl font-bold">Modifica paziente</h2>
+        <button
+          class="px-4 py-2 font-bold text-white transition duration-200 bg-red-600 rounded-lg hover:bg-red-700"
+          on:click={() => (show_patient_form = false)}
+        >
+          Chiudi
+        </button>
+      </div>
+      <form
+        class="grid grid-cols-2 gap-4"
+        on:submit|preventDefault={() => savePatient()}
+      >
+        <div class="relative">
+          <label
+            for="field-name"
+            class="block mb-1 text-sm font-medium text-gray-700"
+            >Nome <span class="text-red-500">*</span></label
+          >
+          <input
+            type="text"
+            bind:value={edit_patient.name}
+            disabled
+            placeholder="Nome"
+            class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600 disabled:bg-gray-200"
+          />
+        </div>
+        <div class="relative">
+          <label
+            for="field-surname"
+            class="block mb-1 text-sm font-medium text-gray-700"
+            >Cognome <span class="text-red-500">*</span></label
+          >
+          <input
+            type="text"
+            bind:value={edit_patient.surname}
+            disabled
+            placeholder="Cognome"
+            class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600 disabled:bg-gray-200"
+          />
+        </div>
+        <div class="relative">
+          <label
+            for="field-phone"
+            class="block mb-1 text-sm font-medium text-gray-700"
+            >Telefono <span class="text-red-500">*</span></label
+          >
+          <input
+            type="tel"
+            bind:value={edit_patient.phone}
+            placeholder="Telefono"
+            class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600 disabled:bg-gray-200"
+          />
+        </div>
+        <div class="relative">
+          <label
+            for="field-address"
+            class="block mb-1 text-sm font-medium text-gray-700"
+            >Indirizzo <span class="text-red-500">*</span></label
+          >
+          <input
+            type="text"
+            bind:value={edit_patient.address}
+            placeholder="Indirizzo"
+            class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600 disabled:bg-gray-200"
+          />
+        </div>
+        <div class="flex justify-between col-span-2 gap-4">
+          <button
+            class="w-full px-6 py-3 font-bold text-white transition duration-200 rounded-lg bg-lime-600 hover:bg-lime-700"
+            type="submit"
+          >
+            Salva
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 {/if}
