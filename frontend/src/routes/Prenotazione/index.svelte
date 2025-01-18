@@ -655,6 +655,8 @@
                         value={new_run[meta_verifier[key]]}
                         on:input={(e) =>
                           (new_run[meta_verifier[key]] = e.target.value)}
+                        on:change={(e) =>
+                          (new_run[meta_verifier[key]] = e.target.value)}
                       />
                     {:else if types[key] === "number"}
                       <input
@@ -830,6 +832,17 @@
                           {/if}
                           {#if (i + 1) % 2 && (key === "Partenza" || key === "Arrivo")}
                             <div class="flex flex-wrap gap-2 mt-2">
+                              {#if new_run.indirizzo}
+                                <button
+                                  type="button"
+                                  on:click={() => {
+                                    additionalRuns[i][key.toLowerCase()] = new_run.indirizzo;
+                                  }}
+                                  class="px-2 py-1 bg-amber-200 rounded-md hover:bg-amber-400"
+                                >
+                                  Copia I.P.
+                                </button>
+                              {/if}
                               {#each presetAddresses as address}
                                 <button
                                   type="button"
