@@ -18,7 +18,7 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-const zoneCenter = { lat: 44.42600757181744, lng: 8.850815866176998 }; // Example coordinates
+const zoneCenter = { lat: 44.425720718111904, lng: 8.850632846909305 }; // Example coordinates
 const radiusInKm = 120 / 1000;
 
 function calculateDistance(lat1, lng1, lat2, lng2) {

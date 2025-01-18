@@ -3,7 +3,30 @@
 
   import { onDestroy, onMount } from "svelte";
   let googleMap;
-  let autocomplete;
+  let search = "";
+  let autocomplete_results = [];
+  let timeoutId;
+
+  async function handlePlaceSelected(place) {
+    const res = await fetch(
+      `https://lookup.search.hereapi.com/v1/lookup?id=${place.id}&apiKey=${import.meta.env.VITE_HERE_API_KEY}`
+    );
+    const data = await res.json();
+    googleMap.setCenter({
+      lat: data.position.lat,
+      lng: data.position.lng,
+    });
+    googleMap.setZoom(17);
+  }
+
+  async function getAutocompleteResults() {
+    console.log(search);
+    const response = await fetch(
+      `https://autocomplete.search.hereapi.com/v1/autocomplete?q=${search}&in=countryCode:ITA&apiKey=${import.meta.env.VITE_HERE_API_KEY}`
+    );
+    const data = await response.json();
+    autocomplete_results = data.items || [];
+  }
 
   const mapOptions = {
     zoom: 15,
@@ -19,21 +42,7 @@
     mapId: "d537a79eb09b53ce",
   };
 
-  let options = {
-    servizio: [
-      { value: "a", text: "A" },
-      { value: "b", text: "B" },
-      { value: "c", text: "C" },
-      { value: "d", text: "D" },
-    ],
-    csb: [
-      { value: "c", text: "C" },
-      { value: "s", text: "S" },
-      { value: "b", text: "B" },
-    ],
-  };
   let drivers = [];
-  let map;
   let socket;
   let driverMarkers = new Map(); // Map to store markers by driver ID
   let fullScreen = false;
@@ -107,71 +116,16 @@
     }
   });
 
-  function getMapInfo() {
-    if (map) return;
-    // Initialize the Leaflet map
-    map = L.map("map").setView([40.7128, -74.006], 13);
-
-    // Add OpenStreetMap tiles
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(
-      map
-    );
-
-    // Add markers for drivers
-    drivers.forEach((driver, i) => {
-      // Create a custom DivIcon for each marker with the driver's ID
-      const customIcon = L.divIcon({
-        className: "custom-marker", // Custom CSS class for styling
-        html: `<div style="font-size: ${driver.name.length > 4 ? "10px" : "12px"}" class="marker-circle custom-marker ${
-          driver.status === "free"
-            ? "bg-green-500 text-green-100 z-30"
-            : driver.status === "busy"
-              ? "bg-amber-500 text-amber-100 z-20"
-              : driver.status === "garage"
-                ? "bg-gray-500 text-gray-100 z-20"
-                : "bg-red-500 text-red-100 z-10"
-        }">${driver.name}</div>`, // Inner HTML to show the ID
-        iconSize: [20, 20], // Size of the marker
-      });
-
-      const marker = L.marker(
-        [driver.last_location.latitude, driver.last_location.longitude],
-        {
-          icon: customIcon,
-        }
-      ).addTo(map);
-
-      map.setView(
-        [driver.last_location.latitude, driver.last_location.longitude],
-        13
-      );
-    });
-  }
-
   onMount(() => {
     // Initialize the Google Map (example coordinates)
-    googleMap = new google.maps.Map(
-      document.getElementById("google-map"),
-      mapOptions
-    );
-
-    // Create the autocomplete search box
-    const input = document.getElementById("search-input");
-    autocomplete = new google.maps.places.Autocomplete(input);
-    autocomplete.bindTo("bounds", googleMap);
-
-    // Handle the selection of a place from autocomplete
-    autocomplete.addListener("place_changed", () => {
-      const place = autocomplete.getPlace();
-      if (!place.geometry || !place.geometry.location) {
-        console.error("No geometry available for the selected place");
-        return;
-      }
-
-      // Zoom and center the map to the selected place
-      googleMap.setCenter(place.geometry.location);
-      googleMap.setZoom(17);
-    });
+    try {
+      googleMap = new google.maps.Map(
+        document.getElementById("google-map"),
+        mapOptions
+      );
+    } catch (error) {
+      console.error("Error initializing Google Map:", error);
+    }
 
     // Fetch drivers from the API
     fetch(import.meta.env.VITE_API_URL + "/api/cars?limit=100", {
@@ -222,13 +176,8 @@
       }
     });
 
-    // Optionally, recenter map to first driver
-    if (drivers.length) {
-      googleMap.setCenter({
-        lat: drivers[0].last_location.latitude,
-        lng: drivers[0].last_location.longitude,
-      });
-    }
+    googleMap.setCenter({ lat: 44.425720718111904, lng: 8.850632846909305 });
+    googleMap.setZoom(20);
   }
 
   // Function to determine marker class based on driver status
@@ -265,13 +214,38 @@
       </button>
     </div>
     <!-- Search Bar -->
-    <div class="mb-4">
+    <div class="relative mb-4">
       <input
         id="search-input"
         type="text"
+        value={search}
+        on:keyup={(e) => {
+          search = e.target.value;
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(async () => {
+            await getAutocompleteResults();
+          }, 500);
+        }}
         class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
         placeholder="Cerca un luogo..."
       />
+      {#if autocomplete_results.length > 0}
+        <div
+          class="absolute top-full left-0 z-50 w-full bg-white overflow-y-auto max-h-[10rem] rounded-lg shadow-md border border-gray-300"
+        >
+          {#each autocomplete_results as result}
+            <button
+              class="w-full p-2 text-left cursor-pointer hover:bg-gray-100"
+              on:click={() => {
+                handlePlaceSelected(result);
+                autocomplete_results = [];
+              }}
+            >
+              {result.title}
+            </button>
+          {/each}
+        </div>
+      {/if}
     </div>
 
     <!-- Google Map Container -->

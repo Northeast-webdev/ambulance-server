@@ -100,12 +100,17 @@
       date: "",
     },
   ];
+  let additionalRunsAutoComplete = {
+    partenza: [],
+    arrivo: [],
+  };
   let additionalRunsMeta = {
     Data: "date",
     Ora: "ora",
     Partenza: "partenza",
     Arrivo: "arrivo",
   };
+  let timeoutId = null;
 
   let presetAddresses = [
     {
@@ -249,7 +254,6 @@
           }),
         });
         show_form = false;
-        getPatients();
         new_run = {
           csb: "",
           nome: "",
@@ -264,270 +268,101 @@
       } catch (error) {
         console.error("Error:", error);
       }
-    } else {
-      try {
-        const { geometry, end_geometry, nome, cognome, ...newR } = edit_run;
-        await fetch(
-          import.meta.env.VITE_API_URL + "/api/runs/" + selected_run,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: JSON.stringify({ meta: newR, geometry }),
-          }
-        );
-        show_form = false;
-        getPatients();
-        edit_run = {
-          csb: "",
-          nome: "",
-          cognome: "",
-          servizio: "",
-          tel: "",
-          n_richiesta: "",
-          ricevuta: "",
-          ora: "",
-          date: new Date().toISOString().split("T")[0],
-          partenza: "",
-          arrivo: "",
-          viaggio: "1",
-          note_particolari: "",
-        };
-      } catch (error) {
-        console.error("Error:", error);
-      }
     }
     navigate("/pazienti");
-  }
-
-  function extractFullAddress(data, input) {
-    let streetNumber = "";
-    let route = "";
-    let subpremise = "";
-    let locality = "";
-    let formattedName = "";
-
-    // Check if the place is a hospital
-    if (data.types.includes("hospital")) {
-      formattedName = `${data.name}`;
-    }
-
-    console.log(data);
-
-    data.address_components.forEach((component) => {
-      if (component.types.includes("street_number")) {
-        const address = input.value; // input[text] value
-        streetNumber = component.long_name;
-
-        // Regex Match associated
-        if (streetNumber) {
-          const regex = RegExp(`[^\\s,]*(${streetNumber})[^\\s,]*`);
-          const foundStreetNumber = regex.exec(address);
-          streetNumber = foundStreetNumber[0];
-        }
-      }
-      if (component.types.includes("route")) {
-        route = component.long_name;
-      }
-      if (component.types.includes("subpremise")) {
-        subpremise = component.long_name;
-      }
-      if (component.types.includes("locality")) {
-        locality = component.long_name;
-      }
-    });
-
-    // Construct the address string
-    let address = `${route}`;
-    if (streetNumber) {
-      address += ` ${streetNumber}`;
-    }
-    if (locality) {
-      address += `, ${locality}`;
-    }
-
-    // Prepend the hospital name if it exists
-    if (formattedName) {
-      address = `${formattedName}, ${address}`;
-    }
-
-    return address.trim();
   }
 
   $: (() => {
     if (show_form && action !== "edit") {
       additionalRuns = Array.from({ length: new_run.viaggio * 2 }).map(
-        (x, i) =>
-          additionalRuns[i] || {
+        (x, i) => {
+          additionalRunsAutoComplete[`partenza_${i}`] = [];
+          additionalRunsAutoComplete[`arrivo_${i}`] = [];
+          return {
             ora: "",
             partenza: "",
             arrivo: "",
             date: "",
-          }
-      );
-      setTimeout(() => {
-        for (let i = 0; i < new_run.viaggio * 2; i++) {
-          const partenzaInput = document.getElementById(`field-Partenza-${i}`);
-          const arrivoInput = document.getElementById(`field-Arrivo-${i}`);
-          const partenzaAutocomplete = new google.maps.places.Autocomplete(
-            partenzaInput
-          );
-          const arrivoAutocomplete = new google.maps.places.Autocomplete(
-            arrivoInput
-          );
-
-          partenzaAutocomplete.addListener("place_changed", () => {
-            const place = partenzaAutocomplete.getPlace();
-            if (!place.geometry || !place.geometry.location) {
-              console.error("No geometry available for the selected place");
-              return;
-            }
-            const str = extractFullAddress(place, partenzaInput);
-            additionalRuns[i].partenza = str;
-            additionalRuns[i].geometry = {
-              latitude: place.geometry.location.lat(),
-              longitude: place.geometry.location.lng(),
-            };
-            console.log(
-              "Selected place:",
-              str,
-              place.geometry.location.lat(),
-              place.geometry.location.lng()
-            );
-          });
-          arrivoAutocomplete.addListener("place_changed", () => {
-            const place = arrivoAutocomplete.getPlace();
-            if (!place.geometry || !place.geometry.location) {
-              console.error("No geometry available for the selected place");
-              return;
-            }
-            const str = extractFullAddress(place, arrivoInput);
-            additionalRuns[i].arrivo = str;
-            additionalRuns[i].end_geometry = {
-              latitude: place.geometry.location.lat(),
-              longitude: place.geometry.location.lng(),
-            };
-            console.log(
-              "Selected place:",
-              str,
-              place.geometry.location.lat(),
-              place.geometry.location.lng()
-            );
-          });
+          };
         }
-      }, 1000);
+      );
     }
   })();
-  const getPatients = async () => {
-    loading = true;
-    fetch(import.meta.env.VITE_API_URL + "/api/patient?surname=" + query, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        patients = data.patients;
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      })
-      .finally(() => {
-        loading = false;
-      });
-  };
 
-  function newRunToggle(a) {
-    show_form = true;
-    action = a;
-    if (a === "edit") {
-      setTimeout(() => {
-        const partenzaInput = document.getElementById("field-Partenza");
-        const arrivoInput = document.getElementById("field-Arrivo");
-        const partenzaAutocomplete = new google.maps.places.Autocomplete(
-          partenzaInput
-        );
-        const arrivoAutocomplete = new google.maps.places.Autocomplete(
-          arrivoInput
-        );
-
-        partenzaAutocomplete.addListener("place_changed", () => {
-          const place = partenzaAutocomplete.getPlace();
-          if (!place.geometry || !place.geometry.location) {
-            console.error("No geometry available for the selected place");
-            return;
-          }
-          const str = extractFullAddress(place, partenzaInput);
-          edit_run.partenza = str;
-          edit_run.geometry = {
-            latitude: place.geometry.location.lat(),
-            longitude: place.geometry.location.lng(),
-          };
-          console.log(
-            "Selected place:",
-            str,
-            place.geometry.location.lat(),
-            place.geometry.location.lng()
-          );
-        });
-        arrivoAutocomplete.addListener("place_changed", () => {
-          const place = arrivoAutocomplete.getPlace();
-          if (!place.geometry || !place.geometry.location) {
-            console.error("No geometry available for the selected place");
-            return;
-          }
-          const str = extractFullAddress(place, arrivoInput);
-          edit_run.arrivo = str;
-          edit_run.end_geometry = {
-            latitude: place.geometry.location.lat(),
-            longitude: place.geometry.location.lng(),
-          };
-          console.log(
-            "Selected place:",
-            str,
-            place.geometry.location.lat(),
-            place.geometry.location.lng()
-          );
-        });
-      }, 1000);
+  async function handlePlaceSelected(
+    place,
+    key,
+    isAdditional = false,
+    index = 0
+  ) {
+    const res = await fetch(
+      `https://lookup.search.hereapi.com/v1/lookup?id=${place.id}&apiKey=${import.meta.env.VITE_HERE_API_KEY}`
+    );
+    const data = await res.json();
+    console.log(data);
+    if (isAdditional && key === "Partenza") {
+      const old_partenza = additionalRuns[index].partenza;
+      if (old_partenza.includes("/")) {
+        additionalRuns[index].partenza =
+          data.address.label.split(",").slice(0, -2).join(",") +
+          "/" +
+          old_partenza.split("/")[1].trim() +
+          ", " +
+          data.address.city;
+      } else {
+        additionalRuns[index].partenza =
+          data.address.label.split(",").slice(0, -2).join(",") +
+          ", " +
+          data.address.city;
+      }
+      additionalRuns[index].geometry = {
+        latitude: data.position.lat,
+        longitude: data.position.lng,
+      };
+    } else if (isAdditional && key === "Arrivo") {
+      const old_arrivo = additionalRuns[index].arrivo;
+      if (old_arrivo.includes("/")) {
+        additionalRuns[index].arrivo =
+          data.address.label.split(",").slice(0, -2).join(",") +
+          "/" +
+          old_arrivo.split("/")[1].trim() +
+          ", " +
+          data.address.city;
+      } else {
+        additionalRuns[index].arrivo =
+          data.address.label.split(",").slice(0, -2).join(",") +
+          ", " +
+          data.address.city;
+      }
+      additionalRuns[index].end_geometry = {
+        latitude: data.position.lat,
+        longitude: data.position.lng,
+      };
     }
   }
-  onMount(getPatients);
+
+  async function getAutocompleteResults(key, index) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(async () => {
+      const string = additionalRuns[index][key.toLowerCase()]
+        .split("/")[0]
+        .trim();
+      const response = await fetch(
+        `https://autocomplete.search.hereapi.com/v1/autocomplete?q=${encodeURIComponent(
+          string
+        )}&in=countryCode:ITA&apiKey=${import.meta.env.VITE_HERE_API_KEY}`
+      );
+      const data = await response.json();
+      additionalRunsAutoComplete[`${key.toLowerCase()}_${index}`] =
+        data.items || [];
+    }, 500);
+  }
 </script>
 
 {#if loading}
   <LoadingList />
 {:else}
   <div class="container px-3 py-6 mx-auto">
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-3xl font-bold">Prenotazioni</h1>
-
-      <button
-        on:click={() => newRunToggle("add")}
-        class="flex items-center justify-center gap-2 px-6 py-2 font-bold text-white transition bg-green-600 rounded-lg shadow-md hover:bg-green-800"
-      >
-        <span class="text-2xl">+</span>
-        <span>Nuova Prenotazione</span>
-      </button>
-    </div>
-
-    <div class="flex items-center gap-4 mb-8">
-      <input
-        bind:value={query}
-        class="p-3 transition-all border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-lime-600"
-        type="text"
-        placeholder="Cerca cognome..."
-      />
-      <button
-        on:click={getPatients}
-        class="px-4 py-3 font-bold text-white transition duration-200 rounded-lg bg-lime-600 hover:bg-lime-800"
-      >
-        Cerca
-      </button>
-    </div>
     <!-- Table Container with Overflow for Responsiveness -->
     <div class="overflow-x-auto">
       <table
@@ -732,7 +567,6 @@
                                     date: run.meta.date,
                                     note_particolari: run.meta.note_particolari,
                                   };
-                                  newRunToggle("edit");
                                 }}
                                 class="px-4 py-1 font-bold transition duration-200 border rounded-lg border-amber-600 hover:bg-amber-600 text-amber-600 hover:text-amber-100"
                               >
@@ -905,7 +739,7 @@
                     {#each Object.keys(additionalRunsMeta) as key}
                       <div
                         class={types[key] === "textarea"
-                          ? "md:col-span-2 lg:col-span-4"
+                          ? "md:col-span-2 lg:col-span-8 relative"
                           : "relative"}
                       >
                         {#if key === "Data"}
@@ -934,12 +768,66 @@
                             id="field-{key}-{i}"
                             class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                             value={additionalRuns[i][additionalRunsMeta[key]]}
-                            on:input={(e) =>
-                              (additionalRuns[i] = {
+                            on:blur={() => {
+                              setTimeout(() => {
+                                additionalRunsAutoComplete[
+                                  `${key.toLowerCase()}_${i}`
+                                ] = [];
+                              }, 500);
+                            }}
+                            on:keyup={(e) => {
+                              additionalRuns[i] = {
                                 ...additionalRuns[i],
                                 [additionalRunsMeta[key]]: e.target.value,
-                              })}
+                              };
+                              if (key === "Partenza" || key === "Arrivo") {
+                                getAutocompleteResults(key, i);
+                              }
+                            }}
                           />
+                          {#if key === "Arrivo" && additionalRunsAutoComplete[`arrivo_${i}`] && additionalRunsAutoComplete[`arrivo_${i}`].length > 0}
+                            <div
+                              class="absolute top-20 left-0 z-50 w-full bg-white overflow-y-auto max-h-[10rem] rounded-lg shadow-md border border-gray-300"
+                            >
+                              {#each additionalRunsAutoComplete[`arrivo_${i}`] as result}
+                                <button
+                                  class="w-full p-2 text-left cursor-pointer hover:bg-green-100"
+                                  on:click={() => {
+                                    handlePlaceSelected(result, key, true, i);
+                                    additionalRunsAutoComplete[`arrivo_${i}`] =
+                                      [];
+                                  }}
+                                >
+                                  <span class="inline-block w-2 h-2"></span>
+                                  <span class="font-medium text-black"
+                                    >{result.title}</span
+                                  >
+                                </button>
+                              {/each}
+                            </div>
+                          {/if}
+                          {#if key === "Partenza" && additionalRunsAutoComplete[`partenza_${i}`] && additionalRunsAutoComplete[`partenza_${i}`].length > 0}
+                            <div
+                              class="absolute top-20 left-0 z-50 w-full bg-white overflow-y-auto max-h-[10rem] rounded-lg shadow-md border border-gray-300"
+                            >
+                              {#each additionalRunsAutoComplete[`partenza_${i}`] as result}
+                                <button
+                                  class="w-full p-2 text-left cursor-pointer hover:bg-green-100"
+                                  on:click={() => {
+                                    handlePlaceSelected(result, key, true, i);
+                                    additionalRunsAutoComplete[
+                                      `partenza_${i}`
+                                    ] = [];
+                                  }}
+                                >
+                                  <span class="inline-block w-2 h-2"></span>
+                                  <span class="font-medium text-black"
+                                    >{result.title}</span
+                                  >
+                                </button>
+                              {/each}
+                            </div>
+                          {/if}
                           {#if (i + 1) % 2 && (key === "Partenza" || key === "Arrivo")}
                             <div class="flex flex-wrap gap-2 mt-2">
                               {#each presetAddresses as address}
@@ -1001,7 +889,7 @@
                   </div>
                   {#if i % 2}
                     <div
-                      class="pt-2 mt-4 border-t border-gray-300 md:col-span-2 lg:col-span-4"
+                      class="pt-2 mt-4 border-t border-gray-300 md:col-span-2 lg:col-span-8"
                     ></div>
                   {/if}
                 {/each}
@@ -1153,7 +1041,7 @@
                   {/each}
                 </div>
               {/if}
-              <div class="md:col-span-2 lg:col-span-4">
+              <div class="md:col-span-2 lg:col-span-8">
                 <label
                   for="field-note_particolari"
                   class="block mb-1 text-sm font-medium text-gray-700"
