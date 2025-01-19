@@ -777,7 +777,7 @@
                                 ] = [];
                               }, 500);
                             }}
-                            on:keyup={(e) => {
+                            on:input={(e) => {
                               additionalRuns[i] = {
                                 ...additionalRuns[i],
                                 [additionalRunsMeta[key]]: e.target.value,
@@ -836,9 +836,10 @@
                                 <button
                                   type="button"
                                   on:click={() => {
-                                    additionalRuns[i][key.toLowerCase()] = new_run.indirizzo;
+                                    additionalRuns[i][key.toLowerCase()] =
+                                      new_run.indirizzo;
                                   }}
-                                  class="px-2 py-1 bg-amber-200 rounded-md hover:bg-amber-400"
+                                  class="px-2 py-1 rounded-md bg-amber-200 hover:bg-amber-400"
                                 >
                                   Copia I.P.
                                 </button>

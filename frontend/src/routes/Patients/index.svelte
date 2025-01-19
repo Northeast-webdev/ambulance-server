@@ -28,6 +28,7 @@
     Viaggi: "viaggio",
     "Note particolari": "note_particolari",
   };
+
   let types = {
     Titolo: "text",
     Ora: "time",
@@ -43,18 +44,6 @@
     Data: "date",
     Nome: "text",
     Cognome: "text",
-  };
-
-  let new_run = {
-    csb: "",
-    nome: "",
-    cognome: "",
-    servizio: "",
-    tel: "",
-    n_richiesta: "",
-    ricevuta: "",
-    viaggio: "1",
-    note_particolari: "",
   };
 
   let edit_run = {
@@ -193,6 +182,7 @@
   let location = useLocation();
   async function newRun() {
     try {
+      console.log(edit_run);
       const { geometry, end_geometry, nome, cognome, ...newR } = edit_run;
       await fetch(import.meta.env.VITE_API_URL + "/api/runs/" + selected_run, {
         method: "PUT",
@@ -754,7 +744,7 @@
                           }, 500);
                         }
                       }}
-                      on:keyup={(e) => {
+                      on:input={(e) => {
                         edit_run[additionalRunsMeta[key]] = e.target.value;
                         if (key === "Partenza" || key === "Arrivo") {
                           getAutocompleteResults(key);
@@ -844,17 +834,6 @@
                 type="button"
                 on:click={() => {
                   show_form = false;
-                  new_run = {
-                    csb: "",
-                    nome: "",
-                    cognome: "",
-                    servizio: "",
-                    tel: "",
-                    n_richiesta: "",
-                    ricevuta: "",
-                    viaggio: "1",
-                    note_particolari: "",
-                  };
                   edit_run = {
                     csb: "",
                     nome: "",
