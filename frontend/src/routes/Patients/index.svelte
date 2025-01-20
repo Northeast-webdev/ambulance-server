@@ -274,7 +274,22 @@
     );
     const data = await res.json();
     console.log(data);
-    if (isAdditional && key === "Partenza") {
+    if (key === "indirizzo") {
+      const old_address = edit_patient.address;
+      if (old_address.includes("/")) {
+        edit_patient.address =
+          data.address.label.split(",").slice(0, -2).join(",") +
+          "/" +
+          old_address.split("/")[1].trim() +
+          ", " +
+          data.address.city;
+      } else {
+        edit_patient.address =
+          data.address.label.split(",").slice(0, -2).join(",") +
+          ", " +
+          data.address.city;
+      }
+    } else if (isAdditional && key === "Partenza") {
       const old_partenza = edit_run.partenza;
       if (old_partenza.includes("/")) {
         edit_run.partenza =
@@ -318,7 +333,10 @@
   async function getAutocompleteResults(key) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(async () => {
-      const string = edit_run[key.toLowerCase()].split("/")[0].trim();
+      const string =
+        key === "indirizzo"
+          ? edit_patient.address
+          : edit_run[key.toLowerCase()].split("/")[0].trim();
       const response = await fetch(
         `https://autocomplete.search.hereapi.com/v1/autocomplete?q=${encodeURIComponent(
           string
@@ -937,10 +955,32 @@
           >
           <input
             type="text"
-            bind:value={edit_patient.address}
+            value={edit_patient.address}
+            on:input={(e) => {
+              edit_patient.address = e.target.value;
+              getAutocompleteResults("indirizzo");
+            }}
             placeholder="Indirizzo"
             class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600 disabled:bg-gray-200"
           />
+          {#if additionalRunsAutoComplete.indirizzo && additionalRunsAutoComplete.indirizzo.length > 0}
+            <div
+              class="absolute top-20 left-0 z-50 w-full bg-white overflow-y-auto max-h-[10rem] rounded-lg shadow-md border border-gray-300"
+            >
+              {#each additionalRunsAutoComplete.indirizzo as result}
+                <button
+                  class="w-full p-2 text-left cursor-pointer hover:bg-green-100"
+                  on:click={() => {
+                    handlePlaceSelected(result, "indirizzo", true);
+                    additionalRunsAutoComplete.indirizzo = [];
+                  }}
+                >
+                  <span class="inline-block w-2 h-2"></span>
+                  <span class="font-medium text-black">{result.title}</span>
+                </button>
+              {/each}
+            </div>
+          {/if}
         </div>
         <div class="flex justify-between col-span-2 gap-4">
           <button
