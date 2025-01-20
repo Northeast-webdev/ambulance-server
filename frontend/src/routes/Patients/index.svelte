@@ -795,6 +795,7 @@
                       <div class="flex flex-wrap gap-2 mt-2">
                         {#each presetAddresses as address}
                           <button
+                            tabindex="-1"
                             type="button"
                             on:click={() => {
                               edit_run[additionalRunsMeta[key]] = address.full;
