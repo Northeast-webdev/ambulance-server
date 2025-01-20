@@ -276,46 +276,37 @@
     additionalRuns = Array.from({ length: new_run.viaggio * 2 }).map((x, i) => {
       additionalRunsAutoComplete[`partenza_${i}`] = [];
       additionalRunsAutoComplete[`arrivo_${i}`] = [];
-      return additionalRuns[i]
-        ? additionalRuns[i]
-        : new_run.servizio === "Dialisi" && i % 2 === 0
-          ? {
-              ora: additionalRuns[0].ora,
-              partenza: additionalRuns[0].partenza,
-              arrivo: additionalRuns[0].arrivo,
-              geometry: {
-                latitude: additionalRuns[0].geometry.latitude,
-                longitude: additionalRuns[0].geometry.longitude,
-              },
-              end_geometry: {
-                latitude: additionalRuns[0].end_geometry.latitude,
-                longitude: additionalRuns[0].end_geometry.longitude,
-              },
-              date: "",
-            }
-          : new_run.servizio === "Dialisi" && i % 2 === 1
-            ? {
-                ora: additionalRuns[1].ora,
-                partenza: additionalRuns[1].partenza,
-                arrivo: additionalRuns[1].arrivo,
-                geometry: {
-                  latitude: additionalRuns[1].geometry.latitude,
-                  longitude: additionalRuns[1].geometry.longitude,
-                },
-                end_geometry: {
-                  latitude: additionalRuns[1].end_geometry.latitude,
-                  longitude: additionalRuns[1].end_geometry.longitude,
-                },
-                date: "",
-              }
-            : {
-                ora: "",
-                partenza: "",
-                arrivo: "",
-                date: "",
-              };
+      return (
+        additionalRuns[i] || {
+          ora: "",
+          partenza: "",
+          arrivo: "",
+          date: "",
+        }
+      );
     });
   })();
+
+  function copyAllAdditionalRuns() {
+    additionalRuns = additionalRuns.map((run, index) => ({
+      ...run,
+      partenza:
+        index % 2 === 0
+          ? additionalRuns[0].partenza
+          : additionalRuns[1].partenza,
+      arrivo:
+        index % 2 === 0 ? additionalRuns[0].arrivo : additionalRuns[1].arrivo,
+      ora: index % 2 === 0 ? additionalRuns[0].ora : additionalRuns[1].ora,
+      geometry:
+        index % 2 === 0
+          ? additionalRuns[0].geometry
+          : additionalRuns[1].geometry,
+      end_geometry:
+        index % 2 === 0
+          ? additionalRuns[0].end_geometry
+          : additionalRuns[1].end_geometry,
+    }));
+  }
 
   async function handlePlaceSelected(
     place,
@@ -702,7 +693,11 @@
                         class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                         value={new_run[meta_verifier[key]]}
                         on:input={(e) => {
-                          if (action === "edit" && key === "Viaggi") return;
+                          if (
+                            (action === "edit" && key === "Viaggi") ||
+                            !e.target.value
+                          )
+                            return;
                           new_run[meta_verifier[key]] = e.target.value;
                         }}
                       />
@@ -865,6 +860,7 @@
                                 <button
                                   type="button"
                                   on:click={() => {
+                                    getAutocompleteResults(key, i);
                                     additionalRuns[i][key.toLowerCase()] =
                                       new_run.indirizzo;
                                   }}
@@ -929,6 +925,18 @@
                           />
                         </svg></button
                       >
+                    {/if}
+
+                    {#if new_run.viaggio !== "1" && i === 1 && new_run.servizio === "Dialisi"}
+                      <div class="flex items-center justify-center col-span-4">
+                        <button
+                          type="button"
+                          on:click={copyAllAdditionalRuns}
+                          class="px-6 py-2 bg-green-400 rounded-md hover:bg-green-500"
+                        >
+                          Copia tutti
+                        </button>
+                      </div>
                     {/if}
                   </div>
                   {#if i % 2}
@@ -1000,7 +1008,11 @@
                         class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                         value={edit_run[meta_verifier[key]]}
                         on:input={(e) => {
-                          if (action === "edit" && key === "Viaggi") return;
+                          if (
+                            (action === "edit" && key === "Viaggi") ||
+                            !e.target.value
+                          )
+                            return;
                           edit_run[meta_verifier[key]] = e.target.value;
                         }}
                       />
