@@ -7,6 +7,10 @@ const patientSchema = new Schema({
   runs: [{ type: Schema.Types.ObjectId, ref: "Run", default: [] }],
   phone: { type: String },
   address: { type: String },
+  geometry: {
+    latitude: { type: Number, default: 0 },
+    longitude: { type: Number, default: 0 },
+  },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });

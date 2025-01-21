@@ -1,10 +1,13 @@
 <script>
   import { DateInput } from "date-picker-svelte";
   import moment from "moment";
-  import { onMount } from "svelte";
-  import { useParams } from "svelte-navigator";
+  import { onDestroy, onMount } from "svelte";
+  import { useLocation, useParams } from "svelte-navigator";
   import MdiAmbulance from "virtual:icons/mdi/ambulance";
+  import jsPDF from "jspdf";
+  import html2canvas from "html2canvas";
   const params = useParams();
+  const query = useLocation();
   let runs = [];
   let user = {};
   let cars = [];
@@ -19,7 +22,7 @@
   ];
   let start_date = new Date(new Date().setDate(new Date().getDate() - 30));
   let end_date = new Date();
-
+  let loading_pdf = false;
   let loading = false;
   const getRunsForUser = async () => {
     loading = true;
@@ -103,17 +106,73 @@
   };
 
   const getRunsByDate = async () => {
+    document.body.classList.add("!leading-[0.5]");
     await getUser();
-    setTimeout(() => {
-      getRunsForUser();
+    setTimeout(async () => {
+      await getRunsForUser();
     }, 1000);
   };
-  onMount(getRunsByDate);
+  onMount(async () => {
+    await getRunsByDate();
+
+    if ($query.search.includes("download=true")) {
+      setTimeout(() => {
+        exportToPDF();
+      }, 2000);
+    }
+  });
+
+  onDestroy(() => {
+    document.body.classList.remove("!leading-[0.5]");
+  });
+
+  async function exportToPDF() {
+    loading_pdf = true;
+    const first_element = document.getElementById("first-to-export"); // Target element
+    const first_canvas = await html2canvas(first_element, {
+      scale: 2,
+      windowWidth: 960,
+    });
+    const first_imgData = first_canvas.toDataURL("image/png"); // Convert canvas to image
+    const fraction = run_car_count.length <= 8 ? 4 : 4.5;
+    const left_offset = run_car_count.length <= 8 ? 30 : 45;
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "px",
+      format: "A4", // Dynamically set size
+    });
+    pdf.addImage(
+      first_imgData,
+      "JPG",
+      left_offset,
+      30,
+      first_canvas.width / fraction,
+      first_canvas.height / fraction
+    ); // Add image to PDF
+    pdf.addPage();
+    const second_element = document.getElementById("second-to-export"); // Target element
+    const second_canvas = await html2canvas(second_element, {
+      scale: 2,
+      windowWidth: 960,
+    });
+    const second_imgData = second_canvas.toDataURL("image/png"); // Convert canvas to image
+
+    pdf.addImage(
+      second_imgData,
+      "JPG",
+      left_offset,
+      30,
+      second_canvas.width / fraction,
+      second_canvas.height / fraction
+    ); // Add image to PDF
+    pdf.save("page-export.pdf"); // Save the PDF
+    loading_pdf = false;
+  }
 </script>
 
-<div class="my-10 shadow-lg">
+<div class="my-10 shadow-lg stats-wrapper">
   <div class="container px-3 py-6 mx-auto">
-    <div class="mb-10">
+    <div class="mb-10" data-html2canvas-ignore="true">
       <div class="flex items-center justify-center gap-3">
         <p class="text-lg font-bold text-black">Periodo dal</p>
         <DateInput
@@ -135,273 +194,329 @@
           on:click={getRunsByDate}
           class="{loading
             ? 'bg-gray-400'
-            : 'bg-lime-600 hover:bg-lime-800'} text-white w-20 font-bold py-1 px-4 rounded-lg transition duration-200"
+            : 'bg-lime-600 hover:bg-lime-800'} text-white w-20 font-bold py-1 px-4 rounded-lg transition duration-200 leading-normal"
         >
           {loading ? "..." : "Cerca"}
         </button>
+
+        <button
+          disabled={loading || loading_pdf}
+          on:click={exportToPDF}
+          class="px-4 py-1 font-bold leading-normal text-white transition duration-200 rounded-lg {loading ||
+          loading_pdf
+            ? 'bg-gray-300'
+            : 'bg-indigo-600 hover:bg-indigo-800'}"
+        >
+          {loading || loading_pdf ? "..." : "Scarica PDF"}
+        </button>
       </div>
     </div>
-    <div class="flex items-center justify-center gap-10">
-      <div
-        class="flex items-center justify-center p-10 text-gray-500 bg-gray-200 border-2 border-gray-300 rounded-full shadow-lg w-72 h-72"
-      >
-        <svg
-          fill="currentColor"
-          version="1.1"
-          id="Layer_1"
-          xmlns="http://www.w3.org/2000/svg"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
-          viewBox="0 0 512 512"
-          xml:space="preserve"
+    <div id="first-to-export">
+      <div class="flex items-center justify-center gap-10">
+        <div
+          class="flex items-center justify-center p-10 text-gray-500 bg-gray-200 border-2 border-gray-300 rounded-full shadow-lg w-72 h-72"
         >
-          <g>
+          <svg
+            fill="currentColor"
+            version="1.1"
+            id="Layer_1"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            viewBox="0 0 512 512"
+            xml:space="preserve"
+          >
             <g>
-              <circle cx="256" cy="114.526" r="114.526" />
+              <g>
+                <circle cx="256" cy="114.526" r="114.526" />
+              </g>
             </g>
-          </g>
-          <g>
             <g>
-              <path
-                d="M256,256c-111.619,0-202.105,90.487-202.105,202.105c0,29.765,24.13,53.895,53.895,53.895h296.421    c29.765,0,53.895-24.13,53.895-53.895C458.105,346.487,367.619,256,256,256z"
-              />
+              <g>
+                <path
+                  d="M256,256c-111.619,0-202.105,90.487-202.105,202.105c0,29.765,24.13,53.895,53.895,53.895h296.421    c29.765,0,53.895-24.13,53.895-53.895C458.105,346.487,367.619,256,256,256z"
+                />
+              </g>
             </g>
-          </g>
-        </svg>
-      </div>
-      <div class="card">
-        <h2 class="text-xl font-bold">
-          {user.first_name}
-          {user.last_name}
-        </h2>
-        <p class="text-sm font-semibold text-gray-700">
-          {user.email}
-        </p>
-        <p class="text-sm font-semibold text-gray-700">
-          {user.phone}
-        </p>
-        <p
-          class="inline-block px-2 py-1 mt-4 text-base font-bold text-gray-900 bg-sky-300"
-        >
-          Mezzi utilizzati:
-        </p>
-        <div class="flex gap-4 mt-2">
-          {#each cars_used as car}
-            <div class="flex items-center gap-1">
-              <MdiAmbulance class="w-6 h-6 text-gray-800" />
-              <p class="font-bold text-gray-800">
-                {car.name}
-              </p>
-            </div>
-          {/each}
+          </svg>
         </div>
-        <p
-          class="inline-block px-2 py-1 mt-6 text-base font-bold text-gray-900 bg-sky-300"
-        >
-          Totale trasporti effettuati
-        </p>
-        <div class="mt-2 space-y-2">
+        <div class="card">
+          <h2 class="text-xl font-bold">
+            {user.first_name}
+            {user.last_name}
+          </h2>
+          <p class="text-sm font-semibold text-gray-700">
+            {user.email}
+          </p>
+          <p class="text-sm font-semibold text-gray-700">
+            {user.phone}
+          </p>
+          <p
+            class="inline-block px-2 py-1 mt-4 text-base font-bold text-gray-900 bg-sky-300"
+          >
+            Mezzi utilizzati:
+          </p>
+          <div class="flex gap-4 mt-2">
+            {#each cars_used as car}
+              <div class="flex items-center gap-1">
+                <MdiAmbulance class="w-6 h-6 text-gray-800" />
+                <p class="font-bold text-gray-800">
+                  {car.name}
+                </p>
+              </div>
+            {/each}
+          </div>
+          <p
+            class="inline-block px-2 py-1 mt-6 text-base font-bold text-gray-900 bg-sky-300"
+          >
+            Totale trasporti effettuati
+          </p>
+          <div class="mt-2 space-y-2">
+            {#each run_car_count as car}
+              <div
+                class="flex items-center justify-between w-full gap-1 max-w-48"
+              >
+                <p class="flex-1 font-bold text-gray-800">
+                  {car.name}
+                </p>
+                <MdiAmbulance class="w-6 h-6 text-gray-800" />
+                <p class="flex-1 font-bold text-right text-gray-800">
+                  {car.count}
+                </p>
+              </div>
+            {/each}
+          </div>
+        </div>
+      </div>
+
+      <h1 class="text-lg font-bold text-center my-14">
+        Statistiche <br />
+        Periodo dal {start_date.toLocaleDateString("it-IT")} al
+        {end_date.toLocaleDateString("it-IT")}
+      </h1>
+      <h2 class="mb-8 text-lg font-bold">STATISTICHE TIPO DI SERVIZIO</h2>
+      <!-- Table Container with Overflow for Responsiveness -->
+      <div class="grid w-full grid-cols-2 gap-4">
+        {#each run_car_count as car}
+          <table class="overflow-hidden border-collapse rounded-lg shadow-lg">
+            <thead class="bg-sky-300">
+              <tr>
+                <th
+                  class="px-4 py-3 font-semibold text-left border-b"
+                  colspan={services.length}
+                >
+                  <div class="flex items-center justify-center gap-2">
+                    <MdiAmbulance class="w-6 h-6 text-gray-800" />
+                    {car.name}
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="text-center border-b">
+                {#each services as service}
+                  <td class="px-4 py-3 font-bold border-r !leading-none">
+                    {service.text}
+                  </td>
+                {/each}
+              </tr>
+              <tr class="text-center border-b">
+                {#each services as service}
+                  <td class="px-4 py-3 border-r">
+                    {runs
+                      .filter((run) => run.meta.servizio === service.value)
+                      .filter((run) => run.car?.name === car.name).length}
+                  </td>
+                {/each}
+              </tr>
+            </tbody>
+          </table>
+        {/each}
+      </div>
+      <div class="my-10 lg:my-20 break-after-page" />
+
+      {#if run_car_count.length < 7}
+        <h2 class="mb-8 text-lg font-bold">STATISTICHE TRASPORTI C/S/B</h2>
+        <!-- Table Container with Overflow for Responsiveness -->
+        <div class="grid w-full grid-cols-3 gap-4">
           {#each run_car_count as car}
-            <div
-              class="flex items-center justify-between w-full gap-1 max-w-48"
-            >
-              <p class="flex-1 font-bold text-gray-800">
-                {car.name}
-              </p>
-              <MdiAmbulance class="w-6 h-6 text-gray-800" />
-              <p class="flex-1 font-bold text-right text-gray-800">
-                {car.count}
-              </p>
-            </div>
+            <table class="overflow-hidden border-collapse rounded-lg shadow-lg">
+              <thead class="bg-sky-300">
+                <tr>
+                  <th
+                    class="px-4 py-3 font-semibold text-left border-b"
+                    colspan="3"
+                  >
+                    <div class="flex items-center justify-center gap-2">
+                      <MdiAmbulance class="w-6 h-6 text-gray-800" />
+                      {car.name}
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="text-center border-b">
+                  <td class="px-4 py-3 font-bold border-r">C</td>
+                  <td class="px-4 py-3 font-bold border-r">S</td>
+                  <td class="px-4 py-3 font-bold border-r">B</td>
+                </tr>
+                <tr class="text-center border-b">
+                  <td class="px-4 py-3 border-r">
+                    {runs
+                      .filter((run) => run.meta.csb === "c")
+                      .filter((run) => run.car?.name === car.name).length}
+                  </td>
+                  <td class="px-4 py-3 border-r">
+                    {runs
+                      .filter((run) => run.meta.csb === "s")
+                      .filter((run) => run.car?.name === car.name).length}
+                  </td>
+                  <td class="px-4 py-3 border-r">
+                    {runs
+                      .filter((run) => run.meta.csb === "b")
+                      .filter((run) => run.car?.name === car.name).length}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           {/each}
         </div>
+      {/if}
+    </div>
+    <div id="second-to-export">
+      {#if run_car_count.length >= 7}
+        <h2 class="mb-8 text-lg font-bold">STATISTICHE TRASPORTI C/S/B</h2>
+        <!-- Table Container with Overflow for Responsiveness -->
+        <div class="grid w-full grid-cols-3 gap-4">
+          {#each run_car_count as car}
+            <table class="overflow-hidden border-collapse rounded-lg shadow-lg">
+              <thead class="bg-sky-300">
+                <tr>
+                  <th
+                    class="px-4 py-3 font-semibold text-left border-b"
+                    colspan="3"
+                  >
+                    <div class="flex items-center justify-center gap-2">
+                      <MdiAmbulance class="w-6 h-6 text-gray-800" />
+                      {car.name}
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="text-center border-b">
+                  <td class="px-4 py-3 font-bold border-r">C</td>
+                  <td class="px-4 py-3 font-bold border-r">S</td>
+                  <td class="px-4 py-3 font-bold border-r">B</td>
+                </tr>
+                <tr class="text-center border-b">
+                  <td class="px-4 py-3 border-r">
+                    {runs
+                      .filter((run) => run.meta.csb === "c")
+                      .filter((run) => run.car?.name === car.name).length}
+                  </td>
+                  <td class="px-4 py-3 border-r">
+                    {runs
+                      .filter((run) => run.meta.csb === "s")
+                      .filter((run) => run.car?.name === car.name).length}
+                  </td>
+                  <td class="px-4 py-3 border-r">
+                    {runs
+                      .filter((run) => run.meta.csb === "b")
+                      .filter((run) => run.car?.name === car.name).length}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          {/each}
+        </div>
+      {/if}
+      <div class="my-10 lg:my-20" />
+      <h2 class="mb-8 text-lg font-bold">WARNINGS RICEVUTI CHECKLIST MEZZO</h2>
+      <!-- Table Container with Overflow for Responsiveness -->
+      <div class="flex flex-wrap items-start w-full gap-4">
+        {#each run_car_count as car}
+          {#if user.alarms.filter((alarm) => alarm.car === car._id && !alarm.car_checklist_done).length > 0}
+            <table class="overflow-hidden border-collapse rounded-lg shadow-lg">
+              <thead class="bg-sky-300">
+                <tr>
+                  <th
+                    class="px-4 py-3 font-semibold text-left border-b"
+                    colspan={2}
+                  >
+                    <div class="flex items-center justify-center gap-2">
+                      <MdiAmbulance class="w-6 h-6 text-gray-800" />
+                      {car.name}
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="text-center border-b">
+                  <td class="px-4 py-3 font-bold border-r">Data</td>
+                  <td class="px-4 py-3 font-bold border-r">Ora</td>
+                </tr>
+                {#if user.alarms}
+                  {#each user.alarms.filter((alarm) => alarm.car === car._id && !alarm.car_checklist_done) as alarm}
+                    <tr class="text-center border-b">
+                      <td class="px-4 py-3 border-r">
+                        {moment(alarm.created_at).format("DD/MM/YYYY")}
+                      </td>
+                      <td class="px-4 py-3 border-r">
+                        {moment(alarm.created_at).format("HH:mm")}
+                      </td>
+                    </tr>
+                  {/each}
+                {/if}
+              </tbody>
+            </table>
+          {/if}
+        {/each}
       </div>
-    </div>
 
-    <h1 class="text-lg font-bold text-center my-14">
-      Statistiche <br />
-      Periodo dal {start_date.toLocaleDateString("it-IT")} al
-      {end_date.toLocaleDateString("it-IT")}
-    </h1>
-
-    <h2 class="mb-8 text-lg font-bold">STATISTICHE TRASPORTI C/S/B</h2>
-    <!-- Table Container with Overflow for Responsiveness -->
-    <div class="grid w-full grid-cols-3 gap-4">
-      {#each run_car_count as car}
-        <table
-          class="flex-1 overflow-hidden border-collapse rounded-lg shadow-lg"
-        >
-          <thead class="bg-sky-300">
-            <tr>
-              <th
-                class="px-4 py-3 font-semibold text-left border-b"
-                colspan="3"
-              >
-                <div class="flex items-center justify-center gap-2">
-                  <MdiAmbulance class="w-6 h-6 text-gray-800" />
-                  {car.name}
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="text-center border-b">
-              <td class="px-4 py-3 font-bold border-r">C</td>
-              <td class="px-4 py-3 font-bold border-r">S</td>
-              <td class="px-4 py-3 font-bold border-r">B</td>
-            </tr>
-            <tr class="text-center border-b">
-              <td class="px-4 py-3 border-r">
-                {runs
-                  .filter((run) => run.meta.csb === "c")
-                  .filter((run) => run.car?.name === car.name).length}
-              </td>
-              <td class="px-4 py-3 border-r">
-                {runs
-                  .filter((run) => run.meta.csb === "s")
-                  .filter((run) => run.car?.name === car.name).length}
-              </td>
-              <td class="px-4 py-3 border-r">
-                {runs
-                  .filter((run) => run.meta.csb === "b")
-                  .filter((run) => run.car?.name === car.name).length}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      {/each}
-    </div>
-    <div class="my-20" />
-    <h2 class="mb-8 text-lg font-bold">STATISTICHE TIPO DI SERVIZIO</h2>
-    <!-- Table Container with Overflow for Responsiveness -->
-    <div class="grid w-full grid-cols-2 gap-4">
-      {#each run_car_count as car}
-        <table
-          class="flex-1 overflow-hidden border-collapse rounded-lg shadow-lg"
-        >
-          <thead class="bg-sky-300">
-            <tr>
-              <th
-                class="px-4 py-3 font-semibold text-left border-b"
-                colspan={services.length}
-              >
-                <div class="flex items-center justify-center gap-2">
-                  <MdiAmbulance class="w-6 h-6 text-gray-800" />
-                  {car.name}
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="text-center border-b">
-              {#each services as service}
-                <td class="px-4 py-3 font-bold border-r">
-                  {service.text}
-                </td>
-              {/each}
-            </tr>
-            <tr class="text-center border-b">
-              {#each services as service}
-                <td class="px-4 py-3 border-r">
-                  {runs
-                    .filter((run) => run.meta.servizio === service.value)
-                    .filter((run) => run.car?.name === car.name).length}
-                </td>
-              {/each}
-            </tr>
-          </tbody>
-        </table>
-      {/each}
-    </div>
-    <div class="my-20" />
-    <h2 class="mb-8 text-lg font-bold">WARNINGS RICEVUTI CHECKLIST MEZZO</h2>
-    <!-- Table Container with Overflow for Responsiveness -->
-    <div class="flex flex-wrap items-start w-full gap-4">
-      {#each run_car_count as car}
-        {#if user.alarms.filter((alarm) => alarm.car === car._id && !alarm.car_checklist_done).length > 0}
-          <table
-            class="w-1/4 overflow-hidden border-collapse rounded-lg shadow-lg"
-          >
-            <thead class="bg-sky-300">
-              <tr>
-                <th
-                  class="px-4 py-3 font-semibold text-left border-b"
-                  colspan={2}
-                >
-                  <div class="flex items-center justify-center gap-2">
-                    <MdiAmbulance class="w-6 h-6 text-gray-800" />
-                    {car.name}
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="text-center border-b">
-                <td class="px-4 py-3 font-bold border-r">Data</td>
-                <td class="px-4 py-3 font-bold border-r">Ora</td>
-              </tr>
-              {#if user.alarms}
-                {#each user.alarms.filter((alarm) => alarm.car === car._id && !alarm.car_checklist_done) as alarm}
-                  <tr class="text-center border-b">
-                    <td class="px-4 py-3 border-r">
-                      {moment(alarm.created_at).format("DD/MM/YYYY")}
-                    </td>
-                    <td class="px-4 py-3 border-r">
-                      {moment(alarm.created_at).format("HH:mm")}
-                    </td>
-                  </tr>
-                {/each}
-              {/if}
-            </tbody>
-          </table>
-        {/if}
-      {/each}
-    </div>
-
-    <div class="my-20" />
-    <h2 class="mb-8 text-lg font-bold">
-      WARNINGS RICEVUTI CHECKLIST MATERIALI
-    </h2>
-    <!-- Table Container with Overflow for Responsiveness -->
-    <div class="flex flex-wrap items-start w-full gap-4">
-      {#each run_car_count as car}
-        {#if user.alarms.filter((alarm) => alarm.car === car._id && !alarm.material_checklist_done).length > 0}
-          <table
-            class="w-1/4 overflow-hidden border-collapse rounded-lg shadow-lg"
-          >
-            <thead class="bg-sky-300">
-              <tr>
-                <th
-                  class="px-4 py-3 font-semibold text-left border-b"
-                  colspan={2}
-                >
-                  <div class="flex items-center justify-center gap-2">
-                    <MdiAmbulance class="w-6 h-6 text-gray-800" />
-                    {car.name}
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="text-center border-b">
-                <td class="px-4 py-3 font-bold border-r">Data</td>
-                <td class="px-4 py-3 font-bold border-r">Ora</td>
-              </tr>
-              {#if user.alarms}
-                {#each user.alarms.filter((alarm) => alarm.car === car._id && !alarm.material_checklist_done) as alarm}
-                  <tr class="text-center border-b">
-                    <td class="px-4 py-3 border-r">
-                      {moment(alarm.created_at).format("DD/MM/YYYY")}
-                    </td>
-                    <td class="px-4 py-3 border-r">
-                      {moment(alarm.created_at).format("HH:mm")}
-                    </td>
-                  </tr>
-                {/each}
-              {/if}
-            </tbody>
-          </table>
-        {/if}
-      {/each}
+      <div class="my-20" />
+      <h2 class="mb-8 text-lg font-bold">
+        WARNINGS RICEVUTI CHECKLIST MATERIALI
+      </h2>
+      <!-- Table Container with Overflow for Responsiveness -->
+      <div class="flex flex-wrap items-start w-full gap-4">
+        {#each run_car_count as car}
+          {#if user.alarms.filter((alarm) => alarm.car === car._id && !alarm.material_checklist_done).length > 0}
+            <table class="overflow-hidden border-collapse rounded-lg shadow-lg">
+              <thead class="bg-sky-300">
+                <tr>
+                  <th
+                    class="px-4 py-3 font-semibold text-left border-b"
+                    colspan={2}
+                  >
+                    <div class="flex items-center justify-center gap-2">
+                      <MdiAmbulance class="w-6 h-6 text-gray-800" />
+                      {car.name}
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="text-center border-b">
+                  <td class="px-4 py-3 font-bold border-r">Data</td>
+                  <td class="px-4 py-3 font-bold border-r">Ora</td>
+                </tr>
+                {#if user.alarms}
+                  {#each user.alarms.filter((alarm) => alarm.car === car._id && !alarm.material_checklist_done) as alarm}
+                    <tr class="text-center border-b">
+                      <td class="px-4 py-3 border-r">
+                        {moment(alarm.created_at).format("DD/MM/YYYY")}
+                      </td>
+                      <td class="px-4 py-3 border-r">
+                        {moment(alarm.created_at).format("HH:mm")}
+                      </td>
+                    </tr>
+                  {/each}
+                {/if}
+              </tbody>
+            </table>
+          {/if}
+        {/each}
+      </div>
     </div>
   </div>
 </div>

@@ -92,7 +92,8 @@ const sendNotification = async (deviceToken, type, data) => {
 };
 
 const createRun = async (request, reply) => {
-  const { additionalRuns, name, surname, phone, address } = request.body;
+  const { additionalRuns, name, surname, phone, address, geometry } =
+    request.body;
   try {
     const patient = await Patient.find({
       name: { $regex: name || "", $options: "i" },
@@ -100,7 +101,13 @@ const createRun = async (request, reply) => {
     });
     let patID = patient.length ? patient[0]._id : "";
     if (!patient.length) {
-      const newPatient = new Patient({ name, surname, phone, address });
+      const newPatient = new Patient({
+        name,
+        surname,
+        phone,
+        address,
+        geometry,
+      });
       await newPatient.save();
       patID = newPatient._id;
     }

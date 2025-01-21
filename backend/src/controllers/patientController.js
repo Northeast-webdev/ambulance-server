@@ -59,11 +59,11 @@ const getPatient = async (request, reply) => {
 };
 
 const updatePatient = async (request, reply) => {
-  const { name, surname, phone, address } = request.body;
+  const { name, surname, phone, address, geometry } = request.body;
   try {
     const patient = await Patient.findOneAndUpdate(
       { _id: request.params.id },
-      { name, surname, phone, address },
+      { name, surname, phone, address, geometry },
       { new: true }
     ).exec();
     return patient;

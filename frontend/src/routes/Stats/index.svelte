@@ -254,6 +254,9 @@
                   >Visualizza</button
                 >
                 <button
+                  on:click={() => {
+                    navigate(`/stats/user/${user._id}?download=true`);
+                  }}
                   class="px-6 py-2 font-bold rounded-lg bg-sky-200 text-sky-700"
                   >Scarica PDF</button
                 >
