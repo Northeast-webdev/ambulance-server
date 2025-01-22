@@ -69,6 +69,7 @@
     surname: "",
     phone: "",
     address: "",
+    geometry: {},
   };
 
   let options = {
@@ -289,6 +290,11 @@
           ", " +
           data.address.city;
       }
+
+      edit_patient.geometry = {
+        latitude: data.position.lat,
+        longitude: data.position.lng,
+      };
     } else if (isAdditional && key === "Partenza") {
       const old_partenza = edit_run.partenza;
       if (old_partenza.includes("/")) {

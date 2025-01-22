@@ -40,7 +40,7 @@
     Data: "date",
     Nome: "text",
     Cognome: "text",
-    Indirizzo: "text",
+    "Indirizzo paziente": "autocomplete",
   };
 
   let new_run = {
@@ -54,24 +54,9 @@
     viaggio: "1",
     note_particolari: "",
     indirizzo: "",
+    geometry: {},
   };
 
-  let edit_run = {
-    csb: "",
-    nome: "",
-    cognome: "",
-    servizio: "",
-    tel: "",
-    n_richiesta: "",
-    ricevuta: "",
-    ora: "",
-    date: new Date().toISOString().split("T")[0],
-    partenza: "",
-    arrivo: "",
-    viaggio: "1",
-    note_particolari: "",
-    indirizzo: "",
-  };
   let options = {
     servizio: [
       { value: "Ordinario", text: "Ordinario" },
@@ -249,8 +234,9 @@
             })),
             name: nome,
             surname: cognome,
-            phone: new_run.tel,
+            phone: newR.tel,
             address: indirizzo,
+            geometry,
           }),
         });
         show_form = false;
@@ -264,6 +250,8 @@
           ricevuta: "",
           viaggio: "1",
           note_particolari: "",
+          geometry: {},
+          indirizzo: "",
         };
       } catch (error) {
         console.error("Error:", error);
@@ -319,18 +307,49 @@
     );
     const data = await res.json();
     console.log(data);
-    if (isAdditional && key === "Partenza") {
+    if (key === "Indirizzo paziente") {
+      const old_address = new_run.indirizzo;
+      if (old_address.includes("/")) {
+        new_run.indirizzo =
+          (
+            data.address.label.split(",").slice(0, -2).join(",") +
+            "/" +
+            old_address.split("/")[1].trim()
+          ).replaceAll(", " + data.address.city, "") +
+          ", " +
+          data.address.city;
+      } else {
+        new_run.indirizzo =
+          data.address.label
+            .split(",")
+            .slice(0, -2)
+            .join(",")
+            .replaceAll(", " + data.address.city, "") +
+          ", " +
+          data.address.city;
+      }
+      new_run.geometry = {
+        latitude: data.position.lat,
+        longitude: data.position.lng,
+      };
+    } else if (isAdditional && key === "Partenza") {
       const old_partenza = additionalRuns[index].partenza;
       if (old_partenza.includes("/")) {
         additionalRuns[index].partenza =
-          data.address.label.split(",").slice(0, -2).join(",") +
-          "/" +
-          old_partenza.split("/")[1].trim() +
+          (
+            data.address.label.split(",").slice(0, -2).join(",") +
+            "/" +
+            old_partenza.split("/")[1].trim()
+          ).replaceAll(", " + data.address.city, "") +
           ", " +
           data.address.city;
       } else {
         additionalRuns[index].partenza =
-          data.address.label.split(",").slice(0, -2).join(",") +
+          data.address.label
+            .split(",")
+            .slice(0, -2)
+            .join(",")
+            .replaceAll(", " + data.address.city, "") +
           ", " +
           data.address.city;
       }
@@ -342,14 +361,20 @@
       const old_arrivo = additionalRuns[index].arrivo;
       if (old_arrivo.includes("/")) {
         additionalRuns[index].arrivo =
-          data.address.label.split(",").slice(0, -2).join(",") +
-          "/" +
-          old_arrivo.split("/")[1].trim() +
+          (
+            data.address.label.split(",").slice(0, -2).join(",") +
+            "/" +
+            old_arrivo.split("/")[1].trim()
+          ).replaceAll(", " + data.address.city, "") +
           ", " +
           data.address.city;
       } else {
         additionalRuns[index].arrivo =
-          data.address.label.split(",").slice(0, -2).join(",") +
+          data.address.label
+            .split(",")
+            .slice(0, -2)
+            .join(",")
+            .replaceAll(", " + data.address.city, "") +
           ", " +
           data.address.city;
       }
@@ -363,7 +388,24 @@
   async function getAutocompleteResults(key, index) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(async () => {
-      const s = additionalRuns[index][key.toLowerCase()].split("/")[0].trim();
+      if (key === "Indirizzo paziente") {
+        const s = new_run["indirizzo"].replace(/\/\d+/g, "").trim();
+        console.log(new_run["indirizzo"]);
+        const response = await fetch(
+          `https://autocomplete.search.hereapi.com/v1/autocomplete?q=${encodeURIComponent(
+            s
+          )}&in=countryCode:ITA&apiKey=${import.meta.env.VITE_HERE_API_KEY}`
+        );
+        const data = await response.json();
+        additionalRunsAutoComplete["indirizzo"] = data.items || [];
+        return;
+      }
+      const s = additionalRuns[index][key.toLowerCase()]
+        .replace(/\/\d+/g, "")
+        .trim();
+      const n = new_run["indirizzo"].replace(/\/\d+/g, "").trim();
+      console.log(additionalRuns[index]);
+      if (s === n) return;
       console.log(additionalRuns[index]);
       const response = await fetch(
         `https://autocomplete.search.hereapi.com/v1/autocomplete?q=${encodeURIComponent(
@@ -570,21 +612,6 @@
                               <button
                                 on:click={() => {
                                   selected_run = run._id;
-                                  edit_run = {
-                                    csb: run.meta.csb,
-                                    ora: run.meta.ora,
-                                    nome: patient.name,
-                                    cognome: patient.surname,
-                                    servizio: run.meta.servizio,
-                                    tel: run.meta.tel,
-                                    partenza: run.meta.partenza,
-                                    arrivo: run.meta.arrivo,
-                                    n_richiesta: run.meta.n_richiesta,
-                                    ricevuta: run.meta.ricevuta,
-                                    viaggio: "1",
-                                    date: run.meta.date,
-                                    note_particolari: run.meta.note_particolari,
-                                  };
                                 }}
                                 class="px-4 py-1 font-bold transition duration-200 border rounded-lg border-amber-600 hover:bg-amber-600 text-amber-600 hover:text-amber-100"
                               >
@@ -671,11 +698,39 @@
                         placeholder="Cerca..."
                         class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none autocomplete-input valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                         value={new_run[meta_verifier[key]]}
-                        on:input={(e) =>
-                          (new_run[meta_verifier[key]] = e.target.value)}
-                        on:change={(e) =>
-                          (new_run[meta_verifier[key]] = e.target.value)}
+                        on:blur={() => {
+                          setTimeout(() => {
+                            additionalRunsAutoComplete["indirizzo"] = [];
+                          }, 500);
+                        }}
+                        on:input={(e) => {
+                          new_run[meta_verifier[key]] = e.target.value;
+                          if (key === "Indirizzo paziente") {
+                            getAutocompleteResults(key, 0);
+                          }
+                        }}
                       />
+
+                      {#if key === "Indirizzo paziente" && additionalRunsAutoComplete["indirizzo"] && additionalRunsAutoComplete["indirizzo"].length > 0}
+                        <div
+                          class="absolute top-20 left-0 z-50 w-full bg-white overflow-y-auto max-h-[10rem] rounded-lg shadow-md border border-gray-300"
+                        >
+                          {#each additionalRunsAutoComplete["indirizzo"] as result}
+                            <button
+                              class="w-full p-2 text-left cursor-pointer hover:bg-green-100"
+                              on:click={() => {
+                                handlePlaceSelected(result, key, true, 0);
+                                additionalRunsAutoComplete["indirizzo"] = [];
+                              }}
+                            >
+                              <span class="inline-block w-2 h-2"></span>
+                              <span class="font-medium text-black"
+                                >{result.title}</span
+                              >
+                            </button>
+                          {/each}
+                        </div>
+                      {/if}
                     {:else if types[key] === "number"}
                       <input
                         type={types[key]}
@@ -738,13 +793,18 @@
                             <button
                               type="button"
                               on:click={() => {
-                                new_run[meta_verifier[key]] = patient.surname;
-                                new_run[meta_verifier["Nome"]] = patient.name;
-                                new_run[meta_verifier["Indirizzo paziente"]] =
-                                  patient.address || "";
-                                new_run[meta_verifier["Tel"]] =
-                                  patient.phone || "";
+                                new_run["cognome"] = patient.surname;
+                                new_run["nome"] = patient.name;
+                                new_run["indirizzo"] = patient.address || "";
+                                new_run["tel"] = patient.phone || "";
+                                new_run["geometry"] = patient.geometry || "";
                                 patients_autocomplete = [];
+                                if (patient.address) {
+                                  getAutocompleteResults(
+                                    "Indirizzo paziente",
+                                    0
+                                  );
+                                }
                               }}
                               class="block w-full p-2 text-left rounded-md hover:bg-green-100"
                             >
@@ -863,6 +923,13 @@
                                     getAutocompleteResults(key, i);
                                     additionalRuns[i][key.toLowerCase()] =
                                       new_run.indirizzo;
+                                    if (key === "Partenza") {
+                                      additionalRuns[i].geometry =
+                                        new_run.geometry;
+                                    } else {
+                                      additionalRuns[i].end_geometry =
+                                        new_run.geometry;
+                                    }
                                   }}
                                   class="px-2 py-1 rounded-md bg-amber-200 hover:bg-amber-400"
                                 >
@@ -945,159 +1012,8 @@
                     ></div>
                   {/if}
                 {/each}
-              {:else}
-                {#each Object.keys(meta_verifier) as key}
-                  {#if key === "Data"}
-                    <div></div>
-                  {/if}
-                  <div class="relative">
-                    {#if types[key] !== "textarea"}
-                      <label
-                        for="field-{key}"
-                        class="block mb-1 text-sm font-medium text-gray-700"
-                      >
-                        {key}
-                        <span
-                          class="text-red-500 {key === 'Arrivo' ||
-                          key === 'Partenza' ||
-                          key === 'Ora' ||
-                          key === 'N. Richiesta' ||
-                          key === 'Ricevuta'
-                            ? 'hidden'
-                            : ''}">*</span
-                        >
-                      </label>
-                    {/if}
-                    {#if types[key] === "select"}
-                      <select
-                        required
-                        id="field-{key}"
-                        class="block w-full p-3 transition-all bg-white border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
-                        bind:value={edit_run[meta_verifier[key]]}
-                      >
-                        <option value="" disabled>Seleziona</option>
-                        {#each options[meta_verifier[key]] as option}
-                          <option value={option.value}>{option.text}</option>
-                        {/each}
-                        <!-- Add your options here -->
-                      </select>
-                    {:else if types[key] === "autocomplete"}
-                      <input
-                        type={types[key]}
-                        id="field-{key}-autocomplete"
-                        placeholder="Cerca..."
-                        class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none autocomplete-input valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
-                        value={edit_run[meta_verifier[key]]}
-                        on:input={(e) =>
-                          (edit_run[meta_verifier[key]] = e.target.value)}
-                      />
-                    {:else if types[key] === "number"}
-                      <input
-                        type={types[key]}
-                        min="1"
-                        max="50"
-                        step="1"
-                        disabled={action === "add"
-                          ? false
-                          : key === "Viaggi"
-                            ? true
-                            : false}
-                        autocomplete="off"
-                        required
-                        id="field-{key}"
-                        class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
-                        value={edit_run[meta_verifier[key]]}
-                        on:input={(e) => {
-                          if (
-                            (action === "edit" && key === "Viaggi") ||
-                            !e.target.value
-                          )
-                            return;
-                          edit_run[meta_verifier[key]] = e.target.value;
-                        }}
-                      />
-                    {:else if types[key] !== "textarea"}
-                      <input
-                        type={types[key]}
-                        required={types[key] !== "time" &&
-                          key !== "N. Richiesta" &&
-                          key !== "Ricevuta"}
-                        disabled={action === "add"
-                          ? false
-                          : key === "Nome" ||
-                              key === "Cognome" ||
-                              key === "Viaggi"
-                            ? true
-                            : false}
-                        id="field-{key}"
-                        class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
-                        value={edit_run[meta_verifier[key]]}
-                        on:input={(e) =>
-                          (edit_run[meta_verifier[key]] = e.target.value)}
-                      />
-                    {/if}
-                  </div>
-                {/each}
-                <div
-                  class="grid grid-cols-1 gap-6 md:col-span-2 lg:col-span-4 md:grid-cols-2 lg:grid-cols-4"
-                >
-                  {#each Object.keys(additionalRunsMeta) as key}
-                    <div
-                      class={types[key] === "textarea"
-                        ? "md:col-span-2 lg:col-span-4"
-                        : "relative"}
-                    >
-                      <label
-                        for="field-{key}"
-                        class="block mb-1 text-sm font-medium text-gray-700"
-                      >
-                        {key}
-                        <span
-                          class="text-red-500 {types[key] === 'textarea'
-                            ? 'hidden'
-                            : ''}">*</span
-                        >
-                      </label>
-                      <input
-                        type={types[key]}
-                        placeholder={key === "Partenza" || key === "Arrivo"
-                          ? "Cerca..."
-                          : ""}
-                        id="field-{key}"
-                        class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
-                        value={edit_run[additionalRunsMeta[key]]}
-                        on:input={(e) => {
-                          console.log(edit_run);
-                          edit_run[additionalRunsMeta[key]] = e.target.value;
-                        }}
-                      />
-
-                      {#if key === "Partenza" || key === "Arrivo"}
-                        <div class="flex flex-wrap gap-2 mt-2">
-                          {#each presetAddresses as address}
-                            <button
-                              tabindex="-1"
-                              type="button"
-                              on:click={() => {
-                                edit_run[additionalRunsMeta[key]] =
-                                  address.full;
-                                if (key === "Partenza") {
-                                  edit_run.geometry = address.geometry;
-                                } else {
-                                  edit_run.end_geometry = address.end_geometry;
-                                }
-                              }}
-                              class="px-2 py-1 bg-gray-200 rounded-md hover:bg-gray-400"
-                            >
-                              {address.label}
-                            </button>
-                          {/each}
-                        </div>
-                      {/if}
-                    </div>
-                  {/each}
-                </div>
               {/if}
+
               <div class="md:col-span-2 lg:col-span-8">
                 <label
                   for="field-note_particolari"
