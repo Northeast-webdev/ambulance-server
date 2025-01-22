@@ -279,14 +279,20 @@
       const old_address = edit_patient.address;
       if (old_address.includes("/")) {
         edit_patient.address =
-          data.address.label.split(",").slice(0, -2).join(",") +
-          "/" +
-          old_address.split("/")[1].trim() +
+          (
+            data.address.label.split(",").slice(0, -2).join(",") +
+            "/" +
+            old_address.split("/")[1].trim()
+          ).replaceAll(", " + data.address.city, "") +
           ", " +
           data.address.city;
       } else {
         edit_patient.address =
-          data.address.label.split(",").slice(0, -2).join(",") +
+          data.address.label
+            .split(",")
+            .slice(0, -2)
+            .join(",")
+            .replaceAll(", " + data.address.city, "") +
           ", " +
           data.address.city;
       }
@@ -299,14 +305,20 @@
       const old_partenza = edit_run.partenza;
       if (old_partenza.includes("/")) {
         edit_run.partenza =
-          data.address.label.split(",").slice(0, -2).join(",") +
-          "/" +
-          old_partenza.split("/")[1].trim() +
+          (
+            data.address.label.split(",").slice(0, -2).join(",") +
+            "/" +
+            old_partenza.split("/")[1].trim()
+          ).replaceAll(", " + data.address.city, "") +
           ", " +
           data.address.city;
       } else {
         edit_run.partenza =
-          data.address.label.split(",").slice(0, -2).join(",") +
+          data.address.label
+            .split(",")
+            .slice(0, -2)
+            .join(",")
+            .replaceAll(", " + data.address.city, "") +
           ", " +
           data.address.city;
       }
@@ -318,14 +330,20 @@
       const old_arrivo = edit_run.arrivo;
       if (old_arrivo.includes("/")) {
         edit_run.arrivo =
-          data.address.label.split(",").slice(0, -2).join(",") +
-          "/" +
-          old_arrivo.split("/")[1].trim() +
+          (
+            data.address.label.split(",").slice(0, -2).join(",") +
+            "/" +
+            old_arrivo.split("/")[1].trim()
+          ).replaceAll(", " + data.address.city, "") +
           ", " +
           data.address.city;
       } else {
         edit_run.arrivo =
-          data.address.label.split(",").slice(0, -2).join(",") +
+          data.address.label
+            .split(",")
+            .slice(0, -2)
+            .join(",")
+            .replaceAll(", " + data.address.city, "") +
           ", " +
           data.address.city;
       }
@@ -341,8 +359,8 @@
     timeoutId = setTimeout(async () => {
       const string =
         key === "indirizzo"
-          ? edit_patient.address
-          : edit_run[key.toLowerCase()].split("/")[0].trim();
+          ? edit_patient.address.replace(/\/\d+/g, "").trim()
+          : edit_run[key.toLowerCase()].replace(/\/\d+/g, "").trim();
       const response = await fetch(
         `https://autocomplete.search.hereapi.com/v1/autocomplete?q=${encodeURIComponent(
           string
