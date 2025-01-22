@@ -278,23 +278,25 @@
     if (key === "indirizzo") {
       const old_address = edit_patient.address;
       if (old_address.includes("/")) {
-        edit_patient.address =
+        edit_patient.address = (
           (
             data.address.label.split(",").slice(0, -2).join(",") +
             "/" +
             old_address.split("/")[1].trim()
           ).replaceAll(", " + data.address.city, "") +
           ", " +
-          data.address.city;
+          data.address.city
+        ).replace(/,+/g, ",");
       } else {
-        edit_patient.address =
+        edit_patient.address = (
           data.address.label
             .split(",")
             .slice(0, -2)
             .join(",")
             .replaceAll(", " + data.address.city, "") +
           ", " +
-          data.address.city;
+          data.address.city
+        ).replace(/,+/g, ",");
       }
 
       edit_patient.geometry = {
@@ -304,23 +306,25 @@
     } else if (isAdditional && key === "Partenza") {
       const old_partenza = edit_run.partenza;
       if (old_partenza.includes("/")) {
-        edit_run.partenza =
+        edit_run.partenza = (
           (
             data.address.label.split(",").slice(0, -2).join(",") +
             "/" +
             old_partenza.split("/")[1].trim()
           ).replaceAll(", " + data.address.city, "") +
           ", " +
-          data.address.city;
+          data.address.city
+        ).replace(/,+/g, ",");
       } else {
-        edit_run.partenza =
+        edit_run.partenza = (
           data.address.label
             .split(",")
             .slice(0, -2)
             .join(",")
             .replaceAll(", " + data.address.city, "") +
           ", " +
-          data.address.city;
+          data.address.city
+        ).replace(/,+/g, ",");
       }
       edit_run.geometry = {
         latitude: data.position.lat,
@@ -329,23 +333,25 @@
     } else if (isAdditional && key === "Arrivo") {
       const old_arrivo = edit_run.arrivo;
       if (old_arrivo.includes("/")) {
-        edit_run.arrivo =
+        edit_run.arrivo = (
           (
             data.address.label.split(",").slice(0, -2).join(",") +
             "/" +
             old_arrivo.split("/")[1].trim()
           ).replaceAll(", " + data.address.city, "") +
           ", " +
-          data.address.city;
+          data.address.city
+        ).replace(/,+/g, ",");
       } else {
-        edit_run.arrivo =
+        edit_run.arrivo = (
           data.address.label
             .split(",")
             .slice(0, -2)
             .join(",")
             .replaceAll(", " + data.address.city, "") +
           ", " +
-          data.address.city;
+          data.address.city
+        ).replace(/,+/g, ",");
       }
       edit_run.geometry = {
         latitude: data.position.lat,
@@ -363,7 +369,7 @@
           : edit_run[key.toLowerCase()].replace(/\/\d+/g, "").trim();
       const response = await fetch(
         `https://autocomplete.search.hereapi.com/v1/autocomplete?q=${encodeURIComponent(
-          string
+          string + " Genova"
         )}&in=countryCode:ITA&apiKey=${import.meta.env.VITE_HERE_API_KEY}`
       );
       const data = await response.json();

@@ -310,23 +310,25 @@
     if (key === "Indirizzo paziente") {
       const old_address = new_run.indirizzo;
       if (old_address.includes("/")) {
-        new_run.indirizzo =
+        new_run.indirizzo = (
           (
             data.address.label.split(",").slice(0, -2).join(",") +
             "/" +
             old_address.split("/")[1].trim()
           ).replaceAll(", " + data.address.city, "") +
           ", " +
-          data.address.city;
+          data.address.city
+        ).replace(/,+/g, ",");
       } else {
-        new_run.indirizzo =
+        new_run.indirizzo = (
           data.address.label
             .split(",")
             .slice(0, -2)
             .join(",")
             .replaceAll(", " + data.address.city, "") +
           ", " +
-          data.address.city;
+          data.address.city
+        ).replace(/,+/g, ",");
       }
       new_run.geometry = {
         latitude: data.position.lat,
@@ -335,23 +337,25 @@
     } else if (isAdditional && key === "Partenza") {
       const old_partenza = additionalRuns[index].partenza;
       if (old_partenza.includes("/")) {
-        additionalRuns[index].partenza =
+        additionalRuns[index].partenza = (
           (
             data.address.label.split(",").slice(0, -2).join(",") +
             "/" +
             old_partenza.split("/")[1].trim()
           ).replaceAll(", " + data.address.city, "") +
           ", " +
-          data.address.city;
+          data.address.city
+        ).replace(/,+/g, ",");
       } else {
-        additionalRuns[index].partenza =
+        additionalRuns[index].partenza = (
           data.address.label
             .split(",")
             .slice(0, -2)
             .join(",")
             .replaceAll(", " + data.address.city, "") +
           ", " +
-          data.address.city;
+          data.address.city
+        ).replace(/,+/g, ",");
       }
       additionalRuns[index].geometry = {
         latitude: data.position.lat,
@@ -360,23 +364,25 @@
     } else if (isAdditional && key === "Arrivo") {
       const old_arrivo = additionalRuns[index].arrivo;
       if (old_arrivo.includes("/")) {
-        additionalRuns[index].arrivo =
+        additionalRuns[index].arrivo = (
           (
             data.address.label.split(",").slice(0, -2).join(",") +
             "/" +
             old_arrivo.split("/")[1].trim()
           ).replaceAll(", " + data.address.city, "") +
           ", " +
-          data.address.city;
+          data.address.city
+        ).replace(/,+/g, ",");
       } else {
-        additionalRuns[index].arrivo =
+        additionalRuns[index].arrivo = (
           data.address.label
             .split(",")
             .slice(0, -2)
             .join(",")
             .replaceAll(", " + data.address.city, "") +
           ", " +
-          data.address.city;
+          data.address.city
+        ).replace(/,+/g, ",");
       }
       additionalRuns[index].end_geometry = {
         latitude: data.position.lat,
@@ -393,7 +399,7 @@
         console.log(new_run["indirizzo"]);
         const response = await fetch(
           `https://autocomplete.search.hereapi.com/v1/autocomplete?q=${encodeURIComponent(
-            s
+            s + " Genova"
           )}&in=countryCode:ITA&apiKey=${import.meta.env.VITE_HERE_API_KEY}`
         );
         const data = await response.json();
@@ -409,7 +415,7 @@
       console.log(additionalRuns[index]);
       const response = await fetch(
         `https://autocomplete.search.hereapi.com/v1/autocomplete?q=${encodeURIComponent(
-          s
+          s + " Genova"
         )}&in=countryCode:ITA&apiKey=${import.meta.env.VITE_HERE_API_KEY}`
       );
       const data = await response.json();
