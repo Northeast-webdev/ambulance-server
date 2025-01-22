@@ -51,7 +51,7 @@ fastify.register(require("fastify-cron"), {
   jobs: [
     {
       name: "cleanUpInactiveUsers",
-      cronTime: "*/5 * * * *", // Every 5m
+      cronTime: "0 */2 * * *", // Every 2 hours
       onTick: async () => {
         await cleanUpInactiveUsers();
       },
