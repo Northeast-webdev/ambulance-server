@@ -799,7 +799,7 @@
                                 new_run["tel"] = patient.phone || "";
                                 new_run["geometry"] = patient.geometry || "";
                                 patients_autocomplete = [];
-                                if (patient.address) {
+                                if (patient.address && !patient.geometry) {
                                   getAutocompleteResults(
                                     "Indirizzo paziente",
                                     0
