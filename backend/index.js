@@ -14,11 +14,13 @@ const { User } = require("./src/schema/user.schema");
 const cleanUpInactiveUsers = async () => {
   try {
     // Calculate the timestamp for 2 hours ago
-    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+    const inactiveThreshold = new Date(
+      Date.now() - 1 * 60 * 60 * 1000 - 55 * 60 * 1000
+    );
 
     // Step 1: Find cars that have been inactive for 2 hours
     const inactiveCars = await Car.find({
-      updated_at: { $lte: twoHoursAgo }, // Cars not updated in the last 2 hours
+      updated_at: { $lte: inactiveThreshold }, // Cars not updated in the last 2 hours
       status: { $ne: "garage" }, // Exclude cars already in the garage
     });
 
@@ -49,7 +51,7 @@ fastify.register(require("fastify-cron"), {
   jobs: [
     {
       name: "cleanUpInactiveUsers",
-      cronTime: "0 */2 * * *", // Every 2 hours
+      cronTime: "*/5 * * * *", // Every 5m
       onTick: async () => {
         await cleanUpInactiveUsers();
       },
