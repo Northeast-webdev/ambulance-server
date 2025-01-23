@@ -741,7 +741,7 @@
                       <input
                         type={types[key]}
                         min="1"
-                        max="50"
+                        max="260"
                         step="1"
                         disabled={action === "add"
                           ? false
@@ -756,7 +756,7 @@
                         on:input={(e) => {
                           if (
                             (action === "edit" && key === "Viaggi") ||
-                            !e.target.value
+                            !e.target.value || parseInt(e.target.value) > 260
                           )
                             return;
                           new_run[meta_verifier[key]] = e.target.value;

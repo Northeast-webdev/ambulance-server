@@ -718,7 +718,7 @@
                     <input
                       type={types[key]}
                       min="1"
-                      max="50"
+                      max="260"
                       step="1"
                       disabled={action === "add"
                         ? false
@@ -731,7 +731,11 @@
                       class="block w-full p-3 transition-all border border-gray-300 rounded-lg outline-none valid:border-lime-500 focus:ring-2 focus:ring-lime-600"
                       value={edit_run[meta_verifier[key]]}
                       on:input={(e) => {
-                        if (action === "edit" && key === "Viaggi") return;
+                        if (
+                          (action === "edit" && key === "Viaggi") ||
+                          parseInt(e.target.value) > 260
+                        )
+                          return;
                         edit_run[meta_verifier[key]] = e.target.value;
                       }}
                     />
