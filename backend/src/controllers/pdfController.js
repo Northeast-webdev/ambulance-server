@@ -111,7 +111,7 @@ const printCarChecklist = async (request) => {
     return `
       <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; margin-top: 30px">
         ${photos.map((item) => `
-        <div style="width: 225px; margin-bottom: 20px;">
+        <div style="width: 275px; margin-bottom: 20px;">
           <img
             src="${item}" 
             style="
@@ -193,6 +193,7 @@ const printCarChecklist = async (request) => {
           <td>${carChecklist.created_at.toLocaleDateString("it-IT")}</td>
         </tr>
       </table>
+      ${renderPhotos()}
       <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
       ${damagePoints.join("")}
       </div>
@@ -308,7 +309,6 @@ const printCarChecklist = async (request) => {
         <span>Altro</span>
       </div>
     </div>
-      ${renderPhotos()}
       <style>
       @page {
         size: A4;
