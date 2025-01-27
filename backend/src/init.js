@@ -4,10 +4,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 // MongoDB connection
-const uri =
-  process.env.NODE_ENV === "production"
-    ? process.env.MONGODB_URI
-    : "mongodb://localhost:27017/ambulance";
+const uri = process.env.MONGODB_URI
 
 async function connectToDatabase() {
   mongoose
