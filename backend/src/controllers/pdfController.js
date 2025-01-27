@@ -111,14 +111,12 @@ const printCarChecklist = async (request) => {
     return `
       <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; margin-top: 30px">
         ${photos.map((item) => `
-        <div style="width: 375px; margin-bottom: 20px;">
+        <div style="width: 250px; margin-bottom: 20px;">
           <img
             src="${item}" 
             style="
               width: 100%;
-              height: 100%;
-              aspect-ratio: 1;
-              object-fit: contain;
+              height: auto;
             "
           />
         </div>
