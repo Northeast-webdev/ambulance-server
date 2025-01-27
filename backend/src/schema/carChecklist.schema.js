@@ -4,6 +4,7 @@ const { Schema, default: mongoose } = require("mongoose");
 const carChecklistSchema = new Schema({
   car: { type: Schema.Types.ObjectId, ref: "Car" },
   user: { type: Schema.Types.ObjectId, ref: "User" },
+  photos: [{ type: String }],
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });

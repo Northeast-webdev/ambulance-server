@@ -7,8 +7,8 @@ const { User } = require("../schema/user.schema");
 const { printCarChecklist, findPDF } = require("./pdfController");
 
 const createCarChecklist = async (request, reply) => {
-  const { car, checklist, user } = request.body;
-  const carChecklist = new CarChecklist({ car, user })
+  const { car, checklist, user, photos } = request.body;
+  const carChecklist = new CarChecklist({ car, user, photos })
   const userExists = await User.findOne({ _id: user });
   const carExists = await Car.findOne({ _id: car });
   try {
@@ -30,6 +30,7 @@ const createCarChecklist = async (request, reply) => {
     printCarChecklist({
       checklistId: carChecklist._id,
       checklist,
+      photos
     });
 
     carChecklist.populate("user", "first_name last_name _id");
