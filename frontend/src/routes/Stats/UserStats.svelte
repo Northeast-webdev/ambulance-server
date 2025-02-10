@@ -173,7 +173,7 @@
 <div class="my-10 shadow-lg stats-wrapper">
   <div class="container px-3 py-6 mx-auto">
     <div class="mb-10" data-html2canvas-ignore="true">
-      <div class="flex items-center justify-center gap-3">
+      <div class="flex gap-3 justify-center items-center">
         <p class="text-lg font-bold text-black">Periodo dal</p>
         <DateInput
           bind:value={start_date}
@@ -212,9 +212,9 @@
       </div>
     </div>
     <div id="first-to-export">
-      <div class="flex items-center justify-center gap-10">
+      <div class="flex gap-10 justify-center items-center">
         <div
-          class="flex items-center justify-center p-10 text-gray-500 bg-gray-200 border-2 border-gray-300 rounded-full shadow-lg w-72 h-72"
+          class="flex justify-center items-center p-10 w-72 h-72 text-gray-500 bg-gray-200 rounded-full border-2 border-gray-300 shadow-lg"
         >
           <svg
             fill="currentColor"
@@ -257,7 +257,7 @@
           </p>
           <div class="flex gap-4 mt-2">
             {#each cars_used as car}
-              <div class="flex items-center gap-1">
+              <div class="flex gap-1 items-center">
                 <MdiAmbulance class="w-6 h-6 text-gray-800" />
                 <p class="font-bold text-gray-800">
                   {car.name}
@@ -273,7 +273,7 @@
           <div class="mt-2 space-y-2">
             {#each run_car_count as car}
               <div
-                class="flex items-center justify-between w-full gap-1 max-w-48"
+                class="flex gap-1 justify-between items-center w-full max-w-48"
               >
                 <p class="flex-1 font-bold text-gray-800">
                   {car.name}
@@ -288,23 +288,23 @@
         </div>
       </div>
 
-      <h1 class="text-lg font-bold text-center my-14">
+      <h1 class="my-14 text-lg font-bold text-center">
         Statistiche <br />
         Periodo dal {start_date.toLocaleDateString("it-IT")} al
         {end_date.toLocaleDateString("it-IT")}
       </h1>
       <h2 class="mb-8 text-lg font-bold">STATISTICHE TIPO DI SERVIZIO</h2>
       <!-- Table Container with Overflow for Responsiveness -->
-      <div class="grid w-full grid-cols-2 gap-4">
+      <div class="grid grid-cols-2 gap-4 w-full">
         {#each run_car_count as car}
-          <table class="overflow-hidden border-collapse rounded-lg shadow-lg">
+          <table class="overflow-hidden rounded-lg shadow-lg border-collapse">
             <thead class="bg-sky-300">
               <tr>
                 <th
                   class="px-4 py-3 font-semibold text-left border-b"
                   colspan={services.length}
                 >
-                  <div class="flex items-center justify-center gap-2">
+                  <div class="flex gap-2 justify-center items-center">
                     <MdiAmbulance class="w-6 h-6 text-gray-800" />
                     {car.name}
                   </div>
@@ -337,16 +337,16 @@
       {#if run_car_count.length < 7}
         <h2 class="mb-8 text-lg font-bold">STATISTICHE TRASPORTI C/S/B</h2>
         <!-- Table Container with Overflow for Responsiveness -->
-        <div class="grid w-full grid-cols-3 gap-4">
+        <div class="grid grid-cols-3 gap-4 w-full">
           {#each run_car_count as car}
-            <table class="overflow-hidden border-collapse rounded-lg shadow-lg">
+            <table class="overflow-hidden rounded-lg shadow-lg border-collapse">
               <thead class="bg-sky-300">
                 <tr>
                   <th
                     class="px-4 py-3 font-semibold text-left border-b"
                     colspan="3"
                   >
-                    <div class="flex items-center justify-center gap-2">
+                    <div class="flex gap-2 justify-center items-center">
                       <MdiAmbulance class="w-6 h-6 text-gray-800" />
                       {car.name}
                     </div>
@@ -386,16 +386,16 @@
       {#if run_car_count.length >= 7}
         <h2 class="mb-8 text-lg font-bold">STATISTICHE TRASPORTI C/S/B</h2>
         <!-- Table Container with Overflow for Responsiveness -->
-        <div class="grid w-full grid-cols-3 gap-4">
+        <div class="grid grid-cols-3 gap-4 w-full">
           {#each run_car_count as car}
-            <table class="overflow-hidden border-collapse rounded-lg shadow-lg">
+            <table class="overflow-hidden rounded-lg shadow-lg border-collapse">
               <thead class="bg-sky-300">
                 <tr>
                   <th
                     class="px-4 py-3 font-semibold text-left border-b"
                     colspan="3"
                   >
-                    <div class="flex items-center justify-center gap-2">
+                    <div class="flex gap-2 justify-center items-center">
                       <MdiAmbulance class="w-6 h-6 text-gray-800" />
                       {car.name}
                     </div>
@@ -433,17 +433,17 @@
       <div class="my-10 lg:my-20" />
       <h2 class="mb-8 text-lg font-bold">WARNINGS RICEVUTI CHECKLIST MEZZO</h2>
       <!-- Table Container with Overflow for Responsiveness -->
-      <div class="flex flex-wrap items-start w-full gap-4">
+      <div class="flex flex-wrap gap-4 items-start w-full">
         {#each run_car_count as car}
           {#if user.alarms.filter((alarm) => alarm.car === car._id && !alarm.car_checklist_done).length > 0}
-            <table class="overflow-hidden border-collapse rounded-lg shadow-lg">
+            <table class="overflow-hidden rounded-lg shadow-lg border-collapse">
               <thead class="bg-sky-300">
                 <tr>
                   <th
                     class="px-4 py-3 font-semibold text-left border-b"
                     colspan={2}
                   >
-                    <div class="flex items-center justify-center gap-2">
+                    <div class="flex gap-2 justify-center items-center">
                       <MdiAmbulance class="w-6 h-6 text-gray-800" />
                       {car.name}
                     </div>
@@ -474,49 +474,6 @@
       </div>
 
       <div class="my-20" />
-      <h2 class="mb-8 text-lg font-bold">
-        WARNINGS RICEVUTI CHECKLIST MATERIALI
-      </h2>
-      <!-- Table Container with Overflow for Responsiveness -->
-      <div class="flex flex-wrap items-start w-full gap-4">
-        {#each run_car_count as car}
-          {#if user.alarms.filter((alarm) => alarm.car === car._id && !alarm.material_checklist_done).length > 0}
-            <table class="overflow-hidden border-collapse rounded-lg shadow-lg">
-              <thead class="bg-sky-300">
-                <tr>
-                  <th
-                    class="px-4 py-3 font-semibold text-left border-b"
-                    colspan={2}
-                  >
-                    <div class="flex items-center justify-center gap-2">
-                      <MdiAmbulance class="w-6 h-6 text-gray-800" />
-                      {car.name}
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="text-center border-b">
-                  <td class="px-4 py-3 font-bold border-r">Data</td>
-                  <td class="px-4 py-3 font-bold border-r">Ora</td>
-                </tr>
-                {#if user.alarms}
-                  {#each user.alarms.filter((alarm) => alarm.car === car._id && !alarm.material_checklist_done) as alarm}
-                    <tr class="text-center border-b">
-                      <td class="px-4 py-3 border-r">
-                        {moment(alarm.created_at).format("DD/MM/YYYY")}
-                      </td>
-                      <td class="px-4 py-3 border-r">
-                        {moment(alarm.created_at).format("HH:mm")}
-                      </td>
-                    </tr>
-                  {/each}
-                {/if}
-              </tbody>
-            </table>
-          {/if}
-        {/each}
-      </div>
     </div>
   </div>
 </div>

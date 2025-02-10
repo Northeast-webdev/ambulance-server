@@ -428,17 +428,10 @@ const websocketHandler = (socket, req) => {
                 created_at: { $gte: car.shift_start },
               });
               console.log("car_checklist_done", car_checklist_done);
-              const material_checklist_done = await MaterialChecklist.exists({
-                car: car._id,
-                user: car.user._id,
-                created_at: { $gte: car.shift_start },
-              });
-              console.log("material_checklist_done", material_checklist_done);
               const alarm = new Alarm({
                 user: car.user._id,
                 car: car._id,
                 car_checklist_done: !!car_checklist_done,
-                material_checklist_done: !!material_checklist_done,
               });
               console.log("alarm", alarm);
               await alarm.save();

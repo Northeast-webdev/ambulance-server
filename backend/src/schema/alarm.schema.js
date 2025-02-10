@@ -5,7 +5,6 @@ const alarmSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: "User" },
   car: { type: Schema.Types.ObjectId, ref: "Car" },
   car_checklist_done: { type: Boolean, default: false },
-  material_checklist_done: { type: Boolean, default: false },
   created_at: { type: Date, default: Date.now },
 });
 const Alarm = mongoose.model("Alarm", alarmSchema);
