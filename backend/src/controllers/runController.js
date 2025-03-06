@@ -6,13 +6,13 @@ const { Patient } = require("../schema/patient.schema");
 const { Run } = require("../schema/run.schema");
 const { Alarm } = require("../schema/alarm.schema");
 const { CarChecklist } = require("../schema/carChecklist.schema");
-const { MaterialChecklist } = require("../schema/materialChecklist.schema");
 require("dotenv").config();
 const admin = require("firebase-admin");
+
 // Store WebSocket connections per user
 const userConnections = new Map();
 
-const serviceAccount = require("../cvsphub-firebase-adminsdk-jgvr0-510f6077d1.json");
+const serviceAccount = require("../cvsphub-2a0e0-firebase-adminsdk-fbsvc-e13add7668.json");
 const { User } = require("../schema/user.schema");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
