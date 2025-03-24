@@ -136,7 +136,7 @@
     })
       .then((response) => response.json())
       .then((data) => {
-        drivers = data.cars.sort((a, b) =>
+        drivers = data.cars.filter((x) => x.status !== "scrapped").sort((a, b) =>
           a.created_at.localeCompare(b.created_at)
         );
       })

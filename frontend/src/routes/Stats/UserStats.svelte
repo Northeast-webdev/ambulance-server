@@ -101,7 +101,7 @@
     })
       .then((response) => response.json())
       .then((data) => {
-        cars = data.cars;
+        cars = data.cars.filter((x) => x.status !== "scrapped");
       });
   };
 

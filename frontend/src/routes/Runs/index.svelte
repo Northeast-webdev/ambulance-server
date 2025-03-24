@@ -418,9 +418,9 @@
     })
       .then((response) => response.json())
       .then((data) => {
-        cars = data.cars;
+        cars = data.cars.filter((x) => x.status !== "scrapped");
         freeCars = data.cars.filter((x) => x.status === "free");
-        drivers = data.cars;
+        drivers = data.cars.filter((x) => x.status !== "scrapped");
       })
       .catch((error) => {
         console.error("Error:", error);
