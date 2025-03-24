@@ -5,9 +5,9 @@ const { Car } = require("../schema/car.schema");
 const { User } = require("../schema/user.schema");
 const { CarChecklist } = require("../schema/carChecklist.schema");
 const { MaterialChecklist } = require("../schema/materialChecklist.schema");
-
+const { Run } = require("../schema/run.schema");
 const createCar = async (request, reply) => {
-  const { meta, name, image } = request.body;
+  const { meta, name, image, old_car_id } = request.body;
   const car = new Car({
     meta,
     name,
@@ -22,6 +22,18 @@ const createCar = async (request, reply) => {
   });
   try {
     await car.save();
+
+    // TODO: Add a function to add new car ,set old car to status "scrapped", replace pending runs car attribute with new car id
+    if (old_car_id) {
+      await Car.updateOne(
+        { _id: old_car_id },
+        { $set: { status: "scrapped" } }
+      );
+      await Run.updateMany(
+        { car: old_car_id, status: "pending" },
+        { $set: { car: car._id } }
+      );
+    }
     reply.send(car);
   } catch (err) {
     reply.code(500).send({ error: err });

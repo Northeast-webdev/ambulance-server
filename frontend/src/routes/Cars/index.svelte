@@ -35,6 +35,7 @@
   let show_form = false;
   let action = "new";
   let car_id = "";
+  let old_car_id = "";
   let loading = false;
   let meta_verifier = {
     Immagine: "image",
@@ -177,6 +178,7 @@
   function newCarToggle() {
     show_form = !show_form;
     action = "new";
+    old_car_id = "";
   }
 
   async function deleteCar(id) {
@@ -221,7 +223,7 @@
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-            body: JSON.stringify({ meta, name, image }),
+            body: JSON.stringify({ meta, name, image, old_car_id }),
           },
         );
         const data = await response.json();
@@ -506,6 +508,11 @@
                     class="text-yellow-900 bg-yellow-300 px-4 rounded-full inline-block text-sm py-1"
                     >Pausa</span
                   >
+                {:else if car.status === "scrapped"}
+                  <span
+                    class="text-gray-900 bg-gray-300 px-4 rounded-full inline-block text-sm py-1"
+                    >Rimesso</span
+                  >
                 {:else if car.status === "garage"}
                   <span
                     class="text-gray-900 bg-gray-300 px-4 rounded-full inline-block text-sm py-1"
@@ -558,6 +565,11 @@
                     class="text-yellow-900 bg-yellow-200 px-4 rounded-full inline-block text-sm py-1"
                     >Pausa</span
                   >
+                {:else if selectedCar.status === "scrapped"}
+                  <span
+                    class="text-gray-900 bg-gray-300 px-4 rounded-full inline-block text-sm py-1"
+                    >Rimesso</span
+                  >
                 {:else if selectedCar.status === "garage"}
                   <span
                     class="text-gray-900 bg-gray-300 px-4 rounded-full inline-block text-sm py-1"
@@ -595,6 +607,16 @@
                 class="mt-2 block bg-sky-600 hover:bg-sky-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
               >
                 Chiudi
+              </button>
+              <button
+                on:click={() => {
+                  action = "new";
+                  old_car_id = selectedCar._id;
+                  show_form = true;
+                }}
+                class="mt-2 block bg-purple-600 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+              >
+                Sostituisci
               </button>
             </div>
 
@@ -826,7 +848,11 @@
         ✕
       </button>
       <h2 class="text-3xl font-bold text-center mb-6">
-        {action === "new" ? "Aggiungi mezzo" : "Modifica mezzo"}
+        {action === "new"
+          ? old_car_id
+            ? "Sostituisci mezzo " + cars.find(car => car._id === old_car_id).name
+            : "Aggiungi mezzo"
+          : "Modifica mezzo"}
       </h2>
       <form on:submit|preventDefault={newCar} class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
