@@ -27,8 +27,9 @@ const createCar = async (request, reply) => {
     if (old_car_id) {
       await Car.updateOne(
         { _id: old_car_id },
-        { $set: { status: "scrapped" } }
+        { $set: { status: "scrapped", user: null } }
       );
+      await User.updateOne({ car: old_car_id }, { $set: { car: null } });
       await Run.updateMany(
         { car: old_car_id, status: "pending" },
         { $set: { car: car._id } }

@@ -469,7 +469,7 @@
       <div
         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 p-3"
       >
-        {#each cars as car}
+        {#each cars.filter((x) => x.status !== "scrapped") as car}
           <button
             type="button"
             class="shadow-lg rounded-lg overflow-hidden {car === selectedCar
@@ -494,7 +494,7 @@
               <p class="text-gray-700 text-xl font-bold mb-2">
                 {car.user
                   ? `${car.user.first_name} ${car.user.last_name}`
-                  : "Nessun driver"}
+                  : "Nessun autista"}
               </p>
               <p class="text-gray-700">
                 <strong>Status:</strong>
@@ -510,8 +510,8 @@
                   >
                 {:else if car.status === "scrapped"}
                   <span
-                    class="text-gray-900 bg-gray-300 px-4 rounded-full inline-block text-sm py-1"
-                    >Rimesso</span
+                    class="text-indigo-900 bg-indigo-300 px-4 rounded-full inline-block text-sm py-1"
+                    >Rimosso</span
                   >
                 {:else if car.status === "garage"}
                   <span
@@ -529,6 +529,52 @@
           </button>
         {/each}
       </div>
+
+      {#if cars.filter((x) => x.status === "scrapped").length > 0}
+      <!-- Scrapped Car List -->
+      <div class="overflow-x-auto mt-10">
+        <h2 class="text-2xl font-bold mb-4">Mezzi rimossi</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 p-3">
+          {#each cars.filter((x) => x.status === "scrapped") as car}
+            <button
+              type="button"
+            class="shadow-lg rounded-lg overflow-hidden {car === selectedCar
+              ? 'bg-emerald-100'
+              : 'bg-white'}"
+            on:click={() => handleSelectCar(car)}
+            aria-label="Select car"
+          >
+            <div class="p-4">
+              <h3 class="text-lg font-bold text-gray-800 text-center">
+                {car.name}
+              </h3>
+              <img
+                src={car.image
+                  ? car.image
+                  : gallery.find((x) => x.includes(car.name)) || van}
+                alt={car.meta.brand}
+                class="w-full {gallery.find((x) => x.includes(car.name))
+                  ? 'h-28 object-center object-cover'
+                  : 'h-24 object-contain'} my-4"
+              />
+              <p class="text-gray-700 text-xl font-bold mb-2">
+                {car.user
+                  ? `${car.user.first_name} ${car.user.last_name}`
+                  : "Nessun autista"}
+              </p>
+              <p class="text-gray-700">
+                <strong>Status:</strong>
+                  <span
+                    class="text-indigo-900 bg-indigo-300 px-4 rounded-full inline-block text-sm py-1"
+                    >Rimosso</span
+                  >
+              </p>
+            </div>
+          </button>
+        {/each}
+        </div>
+      </div>
+      {/if}
       <div
         id="selected-car"
         class="{loadingCar ? 'h-screen' : ''} mx-auto px-4"
@@ -551,7 +597,7 @@
                 <strong>Driver:</strong>
                 {selectedCar.user
                   ? `${selectedCar.user.first_name} ${selectedCar.user.last_name}`
-                  : "Nessun driver"}
+                  : "Nessun autista"}
               </p>
               <p>
                 <strong>Status:</strong>
@@ -567,8 +613,8 @@
                   >
                 {:else if selectedCar.status === "scrapped"}
                   <span
-                    class="text-gray-900 bg-gray-300 px-4 rounded-full inline-block text-sm py-1"
-                    >Rimesso</span
+                    class="text-indigo-900 bg-indigo-300 px-4 rounded-full inline-block text-sm py-1"
+                    >Rimosso</span
                   >
                 {:else if selectedCar.status === "garage"}
                   <span
@@ -608,6 +654,7 @@
               >
                 Chiudi
               </button>
+              {#if selectedCar.status !== "scrapped"}
               <button
                 on:click={() => {
                   action = "new";
@@ -617,7 +664,8 @@
                 class="mt-2 block bg-purple-600 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
               >
                 Sostituisci
-              </button>
+                </button>
+              {/if}
             </div>
 
             <!-- Car Damage Points Display -->
