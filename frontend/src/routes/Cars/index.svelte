@@ -211,6 +211,33 @@
     }
   }
 
+  async function disableCar(id) {
+    const confirm = window.confirm("Sei sicuro di voler rimuovere questo mezzo?");
+    if (!confirm) {
+      return;
+    }
+    try {
+      const response = await fetch(
+        import.meta.env.VITE_API_URL + "/api/cars/" + id,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            status: "scrapped",
+          }),
+        },
+      );
+      const data = await response.json();
+      console.log("data: ", data);
+
+      await getCars();
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
   async function newCar() {
     if (action === "new") {
       try {
@@ -628,6 +655,7 @@
                   >
                 {/if}
               </p>
+              {#if selectedCar.status !== "scrapped"}
               {#if $user.role !== "direzione"}
                 <button
                   on:click={() => {
@@ -649,13 +677,6 @@
                 </button>
               {/if}
               <button
-                on:click={() => (selectedCar = null)}
-                class="mt-2 block bg-sky-600 hover:bg-sky-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
-              >
-                Chiudi
-              </button>
-              {#if selectedCar.status !== "scrapped"}
-              <button
                 on:click={() => {
                   action = "new";
                   old_car_id = selectedCar._id;
@@ -665,7 +686,19 @@
               >
                 Sostituisci
                 </button>
+                <button
+                on:click={() => disableCar(selectedCar._id)}
+                class="mt-2 block bg-red-600 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+              >
+                Rimosci
+                </button>
               {/if}
+              <button
+                on:click={() => (selectedCar = null)}
+                class="mt-2 block bg-sky-600 hover:bg-sky-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+              >
+                Chiudi
+              </button>
             </div>
 
             <!-- Car Damage Points Display -->

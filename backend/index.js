@@ -21,7 +21,7 @@ const cleanUpInactiveUsers = async () => {
     // Step 1: Find cars that have been inactive for 2 hours
     const inactiveCars = await Car.find({
       updated_at: { $lte: inactiveThreshold }, // Cars not updated in the last 2 hours
-      status: { $ne: "garage" }, // Exclude cars already in the garage
+      status: { $ne: "garage", $ne: "scrapped" }, // Exclude cars already in the garage or scrapped
     });
 
     // Step 2: Update the status of inactive cars and set user to null
