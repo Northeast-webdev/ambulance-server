@@ -205,7 +205,7 @@
         <div class="page">
           <table class="header-table"></table>
           <div style="display: flex; justify-content: space-between">
-            <h2>Scheda controllo mezzo:</h2>
+            <h2 id="car">Scheda controllo mezzo:</h2>
 
             <div
               style="
@@ -627,6 +627,9 @@
         executor.innerHTML = `Esecutore: <span style="text-decoration: underline">${checklist.user}</span>`;
         const firma_esecutore = document.getElementById("firma_esecutore");
         firma_esecutore.innerHTML = `<strong>Firma esecutore: <span style="text-decoration: underline; font-size: 1.2em">${checklist.user}</span></strong>`;
+
+        const car = document.getElementById("car");
+        car.innerHTML = `Scheda controllo mezzo: <span style="text-decoration: underline">${checklist.car}</span>`;
 
         const report = document.getElementById("report");
         report.innerHTML = `<p style="text-decoration: underline; font-size: 16px; line-height: 1.5">${checklist.report}</p>`;
