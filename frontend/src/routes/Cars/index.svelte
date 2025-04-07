@@ -104,7 +104,7 @@
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        },
+        }
       );
       const data = await response.json();
       console.log("data: ", data);
@@ -127,7 +127,7 @@
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        },
+        }
       );
       const data = await response.json();
       console.log("data: ", data);
@@ -183,7 +183,7 @@
 
   async function deleteCar(id) {
     const confirm = window.confirm(
-      "Sei sicuro di voler eliminare questo mezzo?",
+      "Sei sicuro di voler eliminare questo mezzo?"
     );
     if (!confirm) {
       return;
@@ -197,7 +197,7 @@
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-        },
+        }
       );
       const data = await response.json();
       console.log("data: ", data);
@@ -212,7 +212,9 @@
   }
 
   async function disableCar(id) {
-    const confirm = window.confirm("Sei sicuro di voler rimuovere questo mezzo?");
+    const confirm = window.confirm(
+      "Sei sicuro di voler rimuovere questo mezzo?"
+    );
     if (!confirm) {
       return;
     }
@@ -228,7 +230,7 @@
           body: JSON.stringify({
             status: "scrapped",
           }),
-        },
+        }
       );
       const data = await response.json();
       console.log("data: ", data);
@@ -251,7 +253,7 @@
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
             body: JSON.stringify({ meta, name, image, old_car_id }),
-          },
+          }
         );
         const data = await response.json();
         console.log("data: ", data);
@@ -259,6 +261,14 @@
           alert(data.error);
           return;
         }
+        new_car = {
+          brand: "",
+          model: "",
+          kilometers: "",
+          plate_number: "",
+          name: "",
+          image: "",
+        };
         await getCars();
         show_form = false;
       } catch (error) {
@@ -280,7 +290,7 @@
               name,
               image,
             }),
-          },
+          }
         );
         const data = await response.json();
         console.log("data: ", data);
@@ -288,6 +298,14 @@
           alert(data.error);
           return;
         }
+        new_car = {
+          brand: "",
+          model: "",
+          kilometers: "",
+          plate_number: "",
+          name: "",
+          image: "",
+        };
         await getCars();
         show_form = false;
       } catch (error) {
@@ -306,7 +324,7 @@
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      },
+      }
     )
       .then((response) => response.json())
       .then((data) => {
@@ -330,7 +348,7 @@
   // Toggle point color when clicked
   const togglePointColor = (side, index) => {
     const confirmRemoval = window.confirm(
-      "Sei sicuro di voler rimuovere questo punto?",
+      "Sei sicuro di voler rimuovere questo punto?"
     );
     if (confirmRemoval)
       selectedCar.damages[side] = [
@@ -354,7 +372,7 @@
           body: JSON.stringify({
             damages: selectedCar.damages,
           }),
-        },
+        }
       );
       const data = await response.json();
       console.log("data: ", data);
@@ -376,7 +394,7 @@
       eager: true,
       query: "?url",
       import: "default",
-    }),
+    })
   );
 
   function createWebSocket() {
@@ -405,7 +423,7 @@
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-          },
+          }
         );
         const data = await response.json();
         newUser = {
@@ -558,49 +576,51 @@
       </div>
 
       {#if cars.filter((x) => x.status === "scrapped").length > 0}
-      <!-- Scrapped Car List -->
-      <div class="overflow-x-auto mt-10">
-        <h2 class="text-2xl font-bold mb-4">Mezzi rimossi</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 p-3">
-          {#each cars.filter((x) => x.status === "scrapped") as car}
-            <button
-              type="button"
-            class="shadow-lg rounded-lg overflow-hidden {car === selectedCar
-              ? 'bg-emerald-100'
-              : 'bg-white'}"
-            on:click={() => handleSelectCar(car)}
-            aria-label="Select car"
+        <!-- Scrapped Car List -->
+        <div class="overflow-x-auto mt-10">
+          <h2 class="text-2xl font-bold mb-4">Mezzi rimossi</h2>
+          <div
+            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 p-3"
           >
-            <div class="p-4">
-              <h3 class="text-lg font-bold text-gray-800 text-center">
-                {car.name}
-              </h3>
-              <img
-                src={car.image
-                  ? car.image
-                  : gallery.find((x) => x.includes(car.name)) || van}
-                alt={car.meta.brand}
-                class="w-full {gallery.find((x) => x.includes(car.name))
-                  ? 'h-28 object-center object-cover'
-                  : 'h-24 object-contain'} my-4"
-              />
-              <p class="text-gray-700 text-xl font-bold mb-2">
-                {car.user
-                  ? `${car.user.first_name} ${car.user.last_name}`
-                  : "Nessun autista"}
-              </p>
-              <p class="text-gray-700">
-                <strong>Status:</strong>
-                  <span
-                    class="text-indigo-900 bg-indigo-300 px-4 rounded-full inline-block text-sm py-1"
-                    >Rimosso</span
-                  >
-              </p>
-            </div>
-          </button>
-        {/each}
+            {#each cars.filter((x) => x.status === "scrapped") as car}
+              <button
+                type="button"
+                class="shadow-lg rounded-lg overflow-hidden {car === selectedCar
+                  ? 'bg-emerald-100'
+                  : 'bg-white'}"
+                on:click={() => handleSelectCar(car)}
+                aria-label="Select car"
+              >
+                <div class="p-4">
+                  <h3 class="text-lg font-bold text-gray-800 text-center">
+                    {car.name}
+                  </h3>
+                  <img
+                    src={car.image
+                      ? car.image
+                      : gallery.find((x) => x.includes(car.name)) || van}
+                    alt={car.meta.brand}
+                    class="w-full {gallery.find((x) => x.includes(car.name))
+                      ? 'h-28 object-center object-cover'
+                      : 'h-24 object-contain'} my-4"
+                  />
+                  <p class="text-gray-700 text-xl font-bold mb-2">
+                    {car.user
+                      ? `${car.user.first_name} ${car.user.last_name}`
+                      : "Nessun autista"}
+                  </p>
+                  <p class="text-gray-700">
+                    <strong>Status:</strong>
+                    <span
+                      class="text-indigo-900 bg-indigo-300 px-4 rounded-full inline-block text-sm py-1"
+                      >Rimosso</span
+                    >
+                  </p>
+                </div>
+              </button>
+            {/each}
+          </div>
         </div>
-      </div>
       {/if}
       <div
         id="selected-car"
@@ -656,41 +676,41 @@
                 {/if}
               </p>
               {#if selectedCar.status !== "scrapped"}
-              {#if $user.role !== "direzione"}
+                {#if $user.role !== "direzione"}
+                  <button
+                    on:click={() => {
+                      action = "edit";
+                      car_id = selectedCar._id;
+                      new_car = {
+                        name: selectedCar.name,
+                        brand: selectedCar.meta.brand,
+                        model: selectedCar.meta.model,
+                        kilometers: selectedCar.meta.kilometers,
+                        plate_number: selectedCar.meta.plate_number,
+                        image: selectedCar.image,
+                      };
+                      show_form = true;
+                    }}
+                    class="mt-4 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+                  >
+                    Modifica
+                  </button>
+                {/if}
                 <button
                   on:click={() => {
-                    action = "edit";
-                    car_id = selectedCar._id;
-                    new_car = {
-                      name: selectedCar.name,
-                      brand: selectedCar.meta.brand,
-                      model: selectedCar.meta.model,
-                      kilometers: selectedCar.meta.kilometers,
-                      plate_number: selectedCar.meta.plate_number,
-                      image: selectedCar.image,
-                    };
+                    action = "new";
+                    old_car_id = selectedCar._id;
                     show_form = true;
                   }}
-                  class="mt-4 block bg-lime-600 hover:bg-lime-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+                  class="mt-2 block bg-purple-600 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
                 >
-                  Modifica
-                </button>
-              {/if}
-              <button
-                on:click={() => {
-                  action = "new";
-                  old_car_id = selectedCar._id;
-                  show_form = true;
-                }}
-                class="mt-2 block bg-purple-600 hover:bg-purple-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
-              >
-                Sostituisci
+                  Sostituisci
                 </button>
                 <button
-                on:click={() => disableCar(selectedCar._id)}
-                class="mt-2 block bg-red-600 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
-              >
-                Rimosci
+                  on:click={() => disableCar(selectedCar._id)}
+                  class="mt-2 block bg-red-600 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
+                >
+                  Rimosci
                 </button>
               {/if}
               <button
@@ -931,7 +951,8 @@
       <h2 class="text-3xl font-bold text-center mb-6">
         {action === "new"
           ? old_car_id
-            ? "Sostituisci mezzo " + cars.find(car => car._id === old_car_id).name
+            ? "Sostituisci mezzo " +
+              cars.find((car) => car._id === old_car_id).name
             : "Aggiungi mezzo"
           : "Modifica mezzo"}
       </h2>
@@ -980,7 +1001,7 @@
                         const ratio = img.width / img.height;
                         if (Math.abs(ratio - 600 / 400) > 0.01) {
                           alert(
-                            "L'immagine deve avere un rapporto di aspetto di 3:2 (come 600x400 pixel)",
+                            "L'immagine deve avere un rapporto di aspetto di 3:2 (come 600x400 pixel)"
                           );
                           e.target.value = "";
                         } else {
