@@ -96,7 +96,7 @@
           : 'text-right flex-1'} mx-6"
       >
         <h3 class="font-semibold">
-          {`${$user.last_name} ${$user.first_name}`}
+          {`${$user.first_name} ${$user.last_name}`}
         </h3>
         <p class="text-sm uppercase tracking-widest">
           {$user.role === "administrator"
