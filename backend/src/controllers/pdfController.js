@@ -17,10 +17,10 @@ const printCarChecklist = async (request) => {
   const car = await Car.findById(carChecklist.car._id.toString());
   const damages = car.damages;
   const VAN_IMAGES = {
-    front: fs.readFileSync(`${process.cwd()}/backend/img/van/front.png`),
-    back: fs.readFileSync(`${process.cwd()}/backend/img/van/back.png`),
-    left: fs.readFileSync(`${process.cwd()}/backend/img/van/left.png`),
-    right: fs.readFileSync(`${process.cwd()}/backend/img/van/right.png`),
+    front: fs.readFileSync(`${process.cwd()}/img/van/front.png`),
+    back: fs.readFileSync(`${process.cwd()}/img/van/back.png`),
+    left: fs.readFileSync(`${process.cwd()}/img/van/left.png`),
+    right: fs.readFileSync(`${process.cwd()}/img/van/right.png`),
   };
   const filename =
     "checklist-" +
@@ -32,7 +32,7 @@ const printCarChecklist = async (request) => {
     "-" +
     carChecklist.created_at.toLocaleTimeString("it-IT");
   const logo = fs
-    .readFileSync(`${process.cwd()}/backend/img/logo.png`)
+    .readFileSync(`${process.cwd()}/img/logo.png`)
     .toString("base64");
   const labels = {
     luciPosizioneAnteriori: "Luci posizione anteriori",
@@ -94,8 +94,8 @@ const printCarChecklist = async (request) => {
     return `
         <div style="position: relative; width: 375px; margin-bottom: 20px;">
           <img src="data:image/png;base64,${image.toString(
-      "base64"
-    )}" alt="${side}" 
+            "base64"
+          )}" alt="${side}" 
           style="
             width: 100%;
             height: 100%;
@@ -110,7 +110,8 @@ const printCarChecklist = async (request) => {
   const renderPhotos = () => {
     return `
       <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; margin-top: 30px">
-        ${photos.map((item) => `
+        ${photos.map(
+          (item) => `
         <div style="width: 250px; margin-bottom: 20px;">
           <img
             src="${item}" 
@@ -120,10 +121,11 @@ const printCarChecklist = async (request) => {
             "
           />
         </div>
-      `)}
+      `
+        )}
       </div>    
     `;
-  }
+  };
   // Set your HTML content here
   const htmlContent = `
     <html>
@@ -164,15 +166,17 @@ const printCarChecklist = async (request) => {
         </tr>
         <tr>
           <td>Autista</td>
-          <td>${carChecklist.user.first_name} ${carChecklist.user.last_name
-    }</td>
+          <td>${carChecklist.user.first_name} ${
+    carChecklist.user.last_name
+  }</td>
         </tr>
         <tr>
           <td>Inizio turno</td>
-          <td>${carChecklist.car.shift_start.toLocaleDateString("it-IT") +
-    " " +
-    carChecklist.car.shift_start.toLocaleTimeString("it-IT")
-    }</td>
+          <td>${
+            carChecklist.car.shift_start.toLocaleDateString("it-IT") +
+            " " +
+            carChecklist.car.shift_start.toLocaleTimeString("it-IT")
+          }</td>
         </tr>
         <tr>
           <td>Chilometri</td>
@@ -398,15 +402,16 @@ const printMaterialChecklist = async (request) => {
 
   // Read both HTML files
   const htmlContent = fs.readFileSync(
-    `${process.cwd()}/backend/src/html/material_page.html`,
+    `${process.cwd()}/src/html/material_page.html`,
     "utf-8"
   );
 
   let newContent = htmlContent.replace(
     "</head>",
-    `<script>${checklist
-      ? `const checklist = ${JSON.stringify(checklist)};`
-      : fs.readFileSync(`${process.cwd()}/backend/src/html/test.js`, "utf-8")
+    `<script>${
+      checklist
+        ? `const checklist = ${JSON.stringify(checklist)};`
+        : fs.readFileSync(`${process.cwd()}/src/html/test.js`, "utf-8")
     }</script></head>`
   );
 
@@ -416,7 +421,7 @@ const printMaterialChecklist = async (request) => {
     path:
       process.env.NODE_ENV === "production"
         ? `/var/data/pdf/${filename}.pdf`
-        : `${process.cwd()}/backend/pdf/test.pdf`,
+        : `${process.cwd()}/pdf/test.pdf`,
     format: "A4",
     scale: 0.8,
     printBackground: true,
@@ -439,12 +444,13 @@ const findPDF = async (request, reply) => {
     .populate("user");
 
   if (carChecklist) {
-    const filePath = `/var/data/pdf/checklist-${carChecklist.user.username}-${carChecklist.car.name
-      }-${carChecklist.created_at
-        .toLocaleDateString("it-IT")
-        .replace(/\//g, "-")}-${carChecklist.created_at.toLocaleTimeString(
-          "it-IT"
-        )}.pdf`;
+    const filePath = `/var/data/pdf/checklist-${carChecklist.user.username}-${
+      carChecklist.car.name
+    }-${carChecklist.created_at
+      .toLocaleDateString("it-IT")
+      .replace(/\//g, "-")}-${carChecklist.created_at.toLocaleTimeString(
+      "it-IT"
+    )}.pdf`;
     const fileStream = fs.readFileSync(filePath);
     // download the PDF
     reply.header("Content-Type", "application/pdf");
@@ -454,12 +460,13 @@ const findPDF = async (request, reply) => {
     );
     reply.send(fileStream);
   } else if (materialChecklist) {
-    const filePath = `/var/data/pdf/checklist_inf-${materialChecklist.user.username
-      }-${materialChecklist.car.name}-${materialChecklist.created_at
-        .toLocaleDateString("it-IT")
-        .replace(/\//g, "-")}-${materialChecklist.created_at.toLocaleTimeString(
-          "it-IT"
-        )}.pdf`;
+    const filePath = `/var/data/pdf/checklist_inf-${
+      materialChecklist.user.username
+    }-${materialChecklist.car.name}-${materialChecklist.created_at
+      .toLocaleDateString("it-IT")
+      .replace(/\//g, "-")}-${materialChecklist.created_at.toLocaleTimeString(
+      "it-IT"
+    )}.pdf`;
     const fileStream = fs.readFileSync(filePath);
     // download the PDF
     reply.header("Content-Type", "application/pdf");
