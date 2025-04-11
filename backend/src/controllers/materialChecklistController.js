@@ -3,7 +3,7 @@
 const { fastify } = require("../init");
 const { MaterialChecklist } = require("../schema/materialChecklist.schema");
 const { CarInventory } = require("../schema/inventory.schema");
-const { printMaterialChecklist, findPDF } = require("./pdfController");
+const { printMaterialChecklist } = require("./pdfController");
 
 const createMaterialChecklist = async (request, reply) => {
   const { car, user, items, photos } = request.body;
@@ -150,22 +150,12 @@ const deleteMaterialChecklist = async (request, reply) => {
   }
 };
 
-const getPdfForMaterialChecklist = async (request, reply) => {
-  const { id } = request.params;
-  try {
-    await findPDF({ checklistId: id }, reply);
-  } catch (err) {
-    reply.code(500).send({ error: err });
-  }
-};
-
 const materialChecklistRoutes = () => {
   fastify.post("/api/material-checklist", createMaterialChecklist);
   fastify.get("/api/material-checklist", listMaterialChecklists);
   fastify.get("/api/material-checklist/:id", getMaterialChecklist);
   fastify.put("/api/material-checklist/:id", updateMaterialChecklist);
   fastify.delete("/api/material-checklist/:id", deleteMaterialChecklist);
-  fastify.get("/api/checklist/:id/pdf", getPdfForMaterialChecklist);
 };
 
 module.exports = materialChecklistRoutes;
