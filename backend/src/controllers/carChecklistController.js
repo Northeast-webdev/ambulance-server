@@ -68,7 +68,7 @@ const createCarChecklist = async (request, reply) => {
     // Generate PDF
     await printCarChecklist({
       checklistId: checklist._id,
-      items: checklist.items,
+      items: items,
       photos: checklist.photos,
     });
 

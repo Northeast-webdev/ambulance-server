@@ -6,32 +6,6 @@ const { MaterialChecklist } = require("../schema/materialChecklist.schema");
 const { Car } = require("../schema/car.schema");
 const { InventoryItem } = require("../schema/inventory.schema");
 
-// Legacy labels for backward compatibility
-const LEGACY_LABELS = {
-  luciPosizioneAnteriori: "Luci posizione anteriori",
-  anabbaglianti: "Anabbaglianti",
-  abbaglianti: "Abbaglianti",
-  fendinebbia: "Fendinebbia",
-  frecceAnteriori: "Frecce anteriori",
-  luciPosizionePosteriori: "Luci posizione posteriori",
-  luciStop: "Luci stop",
-  luciRetromarcia: "Luci retromarcia",
-  retronebbia: "Retronebbia",
-  freccePosteriori: "Frecce posteriori",
-  luceTarga: "Luce targa",
-  lampeggianti: "Lampeggianti",
-  strobo: "Strobo",
-  fariAusiliari: "Fari ausiliari",
-  sirene: "Sirene (no dopo le ore 22)",
-  triangoloEmergenza: "Triangolo emergenza",
-  torcia: "Torcia",
-  kitSostituzionePneumatico: "Kit sostituzione pneumatico",
-  kitAntiscasso: "Kit antiscasso",
-  ruotaDiScorta: "Ruota di scorta",
-  cateneDaNeve: "Catene da neve",
-  documentiNecessari: "Documenti necessari",
-};
-
 const printCarChecklist = async (request) => {
   try {
     const browser = await puppeteer.launch();
@@ -41,11 +15,7 @@ const printCarChecklist = async (request) => {
     const { checklistId, items, photos } = request;
     const carChecklist = await CarChecklist.findById(checklistId)
       .populate("car")
-      .populate("user")
-      .populate({
-        path: "items.item",
-        model: "InventoryItem",
-      });
+      .populate("user");
 
     const car = await Car.findById(carChecklist.car._id.toString());
     const damages = car.damages;
@@ -75,31 +45,18 @@ const printCarChecklist = async (request) => {
     // Generate table rows based on the checklist items
     let checklistRows = "";
 
-    if (carChecklist.items && carChecklist.items.length > 0) {
+    if (items) {
       // New format with inventory items
-      checklistRows = carChecklist.items
+      checklistRows = items
         .map((item) => {
           const status = item.is_present ? "✔" : "✘";
 
           return `
         <tr>
-          <td>${item.item?.name}</td>
+          <td>${item.name}</td>
           <td>${status}</td>
-          ${item.notes ? `<td>${item.notes}</td>` : "<td>-</td>"}
+          <td>-</td>
         </tr>`;
-        })
-        .join("");
-    } else if (items) {
-      // Legacy format
-      checklistRows = Object.entries(items)
-        .map(([key, value]) => {
-          const status = value ? "✔" : "✘";
-          return `
-          <tr>
-            <td>${LEGACY_LABELS[key]}</td>
-            <td>${status}</td>
-            <td>-</td>
-          </tr>`;
         })
         .join("");
     }
