@@ -33,90 +33,91 @@ const LEGACY_LABELS = {
 };
 
 const printCarChecklist = async (request) => {
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
+  try {
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
 
-  // Fetch checklist from database or request body
-  const { checklistId, items, photos } = request;
-  const carChecklist = await CarChecklist.findById(checklistId)
-    .populate("car")
-    .populate("user")
-    .populate({
-      path: "items.item",
-      model: "InventoryItem",
-    });
+    // Fetch checklist from database or request body
+    const { checklistId, items, photos } = request;
+    const carChecklist = await CarChecklist.findById(checklistId)
+      .populate("car")
+      .populate("user")
+      .populate({
+        path: "items.item",
+        model: "InventoryItem",
+      });
 
-  const car = await Car.findById(carChecklist.car._id.toString());
-  const damages = car.damages;
+    const car = await Car.findById(carChecklist.car._id.toString());
+    const damages = car.damages;
 
-  // Load van images
-  const VAN_IMAGES = {
-    front: fs.readFileSync(`${process.cwd()}/img/van/front.png`),
-    back: fs.readFileSync(`${process.cwd()}/img/van/back.png`),
-    left: fs.readFileSync(`${process.cwd()}/img/van/left.png`),
-    right: fs.readFileSync(`${process.cwd()}/img/van/right.png`),
-  };
+    // Load van images
+    const VAN_IMAGES = {
+      front: fs.readFileSync(`${process.cwd()}/img/van/front.png`),
+      back: fs.readFileSync(`${process.cwd()}/img/van/back.png`),
+      left: fs.readFileSync(`${process.cwd()}/img/van/left.png`),
+      right: fs.readFileSync(`${process.cwd()}/img/van/right.png`),
+    };
 
-  const filename =
-    "checklist-" +
-    carChecklist.user.username +
-    "-" +
-    carChecklist.car.name +
-    "-" +
-    carChecklist.created_at.toLocaleDateString("it-IT").replace(/\//g, "-") +
-    "-" +
-    carChecklist.created_at.toLocaleTimeString("it-IT");
+    const filename =
+      "checklist-" +
+      carChecklist.user.username +
+      "-" +
+      carChecklist.car.name +
+      "-" +
+      carChecklist.created_at.toLocaleDateString("it-IT").replace(/\//g, "-") +
+      "-" +
+      carChecklist.created_at.toLocaleTimeString("it-IT");
 
-  const logo = fs
-    .readFileSync(`${process.cwd()}/img/logo.png`)
-    .toString("base64");
+    const logo = fs
+      .readFileSync(`${process.cwd()}/img/logo.png`)
+      .toString("base64");
 
-  // Generate table rows based on the checklist items
-  let checklistRows = "";
+    // Generate table rows based on the checklist items
+    let checklistRows = "";
 
-  if (carChecklist.items && carChecklist.items.length > 0) {
-    // New format with inventory items
-    checklistRows = carChecklist.items
-      .map((item) => {
-        let status;
-        if (item.is_present !== undefined) {
-          // Car checklist item (boolean)
-          status = item.is_present ? "✔" : "✘";
-        } else {
-          // Inventory item with quantity
-          status = `${item.quantity} ${item.item.unit}`;
-        }
+    if (carChecklist.items && carChecklist.items.length > 0) {
+      // New format with inventory items
+      checklistRows = carChecklist.items
+        .map((item) => {
+          let status;
+          if (item.is_present !== undefined) {
+            // Car checklist item (boolean)
+            status = item.is_present ? "✔" : "✘";
+          } else {
+            // Inventory item with quantity
+            status = `${item.quantity} ${item.item.unit}`;
+          }
 
-        return `
+          return `
         <tr>
           <td>${item.item.name}</td>
           <td>${status}</td>
           ${item.notes ? `<td>${item.notes}</td>` : "<td>-</td>"}
         </tr>`;
-      })
-      .join("");
-  } else if (items) {
-    // Legacy format
-    checklistRows = Object.entries(items)
-      .map(([key, value]) => {
-        const status = value ? "✔" : "✘";
-        return `
+        })
+        .join("");
+    } else if (items) {
+      // Legacy format
+      checklistRows = Object.entries(items)
+        .map(([key, value]) => {
+          const status = value ? "✔" : "✘";
+          return `
           <tr>
             <td>${LEGACY_LABELS[key]}</td>
             <td>${status}</td>
             <td>-</td>
           </tr>`;
-      })
-      .join("");
-  }
+        })
+        .join("");
+    }
 
-  const COLORS = ["#FBBF24", "#3B82F6", "#22C55E", "#ADD8E6", "#FFC0CB"];
-  // Generate Car Damage Points Display for all damages and sides
-  const damagePoints = Object.entries(damages).map(([side, points]) => {
-    const image = VAN_IMAGES[side];
-    const pointsDisplay = points
-      .map((point) => {
-        return `
+    const COLORS = ["#FBBF24", "#3B82F6", "#22C55E", "#ADD8E6", "#FFC0CB"];
+    // Generate Car Damage Points Display for all damages and sides
+    const damagePoints = Object.entries(damages).map(([side, points]) => {
+      const image = VAN_IMAGES[side];
+      const pointsDisplay = points
+        .map((point) => {
+          return `
             <div style="
               position: absolute; 
               top: ${point.y}px; 
@@ -129,9 +130,9 @@ const printCarChecklist = async (request) => {
             "
              ></div>
           `;
-      })
-      .join("");
-    return `
+        })
+        .join("");
+      return `
         <div style="position: relative; width: 375px; margin-bottom: 20px;">
           <img src="data:image/png;base64,${image.toString(
             "base64"
@@ -146,9 +147,9 @@ const printCarChecklist = async (request) => {
           ${pointsDisplay}
         </div>
       `;
-  });
-  const renderPhotos = () => {
-    return `
+    });
+    const renderPhotos = () => {
+      return `
       <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; margin-top: 30px">
         ${photos.map(
           (item) => `
@@ -165,9 +166,9 @@ const printCarChecklist = async (request) => {
         )}
       </div>    
     `;
-  };
-  // Set your HTML content here
-  const htmlContent = `
+    };
+    // Set your HTML content here
+    const htmlContent = `
     <html>
     <head>
         <title>Checklist Mezzo ${carChecklist.car.name}</title> 
@@ -212,8 +213,8 @@ const printCarChecklist = async (request) => {
         <tr>
           <td>Autista</td>
           <td>${carChecklist.user.first_name} ${
-    carChecklist.user.last_name
-  }</td>
+      carChecklist.user.last_name
+    }</td>
           <td>-</td>
         </tr>
         <tr>
@@ -412,20 +413,27 @@ const printCarChecklist = async (request) => {
     </body>
     </html>
   `;
-  await page.setContent(htmlContent);
+    await page.setContent(htmlContent);
 
-  await page.pdf({
-    path: `/var/data/${filename}.pdf`,
-    format: "A4",
-    scale: 0.8,
-    printBackground: true,
-  });
-  await browser.close();
+    await page.pdf({
+      path: `/var/data/${filename}.pdf`,
+      format: "A4",
+      scale: 0.8,
+      printBackground: true,
+    });
+    await browser.close();
 
-  return {
-    statusCode: 200,
-    filename: filename,
-  };
+    return {
+      statusCode: 200,
+      filename: filename,
+    };
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    return {
+      statusCode: 500,
+      message: "Error generating PDF",
+    };
+  }
 };
 
 const printMaterialChecklist = async (request) => {
