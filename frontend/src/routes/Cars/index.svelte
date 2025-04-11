@@ -1014,12 +1014,19 @@
             {:else}
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {#each Object.entries(groupedInventory) as [category, items]}
-                  <div class="bg-gray-50 p-4 rounded-lg">
+                  <div
+                    class="bg-gray-50 p-4 rounded-lg {category === 'VEICOLO'
+                      ? 'bg-blue-50 lg:col-span-3'
+                      : ''}"
+                  >
                     <h4 class="font-bold text-lg mb-2">{category}</h4>
                     <div class="space-y-2">
                       {#each items as item}
                         <div
-                          class="flex items-center justify-between gap-4 bg-white p-3 rounded"
+                          class="flex items-center justify-between gap-4 bg-white p-3 rounded {item
+                            .item.type === 'car'
+                            ? 'border-l-4 border-blue-500'
+                            : 'border-l-4 border-green-500'}"
                         >
                           <div>
                             <p class="font-medium">{item.item.name}</p>
@@ -1030,27 +1037,45 @@
                             {/if}
                           </div>
                           <div class="flex items-center gap-4">
-                            <div class="text-sm">
-                              <p>
-                                {#if item.item.type === "car"}
-                                  Stato: <span class="font-bold"
-                                    >{item.quantity === 1
-                                      ? "Presente"
-                                      : "Assente"}</span
-                                  >
-                                {:else}
-                                  Quantità: <span class="font-bold"
+                            {#if item.item.type === "car"}
+                              <label
+                                class="flex items-center gap-2 cursor-pointer"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={item.quantity === 1}
+                                  on:change={() =>
+                                    updateItemQuantity(
+                                      item,
+                                      item.quantity === 1 ? -1 : 1
+                                    )}
+                                  class="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                />
+                                <span
+                                  class="text-sm font-medium {item.quantity ===
+                                  1
+                                    ? 'text-blue-600'
+                                    : 'text-red-600'}"
+                                >
+                                  {item.quantity === 1
+                                    ? "Funzionante"
+                                    : "Non funzionante"}
+                                </span>
+                              </label>
+                            {:else}
+                              <div class="text-sm">
+                                <p>
+                                  Quantità: <span
+                                    class="font-bold text-green-600"
                                     >{item.quantity}</span
                                   >
                                   <br />
                                   Minimo:
-                                  <span class="font-bold"
+                                  <span class="font-bold text-green-600"
                                     >{item.item.minimum_quantity}</span
                                   >
-                                {/if}
-                              </p>
-                            </div>
-                            {#if item.item.type === "material"}
+                                </p>
+                              </div>
                               <div class="flex items-center gap-2">
                                 <button
                                   on:click={() => updateItemQuantity(item, -1)}
