@@ -1,31 +1,35 @@
-const { Schema, default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 
-const inventoryItemSchema = new Schema({
-  name: { type: String, required: true },
+const inventoryItemSchema = new mongoose.Schema({
+  name: { type: String, required: true, unique: true },
   description: { type: String },
-  minimum_quantity: { type: Number, default: 0 },
-  is_car_checklist_item: { type: Boolean, default: false }, // true if this item appears in car checklists
-  is_material_checklist_item: { type: Boolean, default: false },
-  category: { type: String }, // e.g., "VANO SANITARIO", "TRAUMA", etc.
-  subcategory: { type: String }, // e.g., "Rianimazione", "Zaino trauma", etc.
-  created_at: { type: Date, default: Date.now },
-  updated_at: { type: Date, default: Date.now },
+  unit: { type: String },
+  minimum_quantity: { type: Number, required: true },
+  type: {
+    type: String,
+    enum: ["material", "car"],
+    required: true,
+  },
+  category: { type: String },
+  subcategory: { type: String },
 });
 
-const carInventorySchema = new Schema({
-  car: { type: Schema.Types.ObjectId, ref: "Car", required: true },
-  item: { type: Schema.Types.ObjectId, ref: "InventoryItem", required: true },
-  quantity: { type: Number, required: true, default: 0 },
+const carInventorySchema = new mongoose.Schema({
+  car: { type: mongoose.Schema.Types.ObjectId, ref: "Car", required: true },
+  item: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "InventoryItem",
+    required: true,
+  },
+  quantity: { type: Number, required: true },
+  updated_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   last_updated: { type: Date, default: Date.now },
-  updated_by: { type: Schema.Types.ObjectId, ref: "User" },
 });
+
+// Create compound index to ensure unique car-item combinations
+carInventorySchema.index({ car: 1, item: 1 }, { unique: true });
 
 const InventoryItem = mongoose.model("InventoryItem", inventoryItemSchema);
 const CarInventory = mongoose.model("CarInventory", carInventorySchema);
 
-module.exports = {
-  InventoryItem,
-  CarInventory,
-  inventoryItemSchema,
-  carInventorySchema,
-};
+module.exports = { InventoryItem, CarInventory };

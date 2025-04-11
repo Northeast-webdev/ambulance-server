@@ -6,50 +6,41 @@ const { CarChecklist } = require("../schema/carChecklist.schema");
 const { User } = require("../schema/user.schema");
 const { printCarChecklist, findPDF } = require("./pdfController");
 const { CarInventory } = require("../schema/inventory.schema");
+const { InventoryItem } = require("../schema/inventory.schema");
 
 const createCarChecklist = async (request, reply) => {
-  const { car, user, items, photos } = request.body;
   try {
+    const { car, items, notes } = request.body;
+    const user = request.user._id;
+
+    // Create the checklist
     const checklist = new CarChecklist({
       car,
-      user,
       items,
-      photos,
+      notes,
+      created_by: user,
     });
     await checklist.save();
 
     // Update inventory based on checklist items
     const inventoryUpdates = items.map(async (item) => {
-      if (!item.is_present && item.quantity !== undefined) {
-        // Update inventory quantity for non-car-checklist items
+      const inventoryItem = await InventoryItem.findOne({ name: item.name });
+      if (inventoryItem) {
         await CarInventory.findOneAndUpdate(
-          { car, item: item.item },
+          { car, item: inventoryItem._id },
           {
-            quantity: item.quantity,
+            quantity: item.is_present ? 1 : 0, // For car items, quantity is 1 if present, 0 if not
             updated_by: user,
             last_updated: new Date(),
           },
-          { upsert: true }
+          { upsert: true, new: true }
         );
       }
     });
 
     await Promise.all(inventoryUpdates);
-    await printCarChecklist({
-      checklistId: checklist._id,
-      items: checklist.items,
-      photos: photos,
-    });
-    // Populate the response with item details
-    const populatedChecklist = await CarChecklist.findById(checklist._id)
-      .populate({
-        path: "items.item",
-        model: "InventoryItem",
-      })
-      .populate("car", "name _id meta")
-      .populate("user", "first_name last_name _id");
 
-    return populatedChecklist;
+    return checklist;
   } catch (err) {
     reply.code(500).send({ error: err });
   }

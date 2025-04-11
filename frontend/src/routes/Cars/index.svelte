@@ -551,7 +551,14 @@
         }
       );
       const data = await response.json();
-      await loadCarInventory(selectedCar._id);
+      groupedInventory = data.reduce((acc, item) => {
+        const category = item.item.category || "Altro";
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(item);
+        return acc;
+      }, {});
     } catch (error) {
       console.error("Error updating inventory:", error);
     }
@@ -747,88 +754,6 @@
                   >
                 {/if}
               </p>
-
-              <!-- Inventory Management Section -->
-              <div class="mt-8">
-                <h3 class="text-xl font-bold mb-4">Inventario</h3>
-                {#if loadingInventory}
-                  <LoadingList />
-                {:else}
-                  <div class="space-y-4">
-                    {#each Object.entries(groupedInventory) as [category, items]}
-                      <div class="bg-gray-50 p-4 rounded-lg">
-                        <h4 class="font-bold text-lg mb-2">{category}</h4>
-                        <div class="space-y-2">
-                          {#each items as item}
-                            <div
-                              class="flex items-center justify-between gap-4 bg-white p-3 rounded"
-                            >
-                              <div>
-                                <p class="font-medium">{item.item.name}</p>
-                                {#if item.item.subcategory && item.item.subcategory !== "Generale"}
-                                  <p class="text-sm text-gray-500">
-                                    {item.item.subcategory}
-                                  </p>
-                                {/if}
-                              </div>
-                              <div class="flex items-center gap-4">
-                                <div class="text-sm">
-                                  <p>
-                                    Quantità: <span class="font-bold"
-                                      >{item.quantity}</span
-                                    >
-                                  </p>
-                                  <p>
-                                    Minimo: <span class="font-bold"
-                                      >{item.item.minimum_quantity}</span
-                                    >
-                                  </p>
-                                </div>
-                                {#if !item.item.is_car_checklist_item}
-                                  <div class="flex items-center gap-2">
-                                    <button
-                                      on:click={() =>
-                                        updateItemQuantity(item, -1)}
-                                      class="bg-red-100 hover:bg-red-200 text-red-800 p-2 rounded"
-                                      disabled={item.quantity <= 0}
-                                    >
-                                      -
-                                    </button>
-                                    <button
-                                      on:click={() =>
-                                        updateItemQuantity(item, 1)}
-                                      class="bg-green-100 hover:bg-green-200 text-green-800 p-2 rounded"
-                                    >
-                                      +
-                                    </button>
-                                  </div>
-                                {/if}
-                              </div>
-                            </div>
-                          {/each}
-                        </div>
-                      </div>
-                    {/each}
-                  </div>
-                  {#if lowInventoryItems.length > 0}
-                    <div
-                      class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
-                    >
-                      <h4 class="text-lg font-bold text-yellow-800 mb-2">
-                        Articoli sotto scorta minima:
-                      </h4>
-                      <ul class="list-disc list-inside space-y-1">
-                        {#each lowInventoryItems as item}
-                          <li class="text-yellow-700">
-                            {item.item.name} ({item.quantity}/{item.item
-                              .minimum_quantity})
-                          </li>
-                        {/each}
-                      </ul>
-                    </div>
-                  {/if}
-                {/if}
-              </div>
 
               {#if selectedCar.status !== "scrapped"}
                 {#if $user.role !== "direzione"}
@@ -1080,6 +1005,94 @@
               Vedi tutte le checklist
             </button>
           {/if}
+
+          <!-- Inventory Management Section -->
+          <div class="mt-8">
+            <h2 class="text-2xl font-bold mb-4">Inventario</h2>
+            {#if loadingInventory}
+              <LoadingList />
+            {:else}
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {#each Object.entries(groupedInventory) as [category, items]}
+                  <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-bold text-lg mb-2">{category}</h4>
+                    <div class="space-y-2">
+                      {#each items as item}
+                        <div
+                          class="flex items-center justify-between gap-4 bg-white p-3 rounded"
+                        >
+                          <div>
+                            <p class="font-medium">{item.item.name}</p>
+                            {#if item.item.subcategory && item.item.subcategory !== "Generale"}
+                              <p class="text-sm text-gray-500">
+                                {item.item.subcategory}
+                              </p>
+                            {/if}
+                          </div>
+                          <div class="flex items-center gap-4">
+                            <div class="text-sm">
+                              <p>
+                                {#if item.item.type === "car"}
+                                  Stato: <span class="font-bold"
+                                    >{item.quantity === 1
+                                      ? "Presente"
+                                      : "Assente"}</span
+                                  >
+                                {:else}
+                                  Quantità: <span class="font-bold"
+                                    >{item.quantity}</span
+                                  >
+                                  <br />
+                                  Minimo:
+                                  <span class="font-bold"
+                                    >{item.item.minimum_quantity}</span
+                                  >
+                                {/if}
+                              </p>
+                            </div>
+                            {#if item.item.type === "material"}
+                              <div class="flex items-center gap-2">
+                                <button
+                                  on:click={() => updateItemQuantity(item, -1)}
+                                  class="bg-red-100 hover:bg-red-200 text-red-800 p-2 rounded"
+                                  disabled={item.quantity <= 0}
+                                >
+                                  -
+                                </button>
+                                <button
+                                  on:click={() => updateItemQuantity(item, 1)}
+                                  class="bg-green-100 hover:bg-green-200 text-green-800 p-2 rounded"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            {/if}
+                          </div>
+                        </div>
+                      {/each}
+                    </div>
+                  </div>
+                {/each}
+              </div>
+              {#if lowInventoryItems.length > 0}
+                <div
+                  class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg"
+                >
+                  <h4 class="text-lg font-bold text-yellow-800 mb-2">
+                    Articoli sotto scorta minima:
+                  </h4>
+                  <ul class="list-disc list-inside space-y-1">
+                    {#each lowInventoryItems as item}
+                      <li class="text-yellow-700">
+                        {item.item.name} ({item.quantity}/{item.item
+                          .minimum_quantity})
+                      </li>
+                    {/each}
+                  </ul>
+                </div>
+              {/if}
+            {/if}
+          </div>
         {/if}
       </div>
     </div>

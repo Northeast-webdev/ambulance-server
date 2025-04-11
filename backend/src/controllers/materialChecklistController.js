@@ -3,30 +3,35 @@
 const { fastify } = require("../init");
 const { MaterialChecklist } = require("../schema/materialChecklist.schema");
 const { CarInventory } = require("../schema/inventory.schema");
+const { InventoryItem } = require("../schema/inventory.schema");
 const { printMaterialChecklist } = require("./pdfController");
 
 const createMaterialChecklist = async (request, reply) => {
-  const { car, user, items, photos } = request.body;
   try {
+    const { car, items, notes } = request.body;
+    const user = request.user._id;
+
+    // Create the checklist
     const checklist = new MaterialChecklist({
       car,
-      user,
       items,
-      photos,
+      notes,
+      created_by: user,
     });
     await checklist.save();
 
     // Update inventory based on checklist items
     const inventoryUpdates = items.map(async (item) => {
-      if (item.quantity !== undefined) {
+      const inventoryItem = await InventoryItem.findOne({ name: item.name });
+      if (inventoryItem) {
         await CarInventory.findOneAndUpdate(
-          { car, item: item.item },
+          { car, item: inventoryItem._id },
           {
             quantity: item.quantity,
             updated_by: user,
             last_updated: new Date(),
           },
-          { upsert: true }
+          { upsert: true, new: true }
         );
       }
     });
@@ -37,7 +42,7 @@ const createMaterialChecklist = async (request, reply) => {
     await printMaterialChecklist({
       checklistId: checklist._id,
       items: checklist.items,
-      photos,
+      photos: checklist.photos,
     });
 
     // Populate the response with item details
@@ -118,15 +123,16 @@ const updateMaterialChecklist = async (request, reply) => {
     // Update inventory if items were changed
     if (items) {
       const inventoryUpdates = items.map(async (item) => {
-        if (item.quantity !== undefined) {
+        const inventoryItem = await InventoryItem.findOne({ name: item.name });
+        if (inventoryItem) {
           await CarInventory.findOneAndUpdate(
-            { car, item: item.item },
+            { car, item: inventoryItem._id },
             {
               quantity: item.quantity,
               updated_by: user,
               last_updated: new Date(),
             },
-            { upsert: true }
+            { upsert: true, new: true }
           );
         }
       });

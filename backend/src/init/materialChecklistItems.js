@@ -62,7 +62,7 @@ async function initializeMaterialChecklistItems() {
             ...item,
             category: category.category,
             subcategory: category.subcategory || "Generale",
-            is_material_checklist_item: true,
+            type: "material",
           },
           { upsert: true, new: true }
         );
@@ -78,7 +78,7 @@ async function initializeMaterialChecklistItems() {
             ...item,
             category: category.category,
             subcategory: category.subcategory || "Generale",
-            is_material_checklist_item: true,
+            type: "material",
           },
           { upsert: true, new: true }
         );
@@ -88,6 +88,7 @@ async function initializeMaterialChecklistItems() {
     console.log("Material checklist items initialized successfully");
   } catch (error) {
     console.error("Error initializing material checklist items:", error);
+    throw error;
   }
 }
 
