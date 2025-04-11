@@ -83,7 +83,7 @@ const printCarChecklist = async (request) => {
 
           return `
         <tr>
-          <td>${item.name}</td>
+          <td>${item.item?.name}</td>
           <td>${status}</td>
           ${item.notes ? `<td>${item.notes}</td>` : "<td>-</td>"}
         </tr>`;
