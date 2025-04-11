@@ -387,214 +387,60 @@ const printCarChecklist = async (request) => {
 };
 
 const printMaterialChecklist = async (request) => {
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
+  try {
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
 
-  const { checklistId, items, photos } = request;
-  const materialChecklist = await MaterialChecklist.findById(checklistId)
-    .populate("car")
-    .populate("user")
-    .populate({
-      path: "items.item",
-      model: "InventoryItem",
+    const { checklistId, checklist } = request;
+    const materialChecklist = await MaterialChecklist.findById(checklistId)
+      .populate("car")
+      .populate("user");
+
+    const filename =
+      "checklist_inf-" +
+      materialChecklist.user.username +
+      "-" +
+      materialChecklist.car.name +
+      "-" +
+      materialChecklist.created_at
+        .toLocaleDateString("it-IT")
+        .replace(/\//g, "-") +
+      "-" +
+      materialChecklist.created_at.toLocaleTimeString("it-IT");
+
+    // Read the HTML template
+    const htmlContent = fs.readFileSync(
+      `${process.cwd()}/src/html/material_page.html`,
+      "utf-8"
+    );
+
+    // Inject the checklist data into the template
+    let newContent = htmlContent.replace(
+      "</head>",
+      `<script>const checklist = ${JSON.stringify(checklist)};</script></head>`
+    );
+
+    await page.setContent(newContent, { waitUntil: "networkidle0" });
+
+    await page.pdf({
+      path: `/var/data/${filename}.pdf`,
+      format: "A4",
+      scale: 0.8,
+      printBackground: true,
     });
+    await browser.close();
 
-  const filename =
-    "checklist_inf-" +
-    materialChecklist.user.username +
-    "-" +
-    materialChecklist.car.name +
-    "-" +
-    materialChecklist.created_at
-      .toLocaleDateString("it-IT")
-      .replace(/\//g, "-") +
-    "-" +
-    materialChecklist.created_at.toLocaleTimeString("it-IT");
-
-  const logo = fs
-    .readFileSync(`${process.cwd()}/img/logo.png`)
-    .toString("base64");
-
-  // Group items by category and subcategory
-  const groupedItems = {};
-  materialChecklist.items.forEach((item) => {
-    const category = item.item.category || "Altro";
-    const subcategory = item.item.subcategory || "Generale";
-
-    if (!groupedItems[category]) {
-      groupedItems[category] = {};
-    }
-    if (!groupedItems[category][subcategory]) {
-      groupedItems[category][subcategory] = [];
-    }
-
-    groupedItems[category][subcategory].push(item);
-  });
-
-  // Generate HTML for each category and subcategory
-  let checklistRows = "";
-  for (const [category, subcategories] of Object.entries(groupedItems)) {
-    checklistRows += `<tr><td colspan="3" class="category-header">${category}</td></tr>`;
-
-    for (const [subcategory, items] of Object.entries(subcategories)) {
-      if (subcategory !== "Generale") {
-        checklistRows += `<tr><td colspan="3" class="subcategory-header">${subcategory}</td></tr>`;
-      }
-
-      items.forEach((item) => {
-        const quantity = item.quantity === "q.b." ? "q.b." : item.quantity;
-        checklistRows += `
-          <tr>
-            <td>${item.item.name}</td>
-            <td>${quantity}</td>
-            <td>${item.notes || "-"}</td>
-          </tr>`;
-      });
-    }
+    return {
+      statusCode: 200,
+      filename: filename,
+    };
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    return {
+      statusCode: 500,
+      message: "Error generating PDF",
+    };
   }
-
-  const htmlContent = `
-    <html>
-    <head>
-        <title>Checklist Materiali ${materialChecklist.car.name}</title>
-        <style>
-          @page {
-            size: A4;
-            margin: 10mm;
-          }
-          body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: white;
-          }
-          .headerTable {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto 20px;
-            border: 0;
-          }
-          .headerTable h3, .headerTable td {
-            margin: 0;
-            text-align: center;
-          }
-          .headerTable img {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-            display: block;
-            margin: 0 auto;
-          }
-          #mainTable {
-            width: 100%;
-            border-collapse: collapse;
-            page-break-after: always;
-          }
-          #mainTable th, #mainTable td {
-            border: 1px solid black;
-            padding: 8px 4px;
-            text-align: left;
-          }
-          #mainTable th {
-            background-color: #f2f2f2;
-            font-weight: 600;
-          }
-          .category-header {
-            background-color: #e6e6e6;
-            font-weight: bold;
-            text-align: center;
-          }
-          .subcategory-header {
-            background-color: #f2f2f2;
-            font-style: italic;
-            text-align: center;
-          }
-        </style>
-    </head>
-    <body>
-      <table class="headerTable">
-        <tr>
-          <td><img src="data:image/png;base64,${logo}" alt="Logo" /></td>
-          <td><h3>Checklist Materiali ${materialChecklist.car.name}</h3></td>
-          <td>${materialChecklist.created_at.toLocaleDateString("it-IT")}</td>
-        </tr>
-      </table>
-      <table id="mainTable">
-        <thead>
-            <tr>
-                <th>Elemento</th>
-                <th>Quantità</th>
-                <th>Note</th>
-            </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td>Nome</td>
-          <td>${materialChecklist.car.name}</td>
-          <td>-</td>
-        </tr>
-        <tr>
-          <td>Marca</td>
-          <td>${materialChecklist.car.meta.brand}</td>
-          <td>-</td>
-        </tr>
-        <tr>
-          <td>Modello</td>
-          <td>${materialChecklist.car.meta.model}</td>
-          <td>-</td>
-        </tr>
-        <tr>
-          <td>Targa</td>
-          <td>${materialChecklist.car.meta.plate_number}</td>
-          <td>-</td>
-        </tr>
-        <tr>
-          <td>Autista</td>
-          <td>${materialChecklist.user.first_name} ${
-    materialChecklist.user.last_name
-  }</td>
-          <td>-</td>
-        </tr>
-        <tr>
-          <td>Inizio turno</td>
-          <td>${
-            materialChecklist.car.shift_start.toLocaleDateString("it-IT") +
-            " " +
-            materialChecklist.car.shift_start.toLocaleTimeString("it-IT")
-          }</td>
-          <td>-</td>
-        </tr>
-        <tr>
-          <td>Chilometri</td>
-          <td>${materialChecklist.car.meta.kilometers}km</td>
-          <td>-</td>
-        </tr>
-        <tr>
-          <td>Livello carburante</td>
-          <td>${materialChecklist.car.meta.carbon_level}%</td>
-          <td>-</td>
-        </tr>
-        ${checklistRows}
-        </tbody>
-      </table>
-    </body>
-    </html>
-  `;
-
-  await page.setContent(htmlContent);
-
-  await page.pdf({
-    path: `/var/data/${filename}.pdf`,
-    format: "A4",
-    scale: 0.8,
-    printBackground: true,
-  });
-  await browser.close();
-
-  return {
-    statusCode: 200,
-    filename: filename,
-  };
 };
 
 const findPDF = async (request, reply) => {

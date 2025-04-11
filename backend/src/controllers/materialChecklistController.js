@@ -8,17 +8,16 @@ const { printMaterialChecklist } = require("./pdfController");
 
 const createMaterialChecklist = async (request, reply) => {
   try {
-    const { car, items, notes } = request.body;
-    const user = request.user._id;
+    const { car, items, checklist, user } = request.body;
 
     // Create the checklist
-    const checklist = new MaterialChecklist({
+    const materialChecklist = new MaterialChecklist({
       car,
       items,
-      notes,
-      created_by: user,
+      checklist,
+      user,
     });
-    await checklist.save();
+    await materialChecklist.save();
 
     // Update inventory based on checklist items
     const inventoryUpdates = items.map(async (item) => {
@@ -40,9 +39,8 @@ const createMaterialChecklist = async (request, reply) => {
 
     // Generate PDF
     await printMaterialChecklist({
-      checklistId: checklist._id,
-      items: checklist.items,
-      photos: checklist.photos,
+      checklistId: materialChecklist._id,
+      checklist: checklist,
     });
 
     // Populate the response with item details
@@ -56,6 +54,7 @@ const createMaterialChecklist = async (request, reply) => {
 
     return populatedChecklist;
   } catch (err) {
+    console.log(err);
     reply.code(500).send({ error: err });
   }
 };
