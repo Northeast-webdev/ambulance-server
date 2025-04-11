@@ -6,6 +6,8 @@ const { User } = require("../schema/user.schema");
 const { CarChecklist } = require("../schema/carChecklist.schema");
 const { MaterialChecklist } = require("../schema/materialChecklist.schema");
 const { Run } = require("../schema/run.schema");
+const { initializeCarInventory } = require("../init/carInventory");
+
 const createCar = async (request, reply) => {
   const { meta, name, image, old_car_id } = request.body;
   const car = new Car({
@@ -22,6 +24,9 @@ const createCar = async (request, reply) => {
   });
   try {
     await car.save();
+
+    // Initialize inventory for the new car
+    await initializeCarInventory(car._id);
 
     // TODO: Add a function to add new car ,set old car to status "scrapped", replace pending runs car attribute with new car id
     if (old_car_id) {
