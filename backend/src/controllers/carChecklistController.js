@@ -8,6 +8,32 @@ const { printCarChecklist, findPDF } = require("./pdfController");
 const { CarInventory } = require("../schema/inventory.schema");
 const { InventoryItem } = require("../schema/inventory.schema");
 
+const labels = {
+  luciPosizioneAnteriori: "Luci posizione anteriori",
+  anabbaglianti: "Anabbaglianti",
+  abbaglianti: "Abbaglianti",
+  fendinebbia: "Fendinebbia",
+  frecceAnteriori: "Frecce anteriori",
+  luciPosizionePosteriori: "Luci posizione posteriori",
+  luciStop: "Luci stop",
+  luciRetromarcia: "Luci retromarcia",
+  retronebbia: "Retronebbia",
+  freccePosteriori: "Frecce posteriori",
+  luceTarga: "Luce targa",
+  lampeggianti: "Lampeggianti",
+  strobo: "Strobo",
+  fariAusiliari: "Fari ausiliari",
+  sirene: "Sirene (no dopo le ore 22)",
+  triangoloEmergenza: "Triangolo emergenza",
+  torcia: "Torcia",
+  kitSostituzionePneumatico: "Kit sostituzione pneumatico",
+  kitAntiscasso: "Kit antiscasso",
+  ruotaDiScorta: "Ruota di scorta",
+  cateneDaNeve: "Catene da neve",
+  documentiNecessari: "Documenti necessari",
+  carbon_level: "Livello carburante",
+  kilometers: "Chilometri",
+};
 const createCarChecklist = async (request, reply) => {
   try {
     const { car, items, notes } = request.body;
