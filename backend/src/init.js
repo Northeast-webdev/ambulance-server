@@ -16,8 +16,8 @@ async function connectToDatabase() {
     .connect(uri)
     .then(async () => {
       console.log("Connected to MongoDB");
-      await initializeAllCarsInventory();
       await initializeMaterialChecklistItems();
+      await initializeAllCarsInventory();
     })
     .catch((error) => console.error("Connection error", error));
 }
