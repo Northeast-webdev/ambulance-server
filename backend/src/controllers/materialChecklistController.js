@@ -1,42 +1,57 @@
 // controllers/materialChecklistController.js
 
 const { fastify } = require("../init");
-const { Car } = require("../schema/car.schema");
 const { MaterialChecklist } = require("../schema/materialChecklist.schema");
-const { User } = require("../schema/user.schema");
-const { printMaterialChecklist } = require("./pdfController");
+const { CarInventory } = require("../schema/inventory.schema");
+const { printMaterialChecklist, findPDF } = require("./pdfController");
 
 const createMaterialChecklist = async (request, reply) => {
-  const { checklist, user, car } = request.body;
-  const materialChecklist = new MaterialChecklist({ user, car });
-  const userExists = await User.findOne({ _id: user });
-  const carExists = await Car.findOne({ _id: car });
+  const { car, user, items, photos } = request.body;
   try {
-    await materialChecklist.save();
-    if (userExists) {
-      await User.updateOne(
-        { _id: user },
-        { $push: { material_checklists: materialChecklist._id } }
-      );
-    }
-    if (carExists) {
-      await Car.updateOne(
-        { _id: car },
-        { $push: { material_checklists: materialChecklist._id } }
-      );
-    }
+    const checklist = new MaterialChecklist({
+      car,
+      user,
+      items,
+      photos,
+    });
+    await checklist.save();
 
-    // print the pdf here
-    printMaterialChecklist({
-      id: materialChecklist._id,
-      checklist,
+    // Update inventory based on checklist items
+    const inventoryUpdates = items.map(async (item) => {
+      if (item.quantity !== undefined) {
+        await CarInventory.findOneAndUpdate(
+          { car, item: item.item },
+          {
+            quantity: item.quantity,
+            updated_by: user,
+            last_updated: new Date(),
+          },
+          { upsert: true }
+        );
+      }
     });
 
-    materialChecklist.populate("user", "first_name last_name _id");
-    reply.send(materialChecklist);
+    await Promise.all(inventoryUpdates);
+
+    // Generate PDF
+    await printMaterialChecklist({
+      checklistId: checklist._id,
+      items: checklist.items,
+      photos,
+    });
+
+    // Populate the response with item details
+    const populatedChecklist = await MaterialChecklist.findById(checklist._id)
+      .populate({
+        path: "items.item",
+        model: "InventoryItem",
+      })
+      .populate("car", "name _id meta")
+      .populate("user", "first_name last_name _id");
+
+    return populatedChecklist;
   } catch (err) {
-    console.log("Error creating material checklist", err);
-    reply.code(500).send({ error: err.message });
+    reply.code(500).send({ error: err });
   }
 };
 
@@ -52,8 +67,12 @@ const listMaterialChecklists = async (request, reply) => {
   if (car) query.car = car;
   try {
     const checklists = await MaterialChecklist.find(query)
-      .populate("user", "first_name last_name _id")
+      .populate({
+        path: "items.item",
+        model: "InventoryItem",
+      })
       .populate("car", "name _id meta")
+      .populate("user", "first_name last_name _id")
       .skip((page - 1) * limit)
       .limit(limit)
       .sort({ created_at: -1 })
@@ -68,7 +87,14 @@ const getMaterialChecklist = async (request, reply) => {
   try {
     const checklist = await MaterialChecklist.findOne({
       _id: request.params.id,
-    }).exec();
+    })
+      .populate({
+        path: "items.item",
+        model: "InventoryItem",
+      })
+      .populate("car", "name _id meta")
+      .populate("user", "first_name last_name _id")
+      .exec();
     return checklist;
   } catch (err) {
     reply.code(500).send({ error: err });
@@ -76,17 +102,38 @@ const getMaterialChecklist = async (request, reply) => {
 };
 
 const updateMaterialChecklist = async (request, reply) => {
-  const { checklist, user } = request.body;
+  const { car, user, items, photos } = request.body;
   const updates = {};
-  if (checklist) updates.checklist = checklist;
-  if (user) updates.user = user;
-  updates.updated_at = Date.now();
+  if (items) updates.items = items;
+  if (photos) updates.photos = photos;
+  updates.updated_at = new Date();
+
   try {
-    const checklist = await MaterialChecklist.updateOne(
+    const checklist = await MaterialChecklist.findOneAndUpdate(
       { _id: request.params.id },
-      { $set: updates }
+      updates,
+      { new: true }
     );
-    reply.send(checklist);
+
+    // Update inventory if items were changed
+    if (items) {
+      const inventoryUpdates = items.map(async (item) => {
+        if (item.quantity !== undefined) {
+          await CarInventory.findOneAndUpdate(
+            { car, item: item.item },
+            {
+              quantity: item.quantity,
+              updated_by: user,
+              last_updated: new Date(),
+            },
+            { upsert: true }
+          );
+        }
+      });
+      await Promise.all(inventoryUpdates);
+    }
+
+    return checklist;
   } catch (err) {
     reply.code(500).send({ error: err });
   }
@@ -103,12 +150,22 @@ const deleteMaterialChecklist = async (request, reply) => {
   }
 };
 
+const getPdfForMaterialChecklist = async (request, reply) => {
+  const { id } = request.params;
+  try {
+    await findPDF({ checklistId: id }, reply);
+  } catch (err) {
+    reply.code(500).send({ error: err });
+  }
+};
+
 const materialChecklistRoutes = () => {
   fastify.post("/api/material-checklist", createMaterialChecklist);
   fastify.get("/api/material-checklist", listMaterialChecklists);
   fastify.get("/api/material-checklist/:id", getMaterialChecklist);
   fastify.put("/api/material-checklist/:id", updateMaterialChecklist);
   fastify.delete("/api/material-checklist/:id", deleteMaterialChecklist);
+  fastify.get("/api/checklist/:id/pdf", getPdfForMaterialChecklist);
 };
 
 module.exports = materialChecklistRoutes;

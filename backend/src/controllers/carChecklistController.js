@@ -5,39 +5,53 @@ const { Car } = require("../schema/car.schema");
 const { CarChecklist } = require("../schema/carChecklist.schema");
 const { User } = require("../schema/user.schema");
 const { printCarChecklist, findPDF } = require("./pdfController");
+const { CarInventory } = require("../schema/inventory.schema");
 
 const createCarChecklist = async (request, reply) => {
-  const { car, checklist, user, photos } = request.body;
-  const carChecklist = new CarChecklist({ car, user, photos })
-  const userExists = await User.findOne({ _id: user });
-  const carExists = await Car.findOne({ _id: car });
+  const { car, user, items, photos } = request.body;
   try {
-    await carChecklist.save();
-    if (userExists) {
-      await User.updateOne(
-        { _id: user },
-        { $push: { car_checklists: carChecklist._id } }
-      );
-    }
-    if (carExists) {
-      await Car.updateOne(
-        { _id: car },
-        { $push: { car_checklists: carChecklist._id } }
-      );
-    }
+    const checklist = new CarChecklist({
+      car,
+      user,
+      items,
+      photos,
+    });
+    await checklist.save();
 
-    // print the pdf here
-    printCarChecklist({
-      checklistId: carChecklist._id,
-      checklist,
-      photos
+    // Update inventory based on checklist items
+    const inventoryUpdates = items.map(async (item) => {
+      if (!item.is_present && item.quantity !== undefined) {
+        // Update inventory quantity for non-car-checklist items
+        await CarInventory.findOneAndUpdate(
+          { car, item: item.item },
+          {
+            quantity: item.quantity,
+            updated_by: user,
+            last_updated: new Date(),
+          },
+          { upsert: true }
+        );
+      }
     });
 
-    carChecklist.populate("user", "first_name last_name _id");
-    reply.send(carChecklist);
+    await Promise.all(inventoryUpdates);
+    await printCarChecklist({
+      checklistId: checklist._id,
+      items: checklist.items,
+      photos: photos,
+    });
+    // Populate the response with item details
+    const populatedChecklist = await CarChecklist.findById(checklist._id)
+      .populate({
+        path: "items.item",
+        model: "InventoryItem",
+      })
+      .populate("car", "name _id meta")
+      .populate("user", "first_name last_name _id");
+
+    return populatedChecklist;
   } catch (err) {
-    console.log("Error creating car checklist", err);
-    reply.code(500).send({ error: err.message });
+    reply.code(500).send({ error: err });
   }
 };
 

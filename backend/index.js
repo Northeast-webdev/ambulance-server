@@ -8,6 +8,7 @@ const fastifyStatic = require("@fastify/static");
 const carChecklistRoutes = require("./src/controllers/carChecklistController");
 const materialChecklistRoutes = require("./src/controllers/materialChecklistController");
 const patientRoutes = require("./src/controllers/patientController");
+const inventoryRoutes = require("./src/controllers/inventoryController");
 const { Car } = require("./src/schema/car.schema");
 const { User } = require("./src/schema/user.schema");
 
@@ -84,6 +85,7 @@ runRoutes();
 carChecklistRoutes();
 materialChecklistRoutes();
 patientRoutes();
+inventoryRoutes();
 
 // Start the server
 const start = async () => {
