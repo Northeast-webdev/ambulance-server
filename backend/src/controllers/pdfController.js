@@ -79,18 +79,11 @@ const printCarChecklist = async (request) => {
       // New format with inventory items
       checklistRows = carChecklist.items
         .map((item) => {
-          let status;
-          if (item.is_present !== undefined) {
-            // Car checklist item (boolean)
-            status = item.is_present ? "✔" : "✘";
-          } else {
-            // Inventory item with quantity
-            status = `${item.quantity} ${item.item.unit}`;
-          }
+          const status = item.is_present ? "✔" : "✘";
 
           return `
         <tr>
-          <td>${item.item.name}</td>
+          <td>${item.name}</td>
           <td>${status}</td>
           ${item.notes ? `<td>${item.notes}</td>` : "<td>-</td>"}
         </tr>`;
