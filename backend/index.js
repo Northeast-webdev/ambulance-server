@@ -86,17 +86,8 @@ connectToDatabase().then(async () => {
   // Initialize checklist items
   await initializeMaterialChecklistItems();
   await initializeCarChecklistItems();
-
   // Initialize inventory for all cars
   await initializeAllCarsInventory();
-
-  // Start the server
-  fastify.listen({ port: 3000 }, (err) => {
-    if (err) {
-      fastify.log.error(err);
-      process.exit(1);
-    }
-  });
 });
 
 // Register routes
@@ -108,3 +99,16 @@ carChecklistRoutes();
 materialChecklistRoutes();
 patientRoutes();
 inventoryRoutes();
+
+// Start the server
+const start = async () => {
+  try {
+    await fastify.listen({ port: 8080, host: "0.0.0.0" });
+    fastify.cron.startAllJobs();
+    console.log("Server is running on port 8080");
+  } catch (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
+};
+start();
