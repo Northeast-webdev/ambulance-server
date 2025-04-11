@@ -502,8 +502,12 @@
         }
       );
       const data = await response.json();
-      inventory = data;
+      inventory = data.map((item) => ({
+        ...item,
+        editing: false,
+      }));
       console.log("inventory: ", inventory);
+
       // Group items by category
       groupedInventory = inventory.reduce((acc, item) => {
         const category = item.item.category || "Altro";
@@ -514,9 +518,10 @@
         return acc;
       }, {});
 
-      // Find low inventory items
+      // Find low inventory items (only for material items)
       lowInventoryItems = inventory.filter(
-        (inv) => inv.quantity < inv.item.minimum_quantity
+        (inv) =>
+          inv.item.type !== "car" && inv.quantity < inv.item.minimum_quantity
       );
     } catch (error) {
       console.error("Error loading inventory:", error);
@@ -551,6 +556,10 @@
         }
       );
       const data = await response.json();
+      inventory = data.map((item) => ({
+        ...item,
+        editing: false,
+      }));
       groupedInventory = data.reduce((acc, item) => {
         const category = item.item.category || "Altro";
         if (!acc[category]) {
@@ -559,6 +568,10 @@
         acc[category].push(item);
         return acc;
       }, {});
+      lowInventoryItems = inventory.filter(
+        (inv) =>
+          inv.item.type !== "car" && inv.quantity < inv.item.minimum_quantity
+      );
     } catch (error) {
       console.error("Error updating inventory:", error);
     }
@@ -1062,33 +1075,44 @@
                                     : "Non funzionante"}
                                 </span>
                               </label>
-                            {:else}
-                              <div class="text-sm">
-                                <p>
-                                  Quantità: <span
-                                    class="font-bold text-green-600"
-                                    >{item.quantity}</span
-                                  >
-                                  <br />
-                                  Minimo:
-                                  <span class="font-bold text-green-600"
-                                    >{item.item.minimum_quantity}</span
-                                  >
-                                </p>
-                              </div>
+                            {:else if item.editing}
                               <div class="flex items-center gap-2">
+                                <input
+                                  type="number"
+                                  bind:value={item.quantity}
+                                  min="0"
+                                  class="w-20 p-2 border rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                />
                                 <button
-                                  on:click={() => updateItemQuantity(item, -1)}
-                                  class="bg-red-100 hover:bg-red-200 text-red-800 p-2 rounded"
-                                  disabled={item.quantity <= 0}
+                                  on:click={() => {
+                                    updateItemQuantity(item, 0);
+                                    item.editing = false;
+                                  }}
+                                  class="bg-green-100 hover:bg-green-200 text-green-800 py-2 px-4 rounded"
                                 >
-                                  -
+                                  Salva
                                 </button>
+                              </div>
+                            {:else}
+                              <div class="flex items-center gap-4">
+                                <div class="text-sm">
+                                  <p>
+                                    Quantità: <span
+                                      class="font-bold text-green-600"
+                                      >{item.quantity}</span
+                                    >
+                                    <br />
+                                    Minimo:
+                                    <span class="font-bold text-green-600"
+                                      >{item.item.minimum_quantity}</span
+                                    >
+                                  </p>
+                                </div>
                                 <button
-                                  on:click={() => updateItemQuantity(item, 1)}
-                                  class="bg-green-100 hover:bg-green-200 text-green-800 p-2 rounded"
+                                  on:click={() => (item.editing = true)}
+                                  class="bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 rounded"
                                 >
-                                  +
+                                  Modifica
                                 </button>
                               </div>
                             {/if}
