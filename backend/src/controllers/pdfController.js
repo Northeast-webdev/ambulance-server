@@ -415,7 +415,7 @@ const printCarChecklist = async (request) => {
   await page.setContent(htmlContent);
 
   await page.pdf({
-    path: `/var/data/pdf/${filename}.pdf`,
+    path: `/var/data/${filename}.pdf`,
     format: "A4",
     scale: 0.8,
     printBackground: true,
@@ -626,7 +626,7 @@ const printMaterialChecklist = async (request) => {
   await page.setContent(htmlContent);
 
   await page.pdf({
-    path: `/var/data/pdf/${filename}.pdf`,
+    path: `/var/data/${filename}.pdf`,
     format: "A4",
     scale: 0.8,
     printBackground: true,
@@ -649,7 +649,7 @@ const findPDF = async (request, reply) => {
     .populate("user");
 
   if (carChecklist) {
-    const filePath = `/var/data/pdf/checklist-${carChecklist.user.username}-${
+    const filePath = `/var/data/checklist-${carChecklist.user.username}-${
       carChecklist.car.name
     }-${carChecklist.created_at
       .toLocaleDateString("it-IT")
@@ -665,7 +665,7 @@ const findPDF = async (request, reply) => {
     );
     reply.send(fileStream);
   } else if (materialChecklist) {
-    const filePath = `/var/data/pdf/checklist_inf-${
+    const filePath = `/var/data/checklist_inf-${
       materialChecklist.user.username
     }-${materialChecklist.car.name}-${materialChecklist.created_at
       .toLocaleDateString("it-IT")
