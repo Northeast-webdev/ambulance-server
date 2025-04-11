@@ -36,15 +36,14 @@ const labels = {
 };
 const createCarChecklist = async (request, reply) => {
   try {
-    const { car, items, notes } = request.body;
-    const user = request.user._id;
+    const { car, items, notes, user } = request.body;
 
     // Create the checklist
     const checklist = new CarChecklist({
       car,
       items,
       notes,
-      created_by: user,
+      user,
     });
     await checklist.save();
 
@@ -65,6 +64,13 @@ const createCarChecklist = async (request, reply) => {
     });
 
     await Promise.all(inventoryUpdates);
+
+    // Generate PDF
+    await printCarChecklist({
+      checklistId: checklist._id,
+      items: checklist.items,
+      photos: checklist.photos,
+    });
 
     return checklist;
   } catch (err) {
