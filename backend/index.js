@@ -18,7 +18,7 @@ const {
   initializeMaterialChecklistItems,
 } = require("./src/init/materialChecklistItems");
 const { initializeCarChecklistItems } = require("./src/init/carChecklistItems");
-const shiftController = require("./controllers/shiftController");
+const shiftController = require("./src/controllers/shiftController");
 
 const cleanUpInactiveUsers = async () => {
   try {
