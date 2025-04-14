@@ -62,6 +62,7 @@ const login = async (request, reply) => {
     const token = generateToken(user);
     reply.send({ token, id: user._id, role: user.role });
   } catch (err) {
+    console.log(err);
     reply.code(500).send({ error: err });
   }
 };
