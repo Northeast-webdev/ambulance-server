@@ -1,8 +1,9 @@
+const { fastify } = require("../init");
 const Shift = require("../schema/shift.schema");
 const User = require("../schema/user.schema");
 const Car = require("../schema/car.schema");
 
-async function createShift(fastify, request, reply) {
+const createShift = async (request, reply) => {
   try {
     const { vehicle, date, shift_start, shift_end, crew, notes, status } =
       request.body;
@@ -10,7 +11,7 @@ async function createShift(fastify, request, reply) {
     // Validate vehicle exists
     const vehicleExists = await Car.findById(vehicle);
     if (!vehicleExists) {
-      return reply.status(404).send({ error: "Vehicle not found" });
+      return reply.code(404).send({ error: "Vehicle not found" });
     }
 
     // Validate crew members exist and have correct roles
@@ -18,10 +19,16 @@ async function createShift(fastify, request, reply) {
       if (member.user) {
         const user = await User.findById(member.user);
         if (!user) {
-          return reply.status(404).send({ error: `${role} user not found` });
+          return reply.code(404).send({ error: `${role} user not found` });
         }
-        if (!user.roles.includes(role)) {
-          return reply.status(400).send({ error: `User is not a ${role}` });
+
+        // Validate role based on user's role field or current_role
+        if (
+          (role === "driver" && user.role !== "driver") ||
+          (role === "doctor" && user.current_role !== "doctor") ||
+          (role === "nurse" && user.current_role !== "nurse")
+        ) {
+          return reply.code(400).send({ error: `User is not a ${role}` });
         }
       }
     }
@@ -37,14 +44,21 @@ async function createShift(fastify, request, reply) {
     });
 
     await shift.save();
-    return reply.status(201).send(shift);
+
+    const populatedShift = await Shift.findById(shift._id)
+      .populate("vehicle")
+      .populate("crew.driver.user")
+      .populate("crew.doctor.user")
+      .populate("crew.nurse.user");
+
+    return reply.code(201).send(populatedShift);
   } catch (error) {
     console.error("Error creating shift:", error);
-    return reply.status(500).send({ error: "Error creating shift" });
+    return reply.code(500).send({ error: "Error creating shift" });
   }
-}
+};
 
-async function listShifts(fastify, request, reply) {
+const listShifts = async (request, reply) => {
   try {
     const {
       start_date,
@@ -52,7 +66,7 @@ async function listShifts(fastify, request, reply) {
       vehicle,
       status,
       page = 1,
-      limit = 10,
+      limit = 50,
     } = request.query;
     const query = {};
 
@@ -78,22 +92,20 @@ async function listShifts(fastify, request, reply) {
       .populate("crew.nurse.user")
       .sort({ date: -1 })
       .skip((page - 1) * limit)
-      .limit(limit);
+      .limit(parseInt(limit))
+      .exec();
 
-    return reply.send({
-      shifts,
-      total: totalShifts,
-      page,
-      limit,
-      totalPages,
-    });
+    const total = await Shift.countDocuments(query);
+    const totalPages = Math.ceil(total / limit);
+
+    return reply.send(shifts);
   } catch (error) {
     console.error("Error listing shifts:", error);
-    return reply.status(500).send({ error: "Error retrieving shifts" });
+    return reply.code(500).send({ error: "Error retrieving shifts" });
   }
-}
+};
 
-async function getShift(fastify, request, reply) {
+const getShift = async (request, reply) => {
   try {
     const shift = await Shift.findById(request.params.id)
       .populate("vehicle")
@@ -102,31 +114,31 @@ async function getShift(fastify, request, reply) {
       .populate("crew.nurse.user");
 
     if (!shift) {
-      return reply.status(404).send({ error: "Shift not found" });
+      return reply.code(404).send({ error: "Shift not found" });
     }
 
     return reply.send(shift);
   } catch (error) {
     console.error("Error getting shift:", error);
-    return reply.status(500).send({ error: "Error retrieving shift" });
+    return reply.code(500).send({ error: "Error retrieving shift" });
   }
-}
+};
 
-async function updateShift(fastify, request, reply) {
+const updateShift = async (request, reply) => {
   try {
     const { vehicle, date, shift_start, shift_end, crew, status, notes } =
       request.body;
 
     const shift = await Shift.findById(request.params.id);
     if (!shift) {
-      return reply.status(404).send({ error: "Shift not found" });
+      return reply.code(404).send({ error: "Shift not found" });
     }
 
     // Validate vehicle if being updated
     if (vehicle) {
       const vehicleExists = await Car.findById(vehicle);
       if (!vehicleExists) {
-        return reply.status(404).send({ error: "Vehicle not found" });
+        return reply.code(404).send({ error: "Vehicle not found" });
       }
       shift.vehicle = vehicle;
     }
@@ -137,10 +149,16 @@ async function updateShift(fastify, request, reply) {
         if (member.user) {
           const user = await User.findById(member.user);
           if (!user) {
-            return reply.status(404).send({ error: `${role} user not found` });
+            return reply.code(404).send({ error: `${role} user not found` });
           }
-          if (!user.roles.includes(role)) {
-            return reply.status(400).send({ error: `User is not a ${role}` });
+
+          // Validate role based on user's role field or current_role
+          if (
+            (role === "driver" && user.role !== "driver") ||
+            (role === "doctor" && user.current_role !== "doctor") ||
+            (role === "nurse" && user.current_role !== "nurse")
+          ) {
+            return reply.code(400).send({ error: `User is not a ${role}` });
           }
         }
       }
@@ -151,30 +169,37 @@ async function updateShift(fastify, request, reply) {
     if (shift_start) shift.shift_start = shift_start;
     if (shift_end) shift.shift_end = shift_end;
     if (status) shift.status = status;
-    if (notes) shift.notes = notes;
+    if (notes !== undefined) shift.notes = notes;
 
     await shift.save();
-    return reply.send(shift);
+
+    const updatedShift = await Shift.findById(shift._id)
+      .populate("vehicle")
+      .populate("crew.driver.user")
+      .populate("crew.doctor.user")
+      .populate("crew.nurse.user");
+
+    return reply.send(updatedShift);
   } catch (error) {
     console.error("Error updating shift:", error);
-    return reply.status(500).send({ error: "Error updating shift" });
+    return reply.code(500).send({ error: "Error updating shift" });
   }
-}
+};
 
-async function deleteShift(fastify, request, reply) {
+const deleteShift = async (request, reply) => {
   try {
     const shift = await Shift.findByIdAndDelete(request.params.id);
     if (!shift) {
-      return reply.status(404).send({ error: "Shift not found" });
+      return reply.code(404).send({ error: "Shift not found" });
     }
     return reply.send({ message: "Shift deleted successfully" });
   } catch (error) {
     console.error("Error deleting shift:", error);
-    return reply.status(500).send({ error: "Error deleting shift" });
+    return reply.code(500).send({ error: "Error deleting shift" });
   }
-}
+};
 
-module.exports = function (fastify, opts, done) {
+const shiftRoutes = () => {
   fastify.post(
     "/api/shifts",
     { preHandler: [fastify.authenticate] },
@@ -200,6 +225,6 @@ module.exports = function (fastify, opts, done) {
     { preHandler: [fastify.authenticate] },
     deleteShift
   );
-
-  done();
 };
+
+module.exports = shiftRoutes;

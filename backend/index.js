@@ -9,6 +9,7 @@ const carChecklistRoutes = require("./src/controllers/carChecklistController");
 const materialChecklistRoutes = require("./src/controllers/materialChecklistController");
 const patientRoutes = require("./src/controllers/patientController");
 const inventoryRoutes = require("./src/controllers/inventoryController");
+const shiftRoutes = require("./src/controllers/shiftController");
 const { Car } = require("./src/schema/car.schema");
 const { User } = require("./src/schema/user.schema");
 const {
@@ -18,7 +19,6 @@ const {
   initializeMaterialChecklistItems,
 } = require("./src/init/materialChecklistItems");
 const { initializeCarChecklistItems } = require("./src/init/carChecklistItems");
-const shiftController = require("./src/controllers/shiftController");
 
 const cleanUpInactiveUsers = async () => {
   try {
@@ -100,7 +100,7 @@ carChecklistRoutes();
 materialChecklistRoutes();
 patientRoutes();
 inventoryRoutes();
-fastify.register(shiftController);
+shiftRoutes();
 
 // Start the server
 const start = async () => {

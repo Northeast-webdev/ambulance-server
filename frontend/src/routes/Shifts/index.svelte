@@ -485,7 +485,7 @@
               class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
             >
               <option value="">Seleziona medico</option>
-              {#each users.filter((u) => u.role === "doctor") as user}
+              {#each users.filter((u) => u.current_role === "doctor") as user}
                 <option value={user._id}
                   >{user.first_name} {user.last_name}</option
                 >
@@ -506,7 +506,7 @@
               class="block w-full border valid:border-lime-500 outline-none border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-lime-600 transition-all"
             >
               <option value="">Seleziona infermiere</option>
-              {#each users.filter((u) => u.role === "nurse") as user}
+              {#each users.filter((u) => u.current_role === "nurse") as user}
                 <option value={user._id}
                   >{user.first_name} {user.last_name}</option
                 >
