@@ -4,7 +4,8 @@ const Car = require("../schema/car.schema");
 
 async function createShift(fastify, request, reply) {
   try {
-    const { vehicle, date, shift_start, shift_end, crew, notes } = request.body;
+    const { vehicle, date, shift_start, shift_end, crew, notes, status } =
+      request.body;
 
     // Validate vehicle exists
     const vehicleExists = await Car.findById(vehicle);
@@ -27,23 +28,32 @@ async function createShift(fastify, request, reply) {
 
     const shift = new Shift({
       vehicle,
-      date,
+      date: new Date(date),
       shift_start,
       shift_end,
       crew,
       notes,
+      status: status || "scheduled",
     });
 
     await shift.save();
     return reply.status(201).send(shift);
   } catch (error) {
-    return reply.status(500).send({ error: error.message });
+    console.error("Error creating shift:", error);
+    return reply.status(500).send({ error: "Error creating shift" });
   }
 }
 
 async function listShifts(fastify, request, reply) {
   try {
-    const { start_date, end_date, vehicle, status } = request.query;
+    const {
+      start_date,
+      end_date,
+      vehicle,
+      status,
+      page = 1,
+      limit = 10,
+    } = request.query;
     const query = {};
 
     if (start_date && end_date) {
@@ -65,11 +75,21 @@ async function listShifts(fastify, request, reply) {
       .populate("vehicle")
       .populate("crew.driver.user")
       .populate("crew.doctor.user")
-      .populate("crew.nurse.user");
+      .populate("crew.nurse.user")
+      .sort({ date: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
 
-    return reply.send(shifts);
+    return reply.send({
+      shifts,
+      total: totalShifts,
+      page,
+      limit,
+      totalPages,
+    });
   } catch (error) {
-    return reply.status(500).send({ error: error.message });
+    console.error("Error listing shifts:", error);
+    return reply.status(500).send({ error: "Error retrieving shifts" });
   }
 }
 
@@ -87,7 +107,8 @@ async function getShift(fastify, request, reply) {
 
     return reply.send(shift);
   } catch (error) {
-    return reply.status(500).send({ error: error.message });
+    console.error("Error getting shift:", error);
+    return reply.status(500).send({ error: "Error retrieving shift" });
   }
 }
 
@@ -126,7 +147,7 @@ async function updateShift(fastify, request, reply) {
       shift.crew = crew;
     }
 
-    if (date) shift.date = date;
+    if (date) shift.date = new Date(date);
     if (shift_start) shift.shift_start = shift_start;
     if (shift_end) shift.shift_end = shift_end;
     if (status) shift.status = status;
@@ -135,7 +156,8 @@ async function updateShift(fastify, request, reply) {
     await shift.save();
     return reply.send(shift);
   } catch (error) {
-    return reply.status(500).send({ error: error.message });
+    console.error("Error updating shift:", error);
+    return reply.status(500).send({ error: "Error updating shift" });
   }
 }
 
@@ -147,7 +169,8 @@ async function deleteShift(fastify, request, reply) {
     }
     return reply.send({ message: "Shift deleted successfully" });
   } catch (error) {
-    return reply.status(500).send({ error: error.message });
+    console.error("Error deleting shift:", error);
+    return reply.status(500).send({ error: "Error deleting shift" });
   }
 }
 

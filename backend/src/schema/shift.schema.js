@@ -12,11 +12,11 @@ const shiftSchema = new mongoose.Schema(
       required: true,
     },
     shift_start: {
-      type: Date,
+      type: String,
       required: true,
     },
     shift_end: {
-      type: Date,
+      type: String,
       required: true,
     },
     crew: {
@@ -25,24 +25,24 @@ const shiftSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
         },
-        start_time: Date,
-        end_time: Date,
+        start_time: String,
+        end_time: String,
       },
       doctor: {
         user: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
         },
-        start_time: Date,
-        end_time: Date,
+        start_time: String,
+        end_time: String,
       },
       nurse: {
         user: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
         },
-        start_time: Date,
-        end_time: Date,
+        start_time: String,
+        end_time: String,
       },
     },
     status: {
