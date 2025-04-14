@@ -5,6 +5,9 @@
   import { fade, fly } from "svelte/transition";
   import MdiPencil from "virtual:icons/mdi/pencil";
   import MdiTrashCan from "virtual:icons/mdi/trash-can";
+  import MdiCalendarMonth from "virtual:icons/mdi/calendar-month";
+  import MdiFormatListBulleted from "virtual:icons/mdi/format-list-bulleted";
+  import MdiChevronDown from "virtual:icons/mdi/chevron-down";
   import LoadingList from "../../components/LoadingList.svelte";
   import { user } from "../../stores";
 
@@ -16,6 +19,10 @@
   let shiftType = "scheduled";
   let cars = [];
   let users = [];
+  let viewMode = "calendar"; // calendar or list
+  let expandedDay = null; // Store the date of the expanded day
+  let showDayDetail = false; // Controls visibility of day detail modal
+  let selectedDayShifts = []; // Shifts for the selected day
 
   let newShift = {
     vehicle: "",
@@ -259,6 +266,56 @@
       status: "scheduled",
     };
   }
+
+  // Function to toggle view mode
+  function toggleViewMode() {
+    viewMode = viewMode === "calendar" ? "list" : "calendar";
+  }
+
+  // Function to show day detail
+  function showDayDetails(day, dayShifts) {
+    expandedDay = day;
+    selectedDayShifts = dayShifts;
+    showDayDetail = true;
+  }
+
+  // Function to close day detail
+  function closeDayDetail() {
+    showDayDetail = false;
+  }
+
+  // Function to edit a shift
+  function editShift(shift) {
+    action = "edit";
+    shift_id = shift._id;
+    newShift = {
+      vehicle: shift.vehicle?._id || "",
+      date: shift.date.split("T")[0],
+      shift_start: shift.shift_start,
+      shift_end: shift.shift_end,
+      crew: {
+        driver: {
+          user: shift.crew.driver?.user?._id || "",
+          start_time: shift.crew.driver?.start_time || "08:00",
+          end_time: shift.crew.driver?.end_time || "20:00",
+        },
+        doctor: {
+          user: shift.crew.doctor?.user?._id || "",
+          start_time: shift.crew.doctor?.start_time || "08:00",
+          end_time: shift.crew.doctor?.end_time || "20:00",
+        },
+        nurse: {
+          user: shift.crew.nurse?.user?._id || "",
+          start_time: shift.crew.nurse?.start_time || "08:00",
+          end_time: shift.crew.nurse?.end_time || "20:00",
+        },
+      },
+      notes: shift.notes || "",
+      status: shift.status,
+    };
+    show_form = true;
+    if (showDayDetail) closeDayDetail();
+  }
 </script>
 
 {#if loading}
@@ -313,228 +370,248 @@
               : "completati"}
         </p>
       </div>
-      <button
-        on:click={newShiftToggle}
-        class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-md"
-      >
-        <span class="text-2xl">+</span>
-        <span>Nuovo Turno</span>
-      </button>
+      <div class="flex gap-3">
+        <button
+          on:click={toggleViewMode}
+          class="bg-gray-200 hover:bg-gray-300 transition text-gray-700 font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 shadow-md"
+        >
+          {#if viewMode === "calendar"}
+            <MdiFormatListBulleted class="w-5 h-5" />
+            <span>Vista Lista</span>
+          {:else}
+            <MdiCalendarMonth class="w-5 h-5" />
+            <span>Vista Calendario</span>
+          {/if}
+        </button>
+        <button
+          on:click={newShiftToggle}
+          class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-2 px-6 rounded-lg flex items-center justify-center gap-2 shadow-md"
+        >
+          <span class="text-2xl">+</span>
+          <span>Nuovo Turno</span>
+        </button>
+      </div>
     </div>
 
     <!-- Calendar View for Shifts -->
-    <div class="mb-10 bg-white rounded-lg shadow-md p-4">
-      <h2 class="text-xl font-semibold mb-4">Vista Calendario</h2>
-      <div class="grid grid-cols-7 gap-1 mb-2 text-center text-sm">
-        <div class="font-bold">Lunedì</div>
-        <div class="font-bold">Martedì</div>
-        <div class="font-bold">Mercoledì</div>
-        <div class="font-bold">Giovedì</div>
-        <div class="font-bold">Venerdì</div>
-        <div class="font-bold">Sabato</div>
-        <div class="font-bold">Domenica</div>
-      </div>
+    {#if viewMode === "calendar"}
+      <div class="mb-10 bg-white rounded-lg shadow-md p-4">
+        <h2 class="text-xl font-semibold mb-4">Vista Calendario</h2>
+        <div class="grid grid-cols-7 gap-1 mb-2 text-center text-sm">
+          <div class="font-bold">Lunedì</div>
+          <div class="font-bold">Martedì</div>
+          <div class="font-bold">Mercoledì</div>
+          <div class="font-bold">Giovedì</div>
+          <div class="font-bold">Venerdì</div>
+          <div class="font-bold">Sabato</div>
+          <div class="font-bold">Domenica</div>
+        </div>
 
-      {#if shifts.length > 0}
-        <div class="grid grid-cols-7 gap-1 auto-rows-fr">
-          {#each Array.from({ length: 28 }) as _, index}
-            {@const currentDate = new Date()}
-            {@const day = new Date(
-              currentDate.getFullYear(),
-              currentDate.getMonth(),
-              currentDate.getDate() - currentDate.getDay() + 1 + index
-            )}
-            {@const dayShifts = shifts.filter(
-              (s) => new Date(s.date).toDateString() === day.toDateString()
-            )}
-            <div
-              class="border rounded min-h-[100px] p-2 {day.toDateString() ===
-              currentDate.toDateString()
-                ? 'bg-emerald-50 border-emerald-300'
-                : ''}"
-            >
-              <div class="text-sm font-medium mb-1">
-                {day.getDate()}/{day.getMonth() + 1}
-              </div>
-              <div class="space-y-1">
-                {#each dayShifts as shift}
-                  <div
-                    class="text-xs p-1 rounded cursor-pointer {shift.status ===
-                    'scheduled'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : shift.status === 'in_progress'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-green-100 text-green-800'}"
-                    on:click={() => {
-                      action = "edit";
-                      shift_id = shift._id;
-                      newShift = {
-                        vehicle: shift.vehicle?._id || "",
-                        date: shift.date.split("T")[0],
-                        shift_start: shift.shift_start,
-                        shift_end: shift.shift_end,
-                        crew: {
-                          driver: {
-                            user: shift.crew.driver?.user?._id || "",
-                            start_time:
-                              shift.crew.driver?.start_time || "08:00",
-                            end_time: shift.crew.driver?.end_time || "20:00",
-                          },
-                          doctor: {
-                            user: shift.crew.doctor?.user?._id || "",
-                            start_time:
-                              shift.crew.doctor?.start_time || "08:00",
-                            end_time: shift.crew.doctor?.end_time || "20:00",
-                          },
-                          nurse: {
-                            user: shift.crew.nurse?.user?._id || "",
-                            start_time: shift.crew.nurse?.start_time || "08:00",
-                            end_time: shift.crew.nurse?.end_time || "20:00",
-                          },
-                        },
-                        notes: shift.notes || "",
-                        status: shift.status,
-                      };
-                      show_form = true;
-                    }}
-                  >
-                    <span class="font-bold"
-                      >{shift.shift_start}-{shift.shift_end}</span
-                    ><br />
-                    {shift.vehicle?.name || ""}
-                  </div>
-                {/each}
-              </div>
-            </div>
-          {/each}
-        </div>
-      {:else}
-        <div class="text-center py-8 text-gray-500">
-          Nessun turno disponibile. Crea un nuovo turno per visualizzarlo nel
-          calendario.
-        </div>
-      {/if}
-    </div>
-    {#if shifts.length > 0}
-      <!-- Table Container with Overflow for Responsiveness -->
-      <div class="overflow-x-auto">
-        <table
-          class="min-w-full border-collapse shadow-lg rounded-lg overflow-hidden"
-        >
-          <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
-            <tr>
-              <th
-                class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                >Data</th
+        {#if shifts.length > 0}
+          <div class="grid grid-cols-7 gap-1 auto-rows-fr">
+            {#each Array.from({ length: 28 }) as _, index}
+              {@const currentDate = new Date()}
+              {@const day = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth(),
+                currentDate.getDate() - currentDate.getDay() + 1 + index
+              )}
+              {@const dayShifts = shifts.filter(
+                (s) => new Date(s.date).toDateString() === day.toDateString()
+              )}
+              <button
+                class="border rounded min-h-[100px] p-2 {day.toDateString() ===
+                currentDate.toDateString()
+                  ? 'bg-emerald-50 border-emerald-300'
+                  : ''} hover:border-blue-400 transition-colors relative cursor-pointer"
+                type="button"
+                on:click={() => showDayDetails(day, dayShifts)}
               >
-              <th
-                class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                >Veicolo</th
-              >
-              <th
-                class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                >Autista</th
-              >
-              <th
-                class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                >Medico</th
-              >
-              <th
-                class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                >Infermiere</th
-              >
-              <th
-                class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
-                >Orario</th
-              >
-              <th
-                class="py-3 px-4 text-center font-semibold text-gray-700 border-b"
-                >Azioni</th
-              >
-            </tr>
-          </thead>
-          <tbody>
-            {#each shifts as shift, index}
-              <tr
-                transition:fly|local={{
-                  x: 100,
-                  duration: 300,
-                  delay: index * 100,
-                }}
-                class="{index % 2 === 0
-                  ? 'bg-white'
-                  : 'bg-gray-100'} border-b border-l"
-              >
-                <td class="py-3 px-4 border-r"
-                  >{moment(shift.date).format("DD/MM/YYYY")}</td
-                >
-                <td class="py-3 px-4 border-r">{shift.vehicle?.name || "-"}</td>
-                <td class="py-3 px-4 border-r">
-                  {shift.crew.driver?.user?.first_name}
-                  {shift.crew.driver?.user?.last_name}
-                </td>
-                <td class="py-3 px-4 border-r">
-                  {shift.crew.doctor?.user?.first_name}
-                  {shift.crew.doctor?.user?.last_name}
-                </td>
-                <td class="py-3 px-4 border-r">
-                  {shift.crew.nurse?.user?.first_name}
-                  {shift.crew.nurse?.user?.last_name}
-                </td>
-                <td class="py-3 px-4 border-r">
-                  {shift.shift_start} - {shift.shift_end}
-                </td>
-                <td class="py-3 px-4 border-r flex justify-center gap-3">
-                  <button
-                    on:click={() => {
-                      action = "edit";
-                      shift_id = shift._id;
-                      newShift = {
-                        vehicle: shift.vehicle?._id || "",
-                        date: shift.date.split("T")[0],
-                        shift_start: shift.shift_start,
-                        shift_end: shift.shift_end,
-                        crew: {
-                          driver: {
-                            user: shift.crew.driver?.user?._id || "",
-                            start_time:
-                              shift.crew.driver?.start_time || "08:00",
-                            end_time: shift.crew.driver?.end_time || "20:00",
-                          },
-                          doctor: {
-                            user: shift.crew.doctor?.user?._id || "",
-                            start_time:
-                              shift.crew.doctor?.start_time || "08:00",
-                            end_time: shift.crew.doctor?.end_time || "20:00",
-                          },
-                          nurse: {
-                            user: shift.crew.nurse?.user?._id || "",
-                            start_time: shift.crew.nurse?.start_time || "08:00",
-                            end_time: shift.crew.nurse?.end_time || "20:00",
-                          },
-                        },
-                        notes: shift.notes || "",
-                        status: shift.status,
-                      };
-                      show_form = true;
-                    }}
-                    class="border-amber-600 border hover:bg-amber-600 text-amber-600 hover:text-amber-100 font-bold py-2 px-4 rounded-lg transition duration-200"
-                  >
-                    <MdiPencil class="w-4 h-4 inline" />
-                    <span>Modifica</span>
-                  </button>
-                  <button
-                    on:click={() => deleteShift(shift._id)}
-                    class="border-red-600 border hover:bg-red-600 text-red-600 hover:text-red-100 font-bold py-2 px-4 rounded-lg transition duration-200"
-                  >
-                    <MdiTrashCan class="w-4 h-4 inline" />
-                    <span>Elimina</span>
-                  </button>
-                </td>
-              </tr>
+                <div class="text-sm font-medium mb-1">
+                  {day.getDate().toString().padStart(2, "0")}/{(
+                    day.getMonth() + 1
+                  )
+                    .toString()
+                    .padStart(2, "0")}
+                </div>
+                <div class="space-y-1">
+                  {#if dayShifts.length > 0}
+                    <!-- Show max 3 shifts -->
+                    {#each dayShifts.slice(0, 3) as shift}
+                      <div
+                        class="text-xs p-1 w-full text-left rounded {shift.status ===
+                        'scheduled'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : shift.status === 'in_progress'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-green-100 text-green-800'}"
+                      >
+                        <span class="font-bold"
+                          >{shift.shift_start}-{shift.shift_end}</span
+                        ><br />
+                        {shift.vehicle?.name || ""}
+                      </div>
+                    {/each}
+
+                    <!-- Show "more" indicator if there are more than 3 shifts -->
+                    {#if dayShifts.length > 3}
+                      <div
+                        class="w-full text-xs py-1 px-2 bg-gray-100 text-gray-700 rounded flex items-center justify-center"
+                      >
+                        <span>+{dayShifts.length - 3} altri</span>
+                        <MdiChevronDown class="w-3 h-3 ml-1" />
+                      </div>
+                    {/if}
+                  {:else}
+                    <div class="text-xs text-gray-500 italic text-center py-2">
+                      Nessun turno
+                    </div>
+                  {/if}
+                </div>
+              </button>
             {/each}
-          </tbody>
-        </table>
+          </div>
+        {:else}
+          <div class="text-center py-8 text-gray-500">
+            Nessun turno disponibile. Crea un nuovo turno per visualizzarlo nel
+            calendario.
+          </div>
+        {/if}
+      </div>
+    {/if}
+
+    <!-- List View for Shifts -->
+    {#if viewMode === "list" && shifts.length > 0}
+      <div class="bg-white rounded-lg shadow-md p-4">
+        <h2 class="text-xl font-semibold mb-4">Lista Turni</h2>
+        <!-- Table Container with Overflow for Responsiveness -->
+        <div class="overflow-x-auto">
+          <table class="min-w-full border-collapse rounded-lg overflow-hidden">
+            <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
+              <tr>
+                <th
+                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                  >Data</th
+                >
+                <th
+                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                  >Veicolo</th
+                >
+                <th
+                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                  >Autista</th
+                >
+                <th
+                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                  >Medico</th
+                >
+                <th
+                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                  >Infermiere</th
+                >
+                <th
+                  class="py-3 px-4 text-left font-semibold text-gray-700 border-b"
+                  >Orario</th
+                >
+                <th
+                  class="py-3 px-4 text-center font-semibold text-gray-700 border-b"
+                  >Azioni</th
+                >
+              </tr>
+            </thead>
+            <tbody>
+              {#each shifts as shift, index}
+                <tr
+                  transition:fly|local={{
+                    x: 100,
+                    duration: 300,
+                    delay: index * 100,
+                  }}
+                  class="{index % 2 === 0
+                    ? 'bg-white'
+                    : 'bg-gray-100'} border-b border-l"
+                >
+                  <td class="py-3 px-4 border-r"
+                    >{moment(shift.date).format("DD/MM/YYYY")}</td
+                  >
+                  <td class="py-3 px-4 border-r"
+                    >{shift.vehicle?.name || "-"}</td
+                  >
+                  <td class="py-3 px-4 border-r">
+                    {shift.crew.driver?.user?.first_name}
+                    {shift.crew.driver?.user?.last_name}
+                  </td>
+                  <td class="py-3 px-4 border-r">
+                    {shift.crew.doctor?.user?.first_name}
+                    {shift.crew.doctor?.user?.last_name}
+                  </td>
+                  <td class="py-3 px-4 border-r">
+                    {shift.crew.nurse?.user?.first_name}
+                    {shift.crew.nurse?.user?.last_name}
+                  </td>
+                  <td class="py-3 px-4 border-r">
+                    {shift.shift_start} - {shift.shift_end}
+                  </td>
+                  <td class="py-3 px-4 border-r flex justify-center gap-3">
+                    <button
+                      on:click={() => {
+                        action = "edit";
+                        shift_id = shift._id;
+                        newShift = {
+                          vehicle: shift.vehicle?._id || "",
+                          date: shift.date.split("T")[0],
+                          shift_start: shift.shift_start,
+                          shift_end: shift.shift_end,
+                          crew: {
+                            driver: {
+                              user: shift.crew.driver?.user?._id || "",
+                              start_time:
+                                shift.crew.driver?.start_time || "08:00",
+                              end_time: shift.crew.driver?.end_time || "20:00",
+                            },
+                            doctor: {
+                              user: shift.crew.doctor?.user?._id || "",
+                              start_time:
+                                shift.crew.doctor?.start_time || "08:00",
+                              end_time: shift.crew.doctor?.end_time || "20:00",
+                            },
+                            nurse: {
+                              user: shift.crew.nurse?.user?._id || "",
+                              start_time:
+                                shift.crew.nurse?.start_time || "08:00",
+                              end_time: shift.crew.nurse?.end_time || "20:00",
+                            },
+                          },
+                          notes: shift.notes || "",
+                          status: shift.status,
+                        };
+                        show_form = true;
+                      }}
+                      class="border-amber-600 border hover:bg-amber-600 text-amber-600 hover:text-amber-100 font-bold py-2 px-4 rounded-lg transition duration-200"
+                    >
+                      <MdiPencil class="w-4 h-4 inline" />
+                      <span>Modifica</span>
+                    </button>
+                    <button
+                      on:click={() => deleteShift(shift._id)}
+                      class="border-red-600 border hover:bg-red-600 text-red-600 hover:text-red-100 font-bold py-2 px-4 rounded-lg transition duration-200"
+                    >
+                      <MdiTrashCan class="w-4 h-4 inline" />
+                      <span>Elimina</span>
+                    </button>
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {:else if viewMode === "list" && shifts.length === 0}
+      <div class="bg-white rounded-lg shadow-md p-8 text-center">
+        <p class="text-gray-500">
+          Nessun turno disponibile. Crea un nuovo turno per visualizzarlo nella
+          lista.
+        </p>
       </div>
     {/if}
   </div>
@@ -544,7 +621,7 @@
   <!-- Modal Background -->
   <div
     transition:fade={{ duration: 300 }}
-    class="fixed inset-0 z-40 flex items-center justify-center overflow-y-auto p-8 bg-black bg-opacity-50"
+    class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-8 bg-black bg-opacity-50"
   >
     <!-- Form Modal -->
     <div
@@ -861,6 +938,165 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+{/if}
+
+<!-- Day Detail Modal -->
+{#if showDayDetail}
+  <div
+    transition:fade={{ duration: 300 }}
+    class="fixed inset-0 z-40 flex items-center justify-center overflow-y-auto p-8 bg-black bg-opacity-50"
+  >
+    <div
+      class="relative w-full max-w-screen-lg bg-white rounded-lg shadow-xl overflow-y-auto p-6"
+    >
+      <button
+        class="absolute top-4 right-6 text-3xl text-gray-600 hover:text-gray-800"
+        on:click={closeDayDetail}
+        aria-label="Close day detail"
+      >
+        ✕
+      </button>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold">
+          Turni del {moment(expandedDay).format("DD/MM/YYYY")}
+        </h2>
+      </div>
+
+      {#if selectedDayShifts.length > 0}
+        <div class="overflow-x-auto">
+          <table class="min-w-full border-collapse rounded-lg overflow-hidden">
+            <thead class="bg-gradient-to-l from-gray-200 to-gray-300">
+              <tr>
+                <th
+                  class="py-2 px-3 text-left font-semibold text-gray-700 border-b"
+                  >Orario</th
+                >
+                <th
+                  class="py-2 px-3 text-left font-semibold text-gray-700 border-b"
+                  >Veicolo</th
+                >
+                <th
+                  class="py-2 px-3 text-left font-semibold text-gray-700 border-b"
+                  >Equipaggio</th
+                >
+                <th
+                  class="py-2 px-3 text-left font-semibold text-gray-700 border-b"
+                  >Stato</th
+                >
+                <th
+                  class="py-2 px-3 text-center font-semibold text-gray-700 border-b"
+                  >Azioni</th
+                >
+              </tr>
+            </thead>
+            <tbody>
+              {#each selectedDayShifts as shift, index}
+                <tr
+                  transition:fly|local={{
+                    y: 20,
+                    duration: 200,
+                    delay: index * 50,
+                  }}
+                  class="{index % 2 === 0
+                    ? 'bg-white'
+                    : 'bg-gray-50'} border-b hover:bg-gray-100"
+                >
+                  <td class="py-2 px-3"
+                    >{shift.shift_start} - {shift.shift_end}</td
+                  >
+                  <td class="py-2 px-3">{shift.vehicle?.name || "-"}</td>
+                  <td class="py-2 px-3 text-sm">
+                    <div>
+                      {shift.crew.driver?.user?.first_name}
+                      {shift.crew.driver?.user?.last_name}
+                    </div>
+                    <div>
+                      {shift.crew.doctor?.user?.first_name}
+                      {shift.crew.doctor?.user?.last_name}
+                    </div>
+                    <div>
+                      {shift.crew.nurse?.user?.first_name}
+                      {shift.crew.nurse?.user?.last_name}
+                    </div>
+                  </td>
+                  <td class="py-2 px-3">
+                    <span
+                      class="inline-block px-2 py-1 text-sm rounded-full {shift.status ===
+                      'scheduled'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : shift.status === 'in_progress'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-green-100 text-green-800'}"
+                    >
+                      {shift.status === "scheduled"
+                        ? "Pianificato"
+                        : shift.status === "in_progress"
+                          ? "In corso"
+                          : "Completato"}
+                    </span>
+                  </td>
+                  <td class="py-2 px-3 text-center">
+                    <div class="flex justify-center gap-2">
+                      <button
+                        on:click={() => editShift(shift)}
+                        class="border-amber-600 border hover:bg-amber-600 text-amber-600 hover:text-amber-100 font-bold py-2 px-4 text-sm rounded-lg transition duration-200"
+                      >
+                        <MdiPencil class="w-3 h-3 inline" />
+                        <span>Modifica</span>
+                      </button>
+                      <button
+                        on:click={() => {
+                          deleteShift(shift._id);
+                          // Remove the shift from the selectedDayShifts if successful
+                          selectedDayShifts = selectedDayShifts.filter(
+                            (s) => s._id !== shift._id
+                          );
+                          // Close the modal if no shifts are left
+                          if (selectedDayShifts.length === 0) {
+                            closeDayDetail();
+                          }
+                        }}
+                        class="border-red-600 border hover:bg-red-600 text-red-600 hover:text-red-100 font-bold py-2 px-4 text-sm rounded-lg transition duration-200"
+                      >
+                        <MdiTrashCan class="w-3 h-3 inline" />
+                        <span>Elimina</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
+      {:else}
+        <div
+          class="py-12 flex flex-col items-center justify-center bg-gray-50 rounded-lg"
+        >
+          <p class="text-gray-500 mb-6">
+            Nessun turno pianificato per questo giorno.
+          </p>
+          <button
+            on:click={() => {
+              // Set up a new shift for this day
+              resetForm();
+              newShift.date = new Date(
+                expandedDay.setDate(expandedDay.getDate() + 1)
+              )
+                .toISOString()
+                .split("T")[0];
+              show_form = true;
+              action = "new";
+              closeDayDetail();
+            }}
+            class="bg-green-600 hover:bg-green-800 transition text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 shadow-md"
+          >
+            <span class="text-lg">+</span>
+            <span>Pianifica Turno</span>
+          </button>
+        </div>
+      {/if}
     </div>
   </div>
 {/if}
