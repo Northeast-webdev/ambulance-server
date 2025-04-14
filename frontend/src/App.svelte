@@ -16,6 +16,7 @@
   import Runs from "./routes/Runs/index.svelte";
   import Stats from "./routes/Stats/index.svelte";
   import Users from "./routes/Users/index.svelte";
+  import Shifts from "./routes/Shifts/index.svelte";
   import { token, user } from "./stores";
   import UserStats from "./routes/Stats/UserStats.svelte";
 
@@ -117,6 +118,9 @@
       </PrivateRoute>
       <PrivateRoute path="/stats/user/:id">
         <UserStats />
+      </PrivateRoute>
+      <PrivateRoute path="/shifts">
+        <Shifts />
       </PrivateRoute>
       <Route path="login">
         <Login />

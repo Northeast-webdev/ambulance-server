@@ -18,6 +18,7 @@ const {
   initializeMaterialChecklistItems,
 } = require("./src/init/materialChecklistItems");
 const { initializeCarChecklistItems } = require("./src/init/carChecklistItems");
+const shiftController = require("./controllers/shiftController");
 
 const cleanUpInactiveUsers = async () => {
   try {
@@ -99,6 +100,7 @@ carChecklistRoutes();
 materialChecklistRoutes();
 patientRoutes();
 inventoryRoutes();
+fastify.register(shiftController);
 
 // Start the server
 const start = async () => {

@@ -8,7 +8,6 @@ const carSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: "User" },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
-  shift_start: { type: Date, default: Date.now },
   runs: [{ type: Schema.Types.ObjectId, ref: "Run", default: [] }],
   last_location: {
     latitude: { type: Number, default: 44.42580512807064 },
@@ -29,6 +28,61 @@ const carSchema = new Schema({
   ],
   car_checklists: [{ type: Schema.Types.ObjectId, ref: "CarChecklist" }],
   image: { type: String },
+  shift_start: {
+    type: Date,
+    default: null,
+  },
+  shift_end: {
+    type: Date,
+    default: null,
+  },
+  crew: {
+    driver: {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
+      start_time: {
+        type: Date,
+        default: null,
+      },
+      end_time: {
+        type: Date,
+        default: null,
+      },
+    },
+    doctor: {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
+      start_time: {
+        type: Date,
+        default: null,
+      },
+      end_time: {
+        type: Date,
+        default: null,
+      },
+    },
+    nurse: {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: null,
+      },
+      start_time: {
+        type: Date,
+        default: null,
+      },
+      end_time: {
+        type: Date,
+        default: null,
+      },
+    },
+  },
 });
 const Car = mongoose.model("Car", carSchema);
 

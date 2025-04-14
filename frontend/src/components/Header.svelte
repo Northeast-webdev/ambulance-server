@@ -14,6 +14,7 @@
     { name: "Mappa", path: "/" },
     { name: "Utenti", path: "/users" },
     { name: "Deposito", path: "/garage" },
+    { name: "Turni", path: "/shifts" },
     // { name: "Mezzi Checklist", path: "/car-checklists" },
     // { name: "Materiali Checklist", path: "/material-checklists" },
     { name: "Statistiche", path: "/stats" },
