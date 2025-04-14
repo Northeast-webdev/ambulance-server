@@ -420,12 +420,18 @@
                 (s) => new Date(s.date).toDateString() === day.toDateString()
               )}
               <button
-                class="border rounded min-h-[100px] p-2 {day.toDateString() ===
+                type="button"
+                class="border rounded min-h-[100px] p-2 text-left {day.toDateString() ===
                 currentDate.toDateString()
                   ? 'bg-emerald-50 border-emerald-300'
                   : ''} hover:border-blue-400 transition-colors relative cursor-pointer"
-                type="button"
                 on:click={() => showDayDetails(day, dayShifts)}
+                aria-label="Mostra turni del {day
+                  .getDate()
+                  .toString()
+                  .padStart(2, '0')}/{(day.getMonth() + 1)
+                  .toString()
+                  .padStart(2, '0')}"
               >
                 <div class="text-sm font-medium mb-1">
                   {day.getDate().toString().padStart(2, "0")}/{(
@@ -622,6 +628,19 @@
   <div
     transition:fade={{ duration: 300 }}
     class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-8 bg-black bg-opacity-50"
+    on:click|self={() => {
+      show_form = false;
+      resetForm();
+    }}
+    on:keydown={(e) => {
+      if (e.key === "Escape") {
+        show_form = false;
+        resetForm();
+      }
+    }}
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
   >
     <!-- Form Modal -->
     <div
@@ -637,7 +656,7 @@
       >
         ✕
       </button>
-      <h2 class="text-3xl font-bold text-left mb-6">
+      <h2 id="modal-title" class="text-3xl font-bold text-left mb-6">
         {action === "new" ? "Nuovo Turno" : "Modifica Turno"}
       </h2>
       <form on:submit|preventDefault={saveShift} class="space-y-6">
@@ -947,6 +966,15 @@
   <div
     transition:fade={{ duration: 300 }}
     class="fixed inset-0 z-40 flex items-center justify-center overflow-y-auto p-8 bg-black bg-opacity-50"
+    on:click|self={closeDayDetail}
+    on:keydown={(e) => {
+      if (e.key === "Escape") {
+        closeDayDetail();
+      }
+    }}
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="day-detail-title"
   >
     <div
       class="relative w-full max-w-screen-lg bg-white rounded-lg shadow-xl overflow-y-auto p-6"
@@ -959,7 +987,7 @@
         ✕
       </button>
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold">
+        <h2 id="day-detail-title" class="text-2xl font-bold">
           Turni del {moment(expandedDay).format("DD/MM/YYYY")}
         </h2>
       </div>
