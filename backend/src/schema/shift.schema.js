@@ -60,4 +60,6 @@ const shiftSchema = new mongoose.Schema(
 // Index for efficient querying of shifts by date and vehicle
 shiftSchema.index({ date: 1, vehicle: 1 });
 
-module.exports = mongoose.model("Shift", shiftSchema);
+const Shift = mongoose.model("Shift", shiftSchema);
+
+module.exports = { Shift, shiftSchema };

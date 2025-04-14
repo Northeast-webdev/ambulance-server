@@ -1,7 +1,7 @@
 const { fastify } = require("../init");
-const Shift = require("../schema/shift.schema");
-const User = require("../schema/user.schema");
-const Car = require("../schema/car.schema");
+const { Shift } = require("../schema/shift.schema");
+const { User } = require("../schema/user.schema");
+const { Car } = require("../schema/car.schema");
 
 const createShift = async (request, reply) => {
   try {
@@ -14,22 +14,14 @@ const createShift = async (request, reply) => {
       return reply.code(404).send({ error: "Vehicle not found" });
     }
 
-    // Validate crew members exist and have correct roles
+    // Validate crew members exist
     for (const [role, member] of Object.entries(crew)) {
       if (member.user) {
         const user = await User.findById(member.user);
         if (!user) {
           return reply.code(404).send({ error: `${role} user not found` });
         }
-
-        // Validate role based on user's role field or current_role
-        if (
-          (role === "driver" && user.role !== "driver") ||
-          (role === "doctor" && user.current_role !== "doctor") ||
-          (role === "nurse" && user.current_role !== "nurse")
-        ) {
-          return reply.code(400).send({ error: `User is not a ${role}` });
-        }
+        // No role validation - any user can be assigned to any role
       }
     }
 
@@ -151,15 +143,7 @@ const updateShift = async (request, reply) => {
           if (!user) {
             return reply.code(404).send({ error: `${role} user not found` });
           }
-
-          // Validate role based on user's role field or current_role
-          if (
-            (role === "driver" && user.role !== "driver") ||
-            (role === "doctor" && user.current_role !== "doctor") ||
-            (role === "nurse" && user.current_role !== "nurse")
-          ) {
-            return reply.code(400).send({ error: `User is not a ${role}` });
-          }
+          // No role validation - any user can be assigned to any role
         }
       }
       shift.crew = crew;
