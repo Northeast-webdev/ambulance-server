@@ -1,5 +1,5 @@
 // schema/user.schema.js
-const mongoose = require("mongoose");
+const { Schema, default: mongoose } = require("mongoose");
 
 const userSchema = new Schema(
   {
