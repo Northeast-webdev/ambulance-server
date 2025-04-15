@@ -523,7 +523,6 @@ const printMaterialChecklist = async (materialChecklistId, userId) => {
       /\s+/g,
       "_"
     )}_${formattedData.car}_${formattedData.date.replace(/\//g, "-")}.pdf`;
-    const filePath = path.join(__dirname, "../pdf", fileName);
 
     // Set the HTML content
     await page.setContent(htmlTemplate);
@@ -535,7 +534,7 @@ const printMaterialChecklist = async (materialChecklistId, userId) => {
 
     // Generate PDF
     await page.pdf({
-      path: filePath,
+      path: `/var/data/${fileName}`,
       format: "A4",
       printBackground: true,
       margin: {
