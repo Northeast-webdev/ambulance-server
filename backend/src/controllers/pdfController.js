@@ -504,7 +504,8 @@ const printMaterialChecklist = async (checklistId, checklist) => {
         .toLocaleDateString("it-IT")
         .replace(/\//g, "-") +
       "-" +
-      materialChecklist.created_at.toLocaleTimeString("it-IT");
+      materialChecklist.created_at.toLocaleTimeString("it-IT") +
+      ".pdf";
 
     // Launch a browser instance
     const browser = await puppeteer.launch({
@@ -531,13 +532,8 @@ const printMaterialChecklist = async (checklistId, checklist) => {
     await page.pdf({
       path: `/var/data/${filename}`,
       format: "A4",
+      scale: 0.8,
       printBackground: true,
-      margin: {
-        top: "20px",
-        right: "20px",
-        bottom: "20px",
-        left: "20px",
-      },
     });
 
     // Close the browser
