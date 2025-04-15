@@ -1,10 +1,12 @@
 // controllers/pdfController.js
 const puppeteer = require("puppeteer");
 const fs = require("fs");
+const path = require("path");
 const { CarChecklist } = require("../schema/carChecklist.schema");
 const { MaterialChecklist } = require("../schema/materialChecklist.schema");
 const { Car } = require("../schema/car.schema");
-const { InventoryItem } = require("../schema/inventory.schema");
+const { User } = require("../schema/user.schema");
+const { fastify } = require("../init");
 
 const printCarChecklist = async (request) => {
   try {
@@ -386,62 +388,210 @@ const printCarChecklist = async (request) => {
   }
 };
 
-const printMaterialChecklist = async (request) => {
+// Helper function to get a material checklist by ID
+const getMaterialChecklist = async (checklistId) => {
   try {
-    const browser = await puppeteer.launch();
+    return await MaterialChecklist.findOne({
+      _id: checklistId,
+    })
+      .populate({
+        path: "items.item",
+        model: "InventoryItem",
+      })
+      .populate("car", "name _id meta")
+      .populate("user", "first_name last_name _id")
+      .exec();
+  } catch (err) {
+    console.error("Error getting material checklist:", err);
+    return null;
+  }
+};
+
+const materialChecklistToFormattedData = async (materialChecklist, userId) => {
+  try {
+    // Format date and time
+    const checklistDate = new Date(materialChecklist.created_at);
+    const formattedDate = checklistDate.toLocaleDateString("it-IT");
+    const formattedTime = checklistDate.toLocaleTimeString("it-IT");
+
+    // Get user and car information
+    const user = await User.findById(userId);
+    const car = materialChecklist.car;
+
+    if (!user || !car) {
+      return { error: "User or car not found" };
+    }
+
+    // Create formatted checklist object
+    const formattedChecklist = {
+      date: formattedDate,
+      time: formattedTime,
+      user: `${user.firstName} ${user.lastName}`,
+      car: car.name,
+      report: materialChecklist.report || "",
+      unmarked_materials: materialChecklist.unmarked_materials || "",
+      mainTable: [],
+      traumaTable: [],
+      oxygenTable: [],
+      borsaTable: [],
+      cassettiTable: [],
+    };
+
+    // Categorize items based on their category and subcategory
+    const categorizedItems = {
+      main: {},
+      trauma: {},
+      oxygen: {},
+      borsa: {},
+      cassetti: {},
+    };
+
+    // Group items by category and subcategory
+    materialChecklist.items.forEach((item) => {
+      const inventoryItem = item.item;
+      if (!inventoryItem) return;
+
+      const category = (inventoryItem.category || "main").toLowerCase();
+      const subcategory = inventoryItem.subcategory || "Default";
+
+      if (!categorizedItems[category][subcategory]) {
+        categorizedItems[category][subcategory] = [];
+      }
+
+      categorizedItems[category][subcategory].push({
+        name: inventoryItem.name,
+        quantity: inventoryItem.minimum_quantity || 1,
+        value: item.quantity,
+      });
+    });
+
+    // Convert categorized items to format expected by the template
+    Object.keys(categorizedItems).forEach((category) => {
+      const targetArray = formattedChecklist[`${category}Table`];
+      if (!targetArray) return;
+
+      Object.keys(categorizedItems[category]).forEach((subcategory) => {
+        const items = categorizedItems[category][subcategory];
+        if (items.length > 0) {
+          targetArray.push({
+            category: subcategory,
+            items: items,
+          });
+        }
+      });
+    });
+
+    return formattedChecklist;
+  } catch (error) {
+    console.error("Error formatting material checklist:", error);
+    return { error: "Error formatting material checklist" };
+  }
+};
+
+const printMaterialChecklist = async (materialChecklistId, userId) => {
+  try {
+    // Get the material checklist
+    const materialChecklist = await getMaterialChecklist(materialChecklistId);
+    if (!materialChecklist) {
+      return { statusCode: 404, message: "Material checklist not found" };
+    }
+
+    // Get formatted data
+    const formattedData = await materialChecklistToFormattedData(
+      materialChecklist,
+      userId
+    );
+    if (formattedData.error) {
+      return { statusCode: 500, message: formattedData.error };
+    }
+
+    // Launch a browser instance
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
     const page = await browser.newPage();
 
-    const { checklistId, checklist } = request;
-    const materialChecklist = await MaterialChecklist.findById(checklistId)
-      .populate("car")
-      .populate("user");
-
-    const filename =
-      "checklist_inf-" +
-      materialChecklist.user.username +
-      "-" +
-      materialChecklist.car.name +
-      "-" +
-      materialChecklist.created_at
-        .toLocaleDateString("it-IT")
-        .replace(/\//g, "-") +
-      "-" +
-      materialChecklist.created_at.toLocaleTimeString("it-IT");
-
     // Read the HTML template
-    const htmlContent = fs.readFileSync(
-      `${process.cwd()}/src/html/material_page.html`,
-      "utf-8"
+    const htmlTemplate = fs.readFileSync(
+      path.join(__dirname, "../html/material_page.html"),
+      "utf8"
     );
 
-    // Inject the checklist data into the template
-    let newContent = htmlContent.replace(
-      "</head>",
-      `<script>const checklist = ${JSON.stringify(checklist)};</script></head>`
-    );
+    // Create a unique filename
+    const fileName = `material_checklist_${formattedData.user.replace(
+      /\s+/g,
+      "_"
+    )}_${formattedData.car}_${formattedData.date.replace(/\//g, "-")}.pdf`;
+    const filePath = path.join(__dirname, "../pdf", fileName);
 
-    await page.setContent(newContent, { waitUntil: "networkidle0" });
+    // Set the HTML content
+    await page.setContent(htmlTemplate);
 
+    // Inject the formatted data as a global variable
+    await page.evaluate((checklist) => {
+      window.checklist = checklist;
+    }, formattedData);
+
+    // Generate PDF
     await page.pdf({
-      path: `/var/data/${filename}.pdf`,
+      path: filePath,
       format: "A4",
-      scale: 0.8,
       printBackground: true,
+      margin: {
+        top: "20px",
+        right: "20px",
+        bottom: "20px",
+        left: "20px",
+      },
     });
+
+    // Close the browser
     await browser.close();
 
     return {
       statusCode: 200,
-      filename: filename,
+      message: "PDF generated successfully",
+      filename: fileName,
     };
   } catch (error) {
-    console.error("Error generating PDF:", error);
-    return {
-      statusCode: 500,
-      message: "Error generating PDF",
-    };
+    console.error("Error generating material checklist PDF:", error);
+    return { statusCode: 500, message: "Error generating PDF" };
   }
 };
+
+// Helper function to generate HTML table for items
+function generateItemTableHtml(items, categoryTitle) {
+  if (items.length === 0) return "";
+
+  let tableHtml = `
+    <div class="item-category">
+      <h3>${categoryTitle}</h3>
+      <table class="item-table">
+        <tr>
+          <th>Nome</th>
+          <th>Quantità</th>
+          <th>Note</th>
+        </tr>
+  `;
+
+  items.forEach((item) => {
+    tableHtml += `
+      <tr>
+        <td>${item.name}</td>
+        <td>${item.quantity}</td>
+        <td>${item.notes}</td>
+      </tr>
+    `;
+  });
+
+  tableHtml += `
+      </table>
+    </div>
+  `;
+
+  return tableHtml;
+}
 
 const findPDF = async (request, reply) => {
   const { checklistId } = request;
@@ -492,4 +642,72 @@ const findPDF = async (request, reply) => {
   }
 };
 
-module.exports = { printCarChecklist, printMaterialChecklist, findPDF };
+const getPdfForChecklist = async (request, reply) => {
+  try {
+    const { id } = request.params;
+
+    // Check if it's a car checklist
+    let checklist = await CarChecklist.findById(id);
+    let isCarChecklist = true;
+
+    if (!checklist) {
+      // If not found, check if it's a material checklist
+      checklist = await getMaterialChecklist(id);
+      isCarChecklist = false;
+
+      if (!checklist) {
+        return reply.code(404).send({
+          message: "Checklist not found",
+        });
+      }
+    }
+
+    // Construct filename based on checklist type
+    const checklistDate = new Date(checklist.created_at);
+    const formattedDate = checklistDate
+      .toLocaleDateString("it-IT")
+      .replace(/\//g, "-");
+
+    let fileName;
+    if (isCarChecklist) {
+      fileName = `checklist_${checklist.user.firstName}_${checklist.user.lastName}_${checklist.car.name}_${formattedDate}.pdf`;
+    } else {
+      fileName = `material_checklist_${checklist.user.firstName}_${checklist.user.lastName}_${checklist.car.name}_${formattedDate}.pdf`;
+    }
+
+    const filePath = path.join(__dirname, "../pdf", fileName);
+
+    // Check if the file exists
+    if (fs.existsSync(filePath)) {
+      reply.header("Content-Type", "application/pdf");
+      reply.header("Content-Disposition", `attachment; filename=${fileName}`);
+      const fileStream = fs.createReadStream(filePath);
+      return reply.send(fileStream);
+    } else {
+      return reply.code(404).send({
+        message: "PDF file not found",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching PDF:", error);
+    return reply.code(500).send({
+      message: "Error retrieving PDF",
+    });
+  }
+};
+
+// Register routes
+const pdfRoutes = () => {
+  fastify.get(
+    "/api/checklist/:id/pdf",
+    { preHandler: [fastify.authenticate] },
+    getPdfForChecklist
+  );
+};
+
+module.exports = {
+  pdfRoutes,
+  printCarChecklist,
+  printMaterialChecklist,
+  findPDF,
+};

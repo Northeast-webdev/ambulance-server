@@ -38,10 +38,7 @@ const createMaterialChecklist = async (request, reply) => {
     await Promise.all(inventoryUpdates);
 
     // Generate PDF
-    await printMaterialChecklist({
-      checklistId: materialChecklist._id,
-      checklist: checklist,
-    });
+    await printMaterialChecklist(materialChecklist._id, user);
 
     // Populate the response with item details
     const populatedChecklist = await MaterialChecklist.findById(checklist._id)
