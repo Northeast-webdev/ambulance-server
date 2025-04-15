@@ -426,7 +426,7 @@ const materialChecklistToFormattedData = async (materialChecklist, userId) => {
     const formattedChecklist = {
       date: formattedDate,
       time: formattedTime,
-      user: `${user.firstName} ${user.lastName}`,
+      user: `${user.first_name} ${user.last_name}`,
       car: car.name,
       report: materialChecklist.report || "",
       unmarked_materials: materialChecklist.unmarked_materials || "",
