@@ -28,7 +28,7 @@ const createMaterialChecklist = async (request, reply) => {
           await CarInventory.findOneAndUpdate(
             { car, item: inventoryItem._id },
             {
-              quantity: Number(i.quantity),
+              quantity: isNaN(Number(i.quantity)) ? 1 : Number(i.quantity),
               updated_by: user,
               last_updated: new Date(),
             },
