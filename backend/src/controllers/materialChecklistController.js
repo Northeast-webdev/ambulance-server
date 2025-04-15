@@ -18,28 +18,25 @@ const createMaterialChecklist = async (request, reply) => {
     });
     await materialChecklist.save();
 
-    let updates = [];
     // Update inventory based on checklist items
     items.map(async (item) => {
       item.map(async (i) => {
         const inventoryItem = await InventoryItem.findOne({ name: i.name });
         if (inventoryItem) {
-          updates.push(
-            CarInventory.findOneAndUpdate(
-              { car, item: inventoryItem._id },
-              {
-                quantity: Number(i.quantity),
-                updated_by: user,
-                last_updated: new Date(),
-              },
-              { upsert: true, new: true }
-            )
+          console.log("item", i);
+          console.log("inventoryItem", inventoryItem);
+          await CarInventory.findOneAndUpdate(
+            { car, item: inventoryItem._id },
+            {
+              quantity: Number(i.quantity),
+              updated_by: user,
+              last_updated: new Date(),
+            },
+            { upsert: true, new: true }
           );
         }
       });
     });
-
-    await Promise.all(updates);
 
     // Generate PDF
     await printMaterialChecklist(materialChecklist._id, checklist);
