@@ -519,10 +519,9 @@ const printMaterialChecklist = async (materialChecklistId, userId) => {
     );
 
     // Create a unique filename
-    const fileName = `material_checklist_${formattedData.user.replace(
-      /\s+/g,
-      "_"
-    )}_${formattedData.car}_${formattedData.date.replace(/\//g, "-")}.pdf`;
+    const fileName = `checklist_inf-${formattedData.user}-${
+      formattedData.car
+    }-${formattedData.date.replace(/\//g, "-")}.pdf`;
 
     // Set the HTML content
     await page.setContent(htmlTemplate);
