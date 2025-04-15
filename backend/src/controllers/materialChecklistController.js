@@ -14,7 +14,6 @@ const createMaterialChecklist = async (request, reply) => {
     const materialChecklist = new MaterialChecklist({
       car,
       items,
-      checklist,
       user,
     });
     await materialChecklist.save();
@@ -38,7 +37,7 @@ const createMaterialChecklist = async (request, reply) => {
     await Promise.all(inventoryUpdates);
 
     // Generate PDF
-    await printMaterialChecklist(materialChecklist._id, user);
+    await printMaterialChecklist(materialChecklist._id, checklist);
 
     // Populate the response with item details
     const populatedChecklist = await MaterialChecklist.findById(checklist._id)

@@ -488,22 +488,23 @@ const materialChecklistToFormattedData = async (materialChecklist, userId) => {
   }
 };
 
-const printMaterialChecklist = async (materialChecklistId, userId) => {
+const printMaterialChecklist = async (checklistId, checklist) => {
   try {
-    // Get the material checklist
-    const materialChecklist = await getMaterialChecklist(materialChecklistId);
-    if (!materialChecklist) {
-      return { statusCode: 404, message: "Material checklist not found" };
-    }
+    const materialChecklist = await MaterialChecklist.findById(checklistId)
+      .populate("car")
+      .populate("user");
 
-    // Get formatted data
-    const formattedData = await materialChecklistToFormattedData(
-      materialChecklist,
-      userId
-    );
-    if (formattedData.error) {
-      return { statusCode: 500, message: formattedData.error };
-    }
+    const filename =
+      "checklist_inf-" +
+      materialChecklist.user.username +
+      "-" +
+      materialChecklist.car.name +
+      "-" +
+      materialChecklist.created_at
+        .toLocaleDateString("it-IT")
+        .replace(/\//g, "-") +
+      "-" +
+      materialChecklist.created_at.toLocaleTimeString("it-IT");
 
     // Launch a browser instance
     const browser = await puppeteer.launch({
@@ -513,27 +514,22 @@ const printMaterialChecklist = async (materialChecklistId, userId) => {
     const page = await browser.newPage();
 
     // Read the HTML template
-    const htmlTemplate = fs.readFileSync(
-      path.join(__dirname, "../html/material_page.html"),
-      "utf8"
+    const htmlContent = fs.readFileSync(
+      `${process.cwd()}/src/html/material_page.html`,
+      "utf-8"
     );
 
-    // Create a unique filename
-    const fileName = `checklist_inf-${formattedData.user}-${
-      formattedData.car
-    }-${formattedData.date.replace(/\//g, "-")}.pdf`;
+    // Inject the checklist data into the template
+    let newContent = htmlContent.replace(
+      "</head>",
+      `<script>const checklist = ${JSON.stringify(checklist)};</script></head>`
+    );
 
-    // Set the HTML content
-    await page.setContent(htmlTemplate);
-
-    // Inject the formatted data as a global variable
-    await page.evaluate((checklist) => {
-      window.checklist = checklist;
-    }, formattedData);
+    await page.setContent(newContent, { waitUntil: "networkidle0" });
 
     // Generate PDF
     await page.pdf({
-      path: `/var/data/${fileName}`,
+      path: `/var/data/${filename}`,
       format: "A4",
       printBackground: true,
       margin: {
@@ -550,46 +546,13 @@ const printMaterialChecklist = async (materialChecklistId, userId) => {
     return {
       statusCode: 200,
       message: "PDF generated successfully",
-      filename: fileName,
+      filename: filename,
     };
   } catch (error) {
     console.error("Error generating material checklist PDF:", error);
     return { statusCode: 500, message: "Error generating PDF" };
   }
 };
-
-// Helper function to generate HTML table for items
-function generateItemTableHtml(items, categoryTitle) {
-  if (items.length === 0) return "";
-
-  let tableHtml = `
-    <div class="item-category">
-      <h3>${categoryTitle}</h3>
-      <table class="item-table">
-        <tr>
-          <th>Nome</th>
-          <th>Quantità</th>
-          <th>Note</th>
-        </tr>
-  `;
-
-  items.forEach((item) => {
-    tableHtml += `
-      <tr>
-        <td>${item.name}</td>
-        <td>${item.quantity}</td>
-        <td>${item.notes}</td>
-      </tr>
-    `;
-  });
-
-  tableHtml += `
-      </table>
-    </div>
-  `;
-
-  return tableHtml;
-}
 
 const findPDF = async (request, reply) => {
   const { checklistId } = request;
