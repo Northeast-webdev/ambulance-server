@@ -517,7 +517,6 @@
         acc[category].push(item);
         return acc;
       }, {});
-
       // Find low inventory items (only for material items)
       lowInventoryItems = inventory.filter(
         (inv) =>
@@ -1025,31 +1024,22 @@
             {#if loadingInventory}
               <LoadingList />
             {:else}
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {#each Object.entries(groupedInventory) as [category, items]}
-                  <div
-                    class="bg-gray-50 p-4 rounded-lg {category === 'VEICOLO'
-                      ? 'bg-blue-50 lg:col-span-3'
-                      : ''}"
-                  >
-                    <h4 class="font-bold text-lg mb-2">{category}</h4>
-                    <div class="space-y-2">
+              <div>
+                {#each Object.entries(groupedInventory).filter(([category]) => category === "VEICOLO") as [category, items]}
+                  <div class="inventory-card inventory-card-wide mb-4">
+                    <h4 class="inventory-title">{category}</h4>
+                    <div class="inventory-items">
                       {#each items as item}
-                        <div
-                          class="flex items-center justify-between gap-4 bg-white p-3 rounded {item
-                            .item.type === 'car'
-                            ? 'border-l-4 border-blue-500'
-                            : 'border-l-4 border-green-500'}"
-                        >
-                          <div>
-                            <p class="font-medium">{item.item.name}</p>
+                        <div class="inventory-item border-l-4 border-blue-500">
+                          <div class="inventory-item-name">
+                            <p class="font-medium text-sm">{item.item.name}</p>
                             {#if item.item.subcategory && item.item.subcategory !== "Generale"}
-                              <p class="text-sm text-gray-500">
+                              <p class="text-xs text-gray-500">
                                 {item.item.subcategory}
                               </p>
                             {/if}
                           </div>
-                          <div class="flex items-center gap-4">
+                          <div class="inventory-item-controls">
                             {#if item.item.type === "car"}
                               <label
                                 class="flex items-center gap-2 cursor-pointer"
@@ -1094,8 +1084,8 @@
                                 </button>
                               </div>
                             {:else}
-                              <div class="flex items-center gap-4">
-                                <div class="text-sm">
+                              <div class="flex items-center gap-2">
+                                <div class="text-xs">
                                   <p>
                                     Quantità: <span
                                       class="font-bold text-green-600"
@@ -1110,7 +1100,7 @@
                                 </div>
                                 <button
                                   on:click={() => (item.editing = true)}
-                                  class="bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 rounded"
+                                  class="bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 rounded text-sm"
                                 >
                                   Modifica
                                 </button>
@@ -1122,6 +1112,75 @@
                     </div>
                   </div>
                 {/each}
+
+                <div class="inventory-container">
+                  {#each Object.entries(groupedInventory).filter(([category]) => category !== "VEICOLO") as [category, items]}
+                    <div class="inventory-card">
+                      <h4 class="inventory-title">{category}</h4>
+                      <div class="inventory-items">
+                        {#each items as item}
+                          <div
+                            class="inventory-item border-l-4 border-green-500"
+                          >
+                            <div class="inventory-item-name">
+                              <p class="font-medium text-sm">
+                                {item.item.name}
+                              </p>
+                              {#if item.item.subcategory && item.item.subcategory !== "Generale"}
+                                <p class="text-xs text-gray-500">
+                                  {item.item.subcategory}
+                                </p>
+                              {/if}
+                            </div>
+                            <div class="inventory-item-controls">
+                              {#if item.editing}
+                                <div class="flex items-center gap-2">
+                                  <input
+                                    type="number"
+                                    bind:value={item.quantity}
+                                    min="0"
+                                    class="w-20 p-2 border rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                  />
+                                  <button
+                                    on:click={() => {
+                                      updateItemQuantity(item, 0);
+                                      item.editing = false;
+                                    }}
+                                    class="bg-green-100 hover:bg-green-200 text-green-800 py-2 px-4 rounded"
+                                  >
+                                    Salva
+                                  </button>
+                                </div>
+                              {:else}
+                                <div class="flex items-center gap-2">
+                                  <div class="text-xs">
+                                    <p>
+                                      Quantità: <span
+                                        class="font-bold text-green-600"
+                                        >{item.quantity}</span
+                                      >
+                                      <br />
+                                      Minimo:
+                                      <span class="font-bold text-green-600"
+                                        >{item.item.minimum_quantity}</span
+                                      >
+                                    </p>
+                                  </div>
+                                  <button
+                                    on:click={() => (item.editing = true)}
+                                    class="bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 rounded text-sm"
+                                  >
+                                    Modifica
+                                  </button>
+                                </div>
+                              {/if}
+                            </div>
+                          </div>
+                        {/each}
+                      </div>
+                    </div>
+                  {/each}
+                </div>
               </div>
               {#if lowInventoryItems.length > 0}
                 <div
@@ -1304,5 +1363,70 @@
   }
   .side-button.selected {
     background-color: #3b82f6;
+  }
+
+  /* New masonry layout */
+  .inventory-container {
+    column-count: 3;
+    column-gap: 1rem;
+  }
+
+  @media (max-width: 992px) {
+    .inventory-container {
+      column-count: 2;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .inventory-container {
+      column-count: 1;
+    }
+  }
+
+  .inventory-card {
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    break-inside: avoid;
+    display: inline-block;
+    width: 100%;
+  }
+
+  .inventory-card-wide {
+    width: 100%;
+    display: block;
+  }
+
+  .inventory-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .inventory-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .inventory-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: white;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+  }
+
+  .inventory-item-name {
+    flex: 1;
+  }
+
+  .inventory-item-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-shrink: 0;
   }
 </style>

@@ -26,17 +26,24 @@ const createMaterialChecklist = async (request, reply) => {
         console.log("inventoryItem", inventoryItem);
         console.log("item", i);
         if (inventoryItem) {
-          updates.push(
-            CarInventory.findOneAndUpdate(
-              { car, item: inventoryItem._id },
-              {
-                quantity: item.quantity,
-                updated_by: user,
-                last_updated: new Date(),
-              },
-              { upsert: true, new: true }
-            )
-          );
+          updates.push(async () => {
+            const carInventory = await CarInventory.findOne({
+              car,
+              item: inventoryItem._id,
+            });
+            console.log("carInventory", carInventory);
+            if (carInventory) {
+              CarInventory.findOneAndUpdate(
+                { car, item: inventoryItem._id },
+                {
+                  quantity: Number(item.quantity),
+                  updated_by: user,
+                  last_updated: new Date(),
+                },
+                { upsert: true, new: true }
+              );
+            }
+          });
         }
       });
     });
