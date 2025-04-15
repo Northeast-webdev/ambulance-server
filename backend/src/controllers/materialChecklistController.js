@@ -21,11 +21,13 @@ const createMaterialChecklist = async (request, reply) => {
     // Update inventory based on checklist items
     const inventoryUpdates = items.map(async (item) => {
       const inventoryItem = await InventoryItem.findOne({ name: item.name });
+      console.log("inventoryItem", inventoryItem);
+      console.log("item", item);
       if (inventoryItem) {
         await CarInventory.findOneAndUpdate(
           { car, item: inventoryItem._id },
           {
-            quantity: item.value,
+            quantity: item.quantity,
             updated_by: user,
             last_updated: new Date(),
           },
