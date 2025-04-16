@@ -185,7 +185,7 @@ const deleteShift = async (request, reply) => {
 
 const getUserShifts = async (request, reply) => {
   try {
-    const userId = request.user._id;
+    const userId = request.params.id;
 
     // Find shifts where this user is part of the crew
     const shifts = await Shift.find({
@@ -232,7 +232,7 @@ const shiftRoutes = () => {
 
   // Get shifts for the logged-in user
   fastify.get(
-    "/api/shifts/user",
+    "/api/shifts/user/:id",
     { preHandler: [fastify.authenticate] },
     getUserShifts
   );
