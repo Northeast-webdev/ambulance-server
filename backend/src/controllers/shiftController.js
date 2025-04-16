@@ -204,10 +204,34 @@ const getUserShifts = async (request, reply) => {
 
     // Transform the shifts to match the app's expected format
     const transformedShifts = shifts.map((shift) => {
+      // Create date objects with the correct local time (without timezone conversion)
+      const dateStr = shift.date.toISOString().split("T")[0];
+
+      // Parse times while preserving the intended hours (no timezone offset)
+      const startParts = shift.shift_start.split(":");
+      const endParts = shift.shift_end.split(":");
+
+      // Create date objects with the exact hours/minutes as stored
+      const startDate = new Date(shift.date);
+      startDate.setHours(
+        parseInt(startParts[0], 10),
+        parseInt(startParts[1], 10),
+        0,
+        0
+      );
+
+      const endDate = new Date(shift.date);
+      endDate.setHours(
+        parseInt(endParts[0], 10),
+        parseInt(endParts[1], 10),
+        0,
+        0
+      );
+
       const formattedShift = {
         _id: shift._id,
-        startTime: shift.shift_start,
-        endTime: shift.shift_end,
+        startTime: startDate.toISOString(),
+        endTime: endDate.toISOString(),
         vehicle: shift.vehicle,
         status: shift.status,
         notes: shift.notes,
