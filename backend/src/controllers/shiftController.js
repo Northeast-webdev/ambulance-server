@@ -183,6 +183,26 @@ const deleteShift = async (request, reply) => {
   }
 };
 
+const getUserShifts = async (request, reply) => {
+  try {
+    const userId = request.user._id;
+
+    // Find shifts where this user is part of the crew
+    const shifts = await Shift.find({
+      "crew.user": userId,
+    })
+      .populate("vehicle")
+      .populate("crew.user", "first_name last_name role")
+      .sort({ startTime: 1 })
+      .exec();
+
+    return { shifts };
+  } catch (err) {
+    console.error("Error getting user shifts:", err);
+    reply.code(500).send({ error: "Failed to fetch shifts" });
+  }
+};
+
 const shiftRoutes = () => {
   fastify.post(
     "/api/shifts",
@@ -208,6 +228,13 @@ const shiftRoutes = () => {
     "/api/shifts/:id",
     { preHandler: [fastify.authenticate] },
     deleteShift
+  );
+
+  // Get shifts for the logged-in user
+  fastify.get(
+    "/api/shifts/user",
+    { preHandler: [fastify.authenticate] },
+    getUserShifts
   );
 };
 
