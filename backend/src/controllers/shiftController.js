@@ -206,12 +206,8 @@ const getUserShifts = async (request, reply) => {
     const transformedShifts = shifts.map((shift) => {
       const formattedShift = {
         _id: shift._id,
-        startTime: new Date(
-          `${shift.date.toISOString().split("T")[0]}T${shift.shift_start}`
-        ).toISOString(),
-        endTime: new Date(
-          `${shift.date.toISOString().split("T")[0]}T${shift.shift_end}`
-        ).toISOString(),
+        startTime: shift.shift_start,
+        endTime: shift.shift_end,
         vehicle: shift.vehicle,
         status: shift.status,
         notes: shift.notes,
