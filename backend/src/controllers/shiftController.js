@@ -189,10 +189,14 @@ const getUserShifts = async (request, reply) => {
 
     // Find shifts where this user is part of the crew
     const shifts = await Shift.find({
-      "crew.user": userId,
+      "crew.driver.user": userId,
+      "crew.doctor.user": userId,
+      "crew.nurse.user": userId,
     })
       .populate("vehicle")
-      .populate("crew.user", "first_name last_name role")
+      .populate("crew.driver.user", "first_name last_name role")
+      .populate("crew.doctor.user", "first_name last_name role")
+      .populate("crew.nurse.user", "first_name last_name role")
       .sort({ startTime: 1 })
       .exec();
 
