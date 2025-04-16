@@ -187,20 +187,69 @@ const getUserShifts = async (request, reply) => {
   try {
     const userId = request.params.id;
 
-    // Find shifts where this user is part of the crew
+    // Find shifts where this user is in any crew role
     const shifts = await Shift.find({
-      "crew.driver.user._id": userId,
-      "crew.doctor.user._id": userId,
-      "crew.nurse.user._id": userId,
+      $or: [
+        { "crew.driver.user": userId },
+        { "crew.doctor.user": userId },
+        { "crew.nurse.user": userId },
+      ],
     })
       .populate("vehicle")
       .populate("crew.driver.user", "first_name last_name role")
       .populate("crew.doctor.user", "first_name last_name role")
       .populate("crew.nurse.user", "first_name last_name role")
-      .sort({ startTime: 1 })
+      .sort({ date: 1, shift_start: 1 })
       .exec();
 
-    return { shifts };
+    // Transform the shifts to match the app's expected format
+    const transformedShifts = shifts.map((shift) => {
+      const formattedShift = {
+        _id: shift._id,
+        startTime: new Date(
+          `${shift.date.toISOString().split("T")[0]}T${shift.shift_start}`
+        ).toISOString(),
+        endTime: new Date(
+          `${shift.date.toISOString().split("T")[0]}T${shift.shift_end}`
+        ).toISOString(),
+        vehicle: shift.vehicle,
+        status: shift.status,
+        notes: shift.notes,
+        crew: [],
+      };
+
+      // Add crew members to the array
+      if (shift.crew.driver && shift.crew.driver.user) {
+        formattedShift.crew.push({
+          user: shift.crew.driver.user,
+          role: "driver",
+          startTime: shift.crew.driver.startTime,
+          endTime: shift.crew.driver.endTime,
+        });
+      }
+
+      if (shift.crew.doctor && shift.crew.doctor.user) {
+        formattedShift.crew.push({
+          user: shift.crew.doctor.user,
+          role: "doctor",
+          startTime: shift.crew.doctor.startTime,
+          endTime: shift.crew.doctor.endTime,
+        });
+      }
+
+      if (shift.crew.nurse && shift.crew.nurse.user) {
+        formattedShift.crew.push({
+          user: shift.crew.nurse.user,
+          role: "nurse",
+          startTime: shift.crew.nurse.startTime,
+          endTime: shift.crew.nurse.endTime,
+        });
+      }
+
+      return formattedShift;
+    });
+
+    return { shifts: transformedShifts };
   } catch (err) {
     console.error("Error getting user shifts:", err);
     reply.code(500).send({ error: "Failed to fetch shifts" });
