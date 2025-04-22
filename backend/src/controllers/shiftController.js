@@ -185,9 +185,11 @@ const deleteShift = async (request, reply) => {
 
 const getUserShifts = async (request, reply) => {
   try {
-    const userId = request.params.id;
+    const userId = request.user._id;
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    // Find shifts where this user is in any crew role
+    // Find shifts where the user is in any crew role
     const shifts = await Shift.find({
       $or: [
         { "crew.driver.user": userId },
@@ -196,83 +198,155 @@ const getUserShifts = async (request, reply) => {
       ],
     })
       .populate("vehicle")
-      .populate("crew.driver.user", "first_name last_name role")
-      .populate("crew.doctor.user", "first_name last_name role")
-      .populate("crew.nurse.user", "first_name last_name role")
-      .sort({ date: 1, shift_start: 1 })
-      .exec();
+      .populate("crew.driver.user")
+      .populate("crew.doctor.user")
+      .populate("crew.nurse.user")
+      .sort({ date: 1, shift_start: 1 });
 
-    // Transform the shifts to match the app's expected format
+    // Transform shifts to match app's expected format
     const transformedShifts = shifts.map((shift) => {
-      // Create date objects with the correct local time (without timezone conversion)
-      const dateStr = shift.date.toISOString().split("T")[0];
-
-      // Parse times while preserving the intended hours (no timezone offset)
-      const startParts = shift.shift_start.split(":");
-      const endParts = shift.shift_end.split(":");
-
-      // Create date objects with the exact hours/minutes as stored
+      // Create date objects with exact hours and minutes as stored
       const startDate = new Date(shift.date);
-      startDate.setHours(
-        parseInt(startParts[0], 10),
-        parseInt(startParts[1], 10),
-        0,
-        0
-      );
+      const [startHours, startMinutes] = shift.shift_start
+        .split(":")
+        .map(Number);
+      startDate.setHours(startHours, startMinutes, 0, 0);
 
       const endDate = new Date(shift.date);
-      endDate.setHours(
-        parseInt(endParts[0], 10),
-        parseInt(endParts[1], 10),
-        0,
-        0
-      );
+      const [endHours, endMinutes] = shift.shift_end.split(":").map(Number);
+      endDate.setHours(endHours, endMinutes, 0, 0);
 
-      const formattedShift = {
+      // Determine if this is the current shift
+      const isCurrentShift =
+        shift.status === "scheduled" && startDate <= now && endDate > now;
+
+      // If this is the current shift and it's not already in progress, update it
+      if (isCurrentShift && shift.status === "scheduled") {
+        shift.status = "in_progress";
+        shift.save();
+      }
+
+      // Create array of crew members
+      const crewMembers = [];
+      if (shift.crew.driver?.user) {
+        crewMembers.push({
+          role: "driver",
+          user: shift.crew.driver.user,
+          startTime: shift.crew.driver.start_time,
+          endTime: shift.crew.driver.end_time,
+        });
+      }
+      if (shift.crew.doctor?.user) {
+        crewMembers.push({
+          role: "doctor",
+          user: shift.crew.doctor.user,
+          startTime: shift.crew.doctor.start_time,
+          endTime: shift.crew.doctor.end_time,
+        });
+      }
+      if (shift.crew.nurse?.user) {
+        crewMembers.push({
+          role: "nurse",
+          user: shift.crew.nurse.user,
+          startTime: shift.crew.nurse.start_time,
+          endTime: shift.crew.nurse.end_time,
+        });
+      }
+
+      return {
         _id: shift._id,
+        date: shift.date,
         startTime: startDate.toISOString(),
         endTime: endDate.toISOString(),
         vehicle: shift.vehicle,
-        status: shift.status,
+        crew: crewMembers,
         notes: shift.notes,
-        crew: [],
+        status: shift.status,
       };
-
-      // Add crew members to the array
-      if (shift.crew.driver && shift.crew.driver.user) {
-        formattedShift.crew.push({
-          user: shift.crew.driver.user,
-          role: "driver",
-          startTime: shift.crew.driver.startTime,
-          endTime: shift.crew.driver.endTime,
-        });
-      }
-
-      if (shift.crew.doctor && shift.crew.doctor.user) {
-        formattedShift.crew.push({
-          user: shift.crew.doctor.user,
-          role: "doctor",
-          startTime: shift.crew.doctor.startTime,
-          endTime: shift.crew.doctor.endTime,
-        });
-      }
-
-      if (shift.crew.nurse && shift.crew.nurse.user) {
-        formattedShift.crew.push({
-          user: shift.crew.nurse.user,
-          role: "nurse",
-          startTime: shift.crew.nurse.startTime,
-          endTime: shift.crew.nurse.endTime,
-        });
-      }
-
-      return formattedShift;
     });
 
-    return { shifts: transformedShifts };
-  } catch (err) {
-    console.error("Error getting user shifts:", err);
-    reply.code(500).send({ error: "Failed to fetch shifts" });
+    return reply.send(transformedShifts);
+  } catch (error) {
+    console.error("Error fetching user shifts:", error);
+    return reply.code(500).send({ message: "Error fetching shifts" });
+  }
+};
+
+const completeShift = async (request, reply) => {
+  try {
+    const userId = request.user._id;
+    const shiftId = request.params.id;
+
+    const shift = await Shift.findOne({
+      _id: shiftId,
+      $or: [
+        { "crew.driver.user": userId },
+        { "crew.doctor.user": userId },
+        { "crew.nurse.user": userId },
+      ],
+      status: "in_progress",
+    });
+
+    if (!shift) {
+      return reply
+        .status(404)
+        .json({ message: "Shift not found or not in progress" });
+    }
+
+    shift.status = "completed";
+    await shift.save();
+
+    return reply.json({ message: "Shift completed successfully" });
+  } catch (error) {
+    console.error("Error completing shift:", error);
+    return reply.status(500).json({ message: "Error completing shift" });
+  }
+};
+
+const scheduleShiftNotifications = async () => {
+  try {
+    const now = new Date();
+    const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+
+    // Find shifts starting in the next hour
+    const upcomingShifts = await Shift.find({
+      status: "scheduled",
+      date: { $lte: oneHourFromNow },
+      shift_start: {
+        $gte: now.toLocaleTimeString("en-US", {
+          hour12: false,
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        $lte: oneHourFromNow.toLocaleTimeString("en-US", {
+          hour12: false,
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    }).populate("crew.driver.user crew.doctor.user crew.nurse.user");
+
+    for (const shift of upcomingShifts) {
+      const crewMembers = [
+        shift.crew.driver?.user,
+        shift.crew.doctor?.user,
+        shift.crew.nurse?.user,
+      ].filter(Boolean);
+
+      for (const member of crewMembers) {
+        if (member.pushToken) {
+          // Send push notification
+          await sendPushNotification({
+            to: member.pushToken,
+            title: "Shift Starting Soon",
+            body: `Your shift starts in 1 hour at ${shift.shift_start}`,
+            data: { shiftId: shift._id },
+          });
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error scheduling shift notifications:", error);
   }
 };
 
@@ -308,6 +382,13 @@ const shiftRoutes = () => {
     "/api/shifts/user/:id",
     { preHandler: [fastify.authenticate] },
     getUserShifts
+  );
+
+  // Complete a shift for the current user
+  fastify.post(
+    "/api/shifts/complete/:id",
+    { preHandler: [fastify.authenticate] },
+    completeShift
   );
 };
 
