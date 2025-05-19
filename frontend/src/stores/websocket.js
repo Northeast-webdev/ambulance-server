@@ -4,7 +4,6 @@
  */
 
 import { writable, derived, get } from "svelte/store";
-import { token } from "./index";
 
 // Configuration
 const WS_RECONNECT_INTERVAL = 3000;
@@ -24,6 +23,7 @@ let socket = null;
 let reconnectTimer = null;
 let pingTimer = null;
 let authToken = null;
+let tokenStore = null;
 
 // Maintain topic-specific stores
 const topicStores = new Map();
@@ -57,8 +57,24 @@ export function initWebSocket() {
   // Close existing connection if any
   closeConnection();
 
+  if (!tokenStore) {
+    // Lazy import to avoid circular dependency
+    import("./index").then(({ token }) => {
+      tokenStore = token;
+      setupTokenListener();
+      continueInit();
+    });
+  } else {
+    continueInit();
+  }
+}
+
+/**
+ * Continue WebSocket initialization after token store is available
+ */
+function continueInit() {
   // Get the current authentication token
-  authToken = get(token);
+  authToken = tokenStore ? get(tokenStore) : null;
 
   try {
     // Build WebSocket URL with authentication token
@@ -81,6 +97,20 @@ export function initWebSocket() {
     connectionStatus.set("error");
     connectionError.set(error.message);
     scheduleReconnect();
+  }
+}
+
+/**
+ * Setup listener for token changes
+ */
+function setupTokenListener() {
+  if (tokenStore) {
+    tokenStore.subscribe((newToken) => {
+      if (newToken !== authToken && get(connectionStatus) !== "connecting") {
+        console.log("Auth token changed, reconnecting WebSocket");
+        initWebSocket();
+      }
+    });
   }
 }
 
@@ -257,9 +287,11 @@ function scheduleReconnect() {
       reconnectTimer = null;
 
       // Check if token has changed
-      const currentToken = get(token);
-      if (currentToken !== authToken) {
-        authToken = currentToken;
+      if (tokenStore) {
+        const currentToken = get(tokenStore);
+        if (currentToken !== authToken) {
+          authToken = currentToken;
+        }
       }
 
       initWebSocket();
@@ -348,14 +380,6 @@ export const connecting = derived(
 );
 export const error = connectionError;
 export const status = connectionStatus;
-
-// Listen for token changes to reconnect with new auth
-token.subscribe((newToken) => {
-  if (newToken !== authToken && get(connectionStatus) !== "connecting") {
-    console.log("Auth token changed, reconnecting WebSocket");
-    initWebSocket();
-  }
-});
 
 // Export store object for convenience
 const websocket = {

@@ -125,7 +125,7 @@ const setupServer = async () => {
     runRoutes();
     carChecklistRoutes();
     materialChecklistRoutes();
-    patientRoutes();
+    // patientRoutes();
     inventoryRoutes();
     shiftRoutes();
 

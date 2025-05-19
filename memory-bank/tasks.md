@@ -28,6 +28,7 @@ Create a comprehensive plan for enhancing and maintaining the existing ambulance
 - [x] Implementation of shared services (Controller Optimization)
 - [x] Implementation of WebSocket infrastructure (Real-time Updates)
 - [x] Implementation of WebSocketConnection Svelte component
+- [x] Fixed WebSocket circular dependency bug
 
 ## Technology Stack
 
