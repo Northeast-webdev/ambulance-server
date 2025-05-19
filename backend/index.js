@@ -5,16 +5,7 @@ const {
   setupWebSockets,
   services,
 } = require("./src/init");
-const userRoutes = require("./src/controllers/userController");
-const authRoutes = require("./src/controllers/authController");
-const carRoutes = require("./src/controllers/carController");
-const runRoutes = require("./src/controllers/runController");
 const fastifyStatic = require("@fastify/static");
-const carChecklistRoutes = require("./src/controllers/carChecklistController");
-const materialChecklistRoutes = require("./src/controllers/materialChecklistController");
-const patientRoutes = require("./src/controllers/patientController");
-const inventoryRoutes = require("./src/controllers/inventoryController");
-const shiftRoutes = require("./src/controllers/shiftController");
 const { Car } = require("./src/schema/car.schema");
 const { User } = require("./src/schema/user.schema");
 const {
@@ -25,9 +16,18 @@ const {
 } = require("./src/init/materialChecklistItems");
 const { initializeCarChecklistItems } = require("./src/init/carChecklistItems");
 
-// Import new controllers and services
-const userControllerV2 = require("./src/controllers/UserControllerV2");
+// Import controllers - legacy controllers
+const authController = require("./src/controllers/authController");
+const runController = require("./src/controllers/runController");
+const carChecklistController = require("./src/controllers/carChecklistController");
+const materialChecklistController = require("./src/controllers/materialChecklistController");
+const inventoryController = require("./src/controllers/inventoryController");
+const shiftController = require("./src/controllers/shiftController");
+
+// Import V2 controllers (using BaseController pattern)
+const UserControllerV2 = require("./src/controllers/UserControllerV2");
 const PatientControllerV2 = require("./src/controllers/PatientControllerV2");
+const CarControllerV2 = require("./src/controllers/CarControllerV2");
 
 // Get component logger
 const logger = services.logger.child("Server");
@@ -119,27 +119,26 @@ const setupServer = async () => {
     await setupWebSockets();
 
     // Register routes
-    authRoutes();
-    // userRoutes();
-    carRoutes();
-    runRoutes();
-    carChecklistRoutes();
-    materialChecklistRoutes();
-    // patientRoutes();
-    inventoryRoutes();
-    shiftRoutes();
+    authController(fastify);
+    runController(fastify);
+    carChecklistController(fastify);
+    materialChecklistController(fastify);
+    inventoryController(fastify);
+    shiftController(fastify);
 
-    // Register new controllers with base controller pattern
-    userControllerV2();
+    // Register V2 controllers (using BaseController pattern)
+    UserControllerV2();
+    CarControllerV2();
     PatientControllerV2();
 
     // Start the server
-    await fastify.listen({ port: 8080, host: "0.0.0.0" });
+    const PORT = process.env.PORT || 8080;
+    fastify.listen({ port: PORT, host: "0.0.0.0" });
 
     // Start all cron jobs
     fastify.cron.startAllJobs();
 
-    logger.info("Server is running on port 8080");
+    logger.info(`Server is running on port ${PORT}`);
   } catch (err) {
     logger.error("Error starting server:", err);
     process.exit(1);

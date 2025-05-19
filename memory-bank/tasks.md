@@ -29,6 +29,7 @@ Create a comprehensive plan for enhancing and maintaining the existing ambulance
 - [x] Implementation of WebSocket infrastructure (Real-time Updates)
 - [x] Implementation of WebSocketConnection Svelte component
 - [x] Fixed WebSocket circular dependency bug
+- [x] Implementation of Car and Patient controllers using BaseController
 
 ## Technology Stack
 
@@ -153,7 +154,7 @@ Create a comprehensive plan for enhancing and maintaining the existing ambulance
 - **Implementation Strategy**:
   - [x] Create BaseController with common CRUD operations
   - [x] Implement shared service modules
-  - [ ] Gradually refactor existing controllers
+  - [x] Gradually refactor existing controllers
   - [ ] Add consistent error handling and response formatting
 
 ## Dependencies
