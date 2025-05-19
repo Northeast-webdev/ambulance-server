@@ -111,6 +111,25 @@ class LoggingService {
 
     // Additional logging targets can be added here (file, database, etc.)
   }
+
+  /**
+   * Static method to create a component-specific logger
+   * @param {String} componentName - Name of the component
+   * @param {Object} options - Additional options
+   * @returns {LoggingService} - Component-specific logger
+   */
+  static getComponentLogger(componentName, options = {}) {
+    // Create main service instance if it doesn't exist
+    if (!LoggingService.mainInstance) {
+      LoggingService.mainInstance = new LoggingService();
+    }
+
+    // Create child logger for the component
+    return LoggingService.mainInstance.child(componentName, options);
+  }
 }
+
+// Initialize static property
+LoggingService.mainInstance = null;
 
 module.exports = LoggingService;

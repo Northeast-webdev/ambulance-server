@@ -27,6 +27,7 @@ const { initializeCarChecklistItems } = require("./src/init/carChecklistItems");
 
 // Import new controllers and services
 const userControllerV2 = require("./src/controllers/UserControllerV2");
+const PatientControllerV2 = require("./src/controllers/PatientControllerV2");
 
 // Get component logger
 const logger = services.logger.child("Server");
@@ -119,7 +120,7 @@ const setupServer = async () => {
 
     // Register routes
     authRoutes();
-    userRoutes();
+    // userRoutes();
     carRoutes();
     runRoutes();
     carChecklistRoutes();
@@ -130,6 +131,7 @@ const setupServer = async () => {
 
     // Register new controllers with base controller pattern
     userControllerV2();
+    PatientControllerV2();
 
     // Start the server
     await fastify.listen({ port: 8080, host: "0.0.0.0" });

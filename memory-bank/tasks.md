@@ -124,9 +124,10 @@ Create a comprehensive plan for enhancing and maintaining the existing ambulance
   - Leverages existing REST architecture where appropriate
 - **Implementation Strategy**:
   - [x] Phase 1: WebSocket infrastructure setup
-  - [ ] Phase 2: Critical real-time features implementation
-  - [ ] Phase 3: State synchronization with Svelte stores
-  - [ ] Phase 4: Extended real-time features
+  - [x] Phase 2: Finish services and controllers
+  - [ ] Phase 3: Critical real-time features implementation
+  - [ ] Phase 4: State synchronization with Svelte stores
+  - [ ] Phase 5: Extended real-time features
 
 ### Dashboard UI Enhancement
 
