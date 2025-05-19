@@ -113,7 +113,7 @@ connectToDatabase().then(async () => {
 });
 
 // Set up WebSockets after plugins are registered
-const setupServer = async () => {
+const setupRoutes = async () => {
   try {
     // Initialize WebSockets
     await setupWebSockets();
@@ -131,19 +131,28 @@ const setupServer = async () => {
     CarControllerV2();
     PatientControllerV2();
 
-    // Start the server
-    const PORT = process.env.PORT || 8080;
-    fastify.listen({ port: PORT, host: "0.0.0.0" });
+    logger.info("Routes setup completed successfully");
 
     // Start all cron jobs
     fastify.cron.startAllJobs();
 
-    logger.info(`Server is running on port ${PORT}`);
+    logger.info("Cron jobs started successfully");
+  } catch (err) {
+    logger.error("Error starting routes and cron jobs:", err);
+    process.exit(1);
+  }
+};
+
+setupRoutes();
+
+// Start the server
+const start = async () => {
+  try {
+    await fastify.listen({ port: 8080, host: "0.0.0.0" });
+    logger.info(`Server is running on port 8080`);
   } catch (err) {
     logger.error("Error starting server:", err);
     process.exit(1);
   }
 };
-
-// Start the server
-setupServer();
+start();
