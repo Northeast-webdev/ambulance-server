@@ -149,8 +149,8 @@ connectToDatabase().then(async () => {
 
     logger.info("Database initialization completed successfully");
 
-    setupRoutes();
-    start();
+    await setupRoutes();
+    await start();
   } catch (error) {
     logger.error("Error initializing database:", error);
   }
