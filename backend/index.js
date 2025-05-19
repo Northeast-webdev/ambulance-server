@@ -97,21 +97,6 @@ fastify.register(require("@fastify/cors"), {
 // Add the authenticate decorator for jwt
 fastify.decorate("authenticate", verifyToken);
 
-// Connect to MongoDB
-connectToDatabase().then(async () => {
-  try {
-    // Initialize checklist items
-    await initializeMaterialChecklistItems();
-    await initializeCarChecklistItems();
-    // Initialize inventory for all cars
-    await initializeAllCarsInventory();
-
-    logger.info("Database initialization completed successfully");
-  } catch (error) {
-    logger.error("Error initializing database:", error);
-  }
-});
-
 // Set up WebSockets after plugins are registered
 const setupRoutes = async () => {
   try {
@@ -143,8 +128,6 @@ const setupRoutes = async () => {
   }
 };
 
-setupRoutes();
-
 // Start the server
 const start = async () => {
   try {
@@ -155,4 +138,20 @@ const start = async () => {
     process.exit(1);
   }
 };
-start();
+// Connect to MongoDB
+connectToDatabase().then(async () => {
+  try {
+    // Initialize checklist items
+    await initializeMaterialChecklistItems();
+    await initializeCarChecklistItems();
+    // Initialize inventory for all cars
+    await initializeAllCarsInventory();
+
+    logger.info("Database initialization completed successfully");
+
+    setupRoutes();
+    start();
+  } catch (error) {
+    logger.error("Error initializing database:", error);
+  }
+});
