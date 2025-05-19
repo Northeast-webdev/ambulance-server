@@ -1,5 +1,10 @@
 const { verifyToken } = require("./src/jwt");
-const { fastify, connectToDatabase } = require("./src/init");
+const {
+  fastify,
+  connectToDatabase,
+  setupWebSockets,
+  services,
+} = require("./src/init");
 const userRoutes = require("./src/controllers/userController");
 const authRoutes = require("./src/controllers/authController");
 const carRoutes = require("./src/controllers/carController");
@@ -19,6 +24,12 @@ const {
   initializeMaterialChecklistItems,
 } = require("./src/init/materialChecklistItems");
 const { initializeCarChecklistItems } = require("./src/init/carChecklistItems");
+
+// Import new controllers and services
+const userControllerV2 = require("./src/controllers/UserControllerV2");
+
+// Get component logger
+const logger = services.logger.child("Server");
 
 const cleanUpInactiveUsers = async () => {
   try {
@@ -49,13 +60,13 @@ const cleanUpInactiveUsers = async () => {
       await car.save();
     }
 
-    console.log(`Cleaned up ${inactiveCars.length} inactive cars.`);
+    logger.info(`Cleaned up ${inactiveCars.length} inactive cars.`);
   } catch (error) {
-    console.error("Error cleaning up inactive users:", error);
+    logger.error("Error cleaning up inactive users:", error);
   }
 };
 
-fastify.register(require("@fastify/websocket"));
+// Register cron jobs
 fastify.register(require("fastify-cron"), {
   jobs: [
     {
@@ -68,11 +79,13 @@ fastify.register(require("fastify-cron"), {
     },
   ],
 });
+
 // Serve static files from the frontend/dist folder
 fastify.register(fastifyStatic, {
   root: require("path").join(__dirname, "../frontend/dist"),
   prefix: "/",
 });
+
 // Register the CORS plugin
 fastify.register(require("@fastify/cors"), {
   origin: "*", // Allow all origins. Change this to the specific origin in production.
@@ -80,37 +93,56 @@ fastify.register(require("@fastify/cors"), {
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow only these HTTP methods.
 });
 
-fastify.decorate("authenticate", verifyToken); // Add the authenticate decorator for jwt
+// Add the authenticate decorator for jwt
+fastify.decorate("authenticate", verifyToken);
 
 // Connect to MongoDB
 connectToDatabase().then(async () => {
-  // Initialize checklist items
-  await initializeMaterialChecklistItems();
-  await initializeCarChecklistItems();
-  // Initialize inventory for all cars
-  await initializeAllCarsInventory();
+  try {
+    // Initialize checklist items
+    await initializeMaterialChecklistItems();
+    await initializeCarChecklistItems();
+    // Initialize inventory for all cars
+    await initializeAllCarsInventory();
+
+    logger.info("Database initialization completed successfully");
+  } catch (error) {
+    logger.error("Error initializing database:", error);
+  }
 });
 
-// Register routes
-authRoutes();
-userRoutes();
-carRoutes();
-runRoutes();
-carChecklistRoutes();
-materialChecklistRoutes();
-patientRoutes();
-inventoryRoutes();
-shiftRoutes();
-
-// Start the server
-const start = async () => {
+// Set up WebSockets after plugins are registered
+const setupServer = async () => {
   try {
+    // Initialize WebSockets
+    await setupWebSockets();
+
+    // Register routes
+    authRoutes();
+    userRoutes();
+    carRoutes();
+    runRoutes();
+    carChecklistRoutes();
+    materialChecklistRoutes();
+    patientRoutes();
+    inventoryRoutes();
+    shiftRoutes();
+
+    // Register new controllers with base controller pattern
+    userControllerV2();
+
+    // Start the server
     await fastify.listen({ port: 8080, host: "0.0.0.0" });
+
+    // Start all cron jobs
     fastify.cron.startAllJobs();
-    console.log("Server is running on port 8080");
+
+    logger.info("Server is running on port 8080");
   } catch (err) {
-    fastify.log.error(err);
+    logger.error("Error starting server:", err);
     process.exit(1);
   }
 };
-start();
+
+// Start the server
+setupServer();
