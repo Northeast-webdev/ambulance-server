@@ -130,11 +130,14 @@ setupRoutes();
 // Start the server
 const start = async () => {
   try {
-    fastify.listen({ port: 8080, host: "0.0.0.0" }, async () => {
-      // Start all cron jobs
-      fastify.cron.startAllJobs();
-    });
-    logger.info(`Server is running on port 8080`);
+    fastify.listen(
+      { port: process.env.PORT || 8080, host: "0.0.0.0" },
+      async () => {
+        // Start all cron jobs
+        fastify.cron.startAllJobs();
+      }
+    );
+    logger.info(`Server is running on port ${process.env.PORT || 8080}`);
   } catch (err) {
     logger.error("Error starting server:", err);
     process.exit(1);
