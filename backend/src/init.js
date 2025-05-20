@@ -15,7 +15,6 @@ const AuthorizationService = require("./services/AuthorizationService");
 const FormatterService = require("./services/FormatterService");
 const ErrorHandlerService = require("./services/ErrorHandlerService");
 const LoggingService = require("./services/LoggingService");
-const WebSocketService = require("./services/WebSocketService");
 
 // MongoDB connection
 const uri = process.env.MONGODB_URI;
@@ -27,7 +26,6 @@ const services = {
   formatter: new FormatterService(),
   errorHandler: new ErrorHandlerService(),
   logger: new LoggingService(),
-  websocket: null, // Will be initialized after fastify-websocket is registered
 };
 
 // Set up service dependencies
@@ -87,20 +85,4 @@ async function connectToDatabase() {
   }
 }
 
-async function setupWebSockets() {
-  try {
-    // Initialize WebSocket service
-    services.websocket = new WebSocketService(fastify, {
-      logger: services.logger.child("websocket"),
-    });
-
-    // Initialize WebSocket endpoints
-    services.websocket.initialize();
-
-    console.log("WebSocket service initialized");
-  } catch (error) {
-    console.error("Failed to initialize WebSocket service:", error);
-  }
-}
-
-module.exports = { fastify, connectToDatabase, setupWebSockets, services };
+module.exports = { fastify, connectToDatabase, services };

@@ -3,25 +3,31 @@
  * Service for standardized error handling and responses
  */
 
+const errorMap = {
+  ValidationError: 400,
+  AuthorizationError: 403,
+  AuthenticationError: 401,
+  NotFoundError: 404,
+  ConflictError: 409,
+  RateLimitError: 429,
+};
+
+// Instance for internal use
+let formatter = null;
+
 class ErrorHandlerService {
-  constructor(formatter) {
-    this.formatter = formatter || null;
-    this.errorMap = {
-      ValidationError: 400,
-      AuthorizationError: 403,
-      AuthenticationError: 401,
-      NotFoundError: 404,
-      ConflictError: 409,
-      RateLimitError: 429,
-    };
+  constructor(formatterService) {
+    if (formatterService) {
+      formatter = formatterService;
+    }
   }
 
   /**
    * Set formatter service for response formatting
-   * @param {Object} formatter - FormatterService instance
+   * @param {Object} formatterService - FormatterService instance
    */
-  setFormatter(formatter) {
-    this.formatter = formatter;
+  setFormatter(formatterService) {
+    formatter = formatterService;
   }
 
   /**
@@ -30,14 +36,14 @@ class ErrorHandlerService {
    * @param {Object} reply - Fastify reply object
    * @returns {Object} - Formatted error response
    */
-  handleError(error, reply) {
+  static handleError(error, reply) {
     const errorName = error.name || "Error";
-    const statusCode = this.errorMap[errorName] || 500;
+    const statusCode = errorMap[errorName] || 500;
 
     console.error(`[ErrorHandler] ${errorName}: ${error.message}`, error.stack);
 
-    const response = this.formatter
-      ? this.formatter.formatError(error, statusCode, error.details)
+    const response = formatter
+      ? formatter.formatError(error, statusCode, error.details)
       : {
           error: error.message,
           statusCode,
@@ -57,10 +63,10 @@ class ErrorHandlerService {
    * @param {String} message - Custom message
    * @returns {Object} - Not found error response
    */
-  handleNotFound(reply, message = "Resource not found") {
+  static handleNotFound(reply, message = "Resource not found") {
     const error = new Error(message);
     error.name = "NotFoundError";
-    return this.handleError(error, reply);
+    return ErrorHandlerService.handleError(error, reply);
   }
 
   /**
@@ -69,11 +75,11 @@ class ErrorHandlerService {
    * @param {Array|String} details - Validation error details
    * @returns {Object} - Validation error response
    */
-  handleValidationError(reply, details) {
+  static handleValidationError(reply, details) {
     const error = new Error("Validation failed");
     error.name = "ValidationError";
     error.details = details;
-    return this.handleError(error, reply);
+    return ErrorHandlerService.handleError(error, reply);
   }
 
   /**
@@ -82,10 +88,22 @@ class ErrorHandlerService {
    * @param {String} message - Custom message
    * @returns {Object} - Authentication error response
    */
-  handleAuthError(reply, message = "Authentication required") {
+  static handleAuthError(reply, message = "Authentication required") {
     const error = new Error(message);
     error.name = "AuthenticationError";
-    return this.handleError(error, reply);
+    return ErrorHandlerService.handleError(error, reply);
+  }
+
+  /**
+   * Handle bad request errors
+   * @param {Object} reply - Fastify reply object
+   * @param {String} message - Custom message
+   * @returns {Object} - Bad request error response
+   */
+  static handleBadRequest(reply, message = "Bad request") {
+    const error = new Error(message);
+    error.name = "ValidationError";
+    return ErrorHandlerService.handleError(error, reply);
   }
 }
 

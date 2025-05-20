@@ -1,10 +1,5 @@
 const { verifyToken } = require("./src/jwt");
-const {
-  fastify,
-  connectToDatabase,
-  setupWebSockets,
-  services,
-} = require("./src/init");
+const { fastify, connectToDatabase, services } = require("./src/init");
 const fastifyStatic = require("@fastify/static");
 const { Car } = require("./src/schema/car.schema");
 const { User } = require("./src/schema/user.schema");
@@ -94,6 +89,7 @@ fastify.register(require("@fastify/cors"), {
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow only these HTTP methods.
 });
 
+// Register WebSocket plugin directly
 fastify.register(require("@fastify/websocket"), {
   options: {
     maxPayload: 1048576, // 1MB
@@ -112,16 +108,13 @@ fastify.decorate("authenticate", verifyToken);
 // Set up WebSockets after plugins are registered
 const setupRoutes = async () => {
   try {
-    // Initialize WebSockets
-    await setupWebSockets();
-
     // Register routes
-    authController();
-    runController();
-    carChecklistController();
-    materialChecklistController();
-    inventoryController();
-    shiftController();
+    authController(fastify);
+    runController(fastify);
+    carChecklistController(fastify);
+    materialChecklistController(fastify);
+    inventoryController(fastify);
+    shiftController(fastify);
 
     // Register V2 controllers (using BaseController pattern)
     UserControllerV2();
