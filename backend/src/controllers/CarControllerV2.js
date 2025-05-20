@@ -7,7 +7,7 @@ const { User } = require("../schema/user.schema");
 const { Run } = require("../schema/run.schema");
 const { CarChecklist } = require("../schema/carChecklist.schema");
 const { MaterialChecklist } = require("../schema/materialChecklist.schema");
-const { initializeCarInventory } = require("../init/carInventory");
+const InventoryService = require("../services/InventoryService");
 const ValidationService = require("../services/ValidationService");
 const ErrorHandlerService = require("../services/ErrorHandlerService");
 const FormatterService = require("../services/FormatterService");
@@ -120,7 +120,16 @@ class CarController extends BaseController {
       await car.save();
 
       // Initialize inventory for the new car
-      await initializeCarInventory(car._id);
+      try {
+        await InventoryService.initializeCarInventory(car._id);
+        logger.debug(`Initialized inventory for car ${car._id}`);
+      } catch (inventoryError) {
+        logger.error(
+          `Error initializing inventory for car ${car._id}`,
+          inventoryError
+        );
+        // Continue execution even if inventory initialization fails
+      }
 
       // Handle old car replacement if specified
       if (old_car_id) {

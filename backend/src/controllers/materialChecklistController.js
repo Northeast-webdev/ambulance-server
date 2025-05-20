@@ -2,12 +2,18 @@
 
 const { fastify } = require("../init");
 const { MaterialChecklist } = require("../schema/materialChecklist.schema");
-const { CarInventory } = require("../schema/inventory.schema");
-const { InventoryItem } = require("../schema/inventory.schema");
+const InventoryService = require("../services/InventoryService");
+const FormatterService = require("../services/FormatterService");
+const ErrorHandlerService = require("../services/ErrorHandlerService");
+const LoggingService = require("../services/LoggingService");
 const { printMaterialChecklist } = require("./pdfController");
+
+// Create a component-specific logger
+const logger = LoggingService.getComponentLogger("MaterialChecklistController");
 
 const createMaterialChecklist = async (request, reply) => {
   try {
+    logger.debug("Creating new material checklist");
     const { car, items, checklist, user } = request.body;
 
     // Create the checklist
@@ -19,24 +25,13 @@ const createMaterialChecklist = async (request, reply) => {
     await materialChecklist.save();
 
     // Update inventory based on checklist items
-    items.map(async (item) => {
-      item.map(async (i) => {
-        const inventoryItem = await InventoryItem.findOne({ name: i.name });
-        if (inventoryItem) {
-          console.log("item", i);
-          console.log("inventoryItem", inventoryItem);
-          await CarInventory.findOneAndUpdate(
-            { car, item: inventoryItem._id },
-            {
-              quantity: isNaN(Number(i.quantity)) ? 1 : Number(i.quantity),
-              updated_by: user,
-              last_updated: new Date(),
-            },
-            { upsert: true, new: true }
-          );
-        }
-      });
-    });
+    try {
+      await InventoryService.updateFromChecklist(car, items.flat(), user);
+      logger.debug("Updated inventory based on checklist items");
+    } catch (inventoryError) {
+      logger.error("Error updating inventory", inventoryError);
+      // Continue execution even if inventory update fails
+    }
 
     // Generate PDF
     await printMaterialChecklist(materialChecklist._id, checklist);
@@ -50,24 +45,30 @@ const createMaterialChecklist = async (request, reply) => {
       .populate("car", "name _id meta")
       .populate("user", "first_name last_name _id");
 
-    return populatedChecklist;
+    return FormatterService.formatResponse(populatedChecklist, {
+      message: "Material checklist created successfully",
+    });
   } catch (err) {
-    console.log(err);
-    reply.code(500).send({ error: err });
+    logger.error("Error creating material checklist", err);
+    return ErrorHandlerService.handleError(err, reply);
   }
 };
 
 const listMaterialChecklists = async (request, reply) => {
-  const { page = 1, limit = 10, date, car } = request.query;
-  const query = {};
-  if (date) {
-    const startDate = new Date(date);
-    const endDate = new Date(date);
-    endDate.setDate(endDate.getDate() + 1);
-    query.created_at = { $gte: startDate, $lt: endDate };
-  }
-  if (car) query.car = car;
   try {
+    logger.debug("Listing material checklists");
+    const { page = 1, limit = 10, date, car } = request.query;
+    const query = {};
+
+    if (date) {
+      const startDate = new Date(date);
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + 1);
+      query.created_at = { $gte: startDate, $lt: endDate };
+    }
+
+    if (car) query.car = car;
+
     const checklists = await MaterialChecklist.find(query)
       .populate({
         path: "items.item",
@@ -79,14 +80,19 @@ const listMaterialChecklists = async (request, reply) => {
       .limit(limit)
       .sort({ created_at: -1 })
       .exec();
-    return { checklists, page, limit };
+
+    const total = await MaterialChecklist.countDocuments(query);
+
+    return FormatterService.formatPaginated(checklists, page, limit, total);
   } catch (err) {
-    reply.code(500).send({ error: err });
+    logger.error("Error listing material checklists", err);
+    return ErrorHandlerService.handleError(err, reply);
   }
 };
 
 const getMaterialChecklist = async (request, reply) => {
   try {
+    logger.debug(`Getting material checklist ${request.params.id}`);
     const checklist = await MaterialChecklist.findOne({
       _id: request.params.id,
     })
@@ -97,59 +103,84 @@ const getMaterialChecklist = async (request, reply) => {
       .populate("car", "name _id meta")
       .populate("user", "first_name last_name _id")
       .exec();
-    return checklist;
+
+    if (!checklist) {
+      return ErrorHandlerService.handleNotFound(
+        reply,
+        "Material checklist not found"
+      );
+    }
+
+    return FormatterService.formatResponse(checklist);
   } catch (err) {
-    reply.code(500).send({ error: err });
+    logger.error(`Error getting material checklist ${request.params.id}`, err);
+    return ErrorHandlerService.handleError(err, reply);
   }
 };
 
 const updateMaterialChecklist = async (request, reply) => {
-  const { car, user, items, photos } = request.body;
-  const updates = {};
-  if (items) updates.items = items;
-  if (photos) updates.photos = photos;
-  updates.updated_at = new Date();
-
   try {
+    logger.debug(`Updating material checklist ${request.params.id}`);
+    const { car, user, items, photos } = request.body;
+    const updates = {};
+
+    if (items) updates.items = items;
+    if (photos) updates.photos = photos;
+    updates.updated_at = new Date();
+
     const checklist = await MaterialChecklist.findOneAndUpdate(
       { _id: request.params.id },
       updates,
       { new: true }
     );
 
-    // Update inventory if items were changed
-    if (items) {
-      const inventoryUpdates = items.map(async (item) => {
-        const inventoryItem = await InventoryItem.findOne({ name: item.name });
-        if (inventoryItem) {
-          await CarInventory.findOneAndUpdate(
-            { car, item: inventoryItem._id },
-            {
-              quantity: item.quantity,
-              updated_by: user,
-              last_updated: new Date(),
-            },
-            { upsert: true, new: true }
-          );
-        }
-      });
-      await Promise.all(inventoryUpdates);
+    if (!checklist) {
+      return ErrorHandlerService.handleNotFound(
+        reply,
+        "Material checklist not found"
+      );
     }
 
-    return checklist;
+    // Update inventory if items were changed
+    if (items) {
+      try {
+        await InventoryService.updateFromChecklist(car, items, user);
+        logger.debug("Updated inventory based on checklist items");
+      } catch (inventoryError) {
+        logger.error("Error updating inventory", inventoryError);
+        // Continue execution even if inventory update fails
+      }
+    }
+
+    return FormatterService.formatResponse(checklist, {
+      message: "Material checklist updated successfully",
+    });
   } catch (err) {
-    reply.code(500).send({ error: err });
+    logger.error(`Error updating material checklist ${request.params.id}`, err);
+    return ErrorHandlerService.handleError(err, reply);
   }
 };
 
 const deleteMaterialChecklist = async (request, reply) => {
   try {
-    await MaterialChecklist.deleteOne({
+    logger.debug(`Deleting material checklist ${request.params.id}`);
+    const result = await MaterialChecklist.deleteOne({
       _id: request.params.id,
     });
-    reply.send({ message: request.params.id + " checklist deleted" });
+
+    if (result.deletedCount === 0) {
+      return ErrorHandlerService.handleNotFound(
+        reply,
+        "Material checklist not found"
+      );
+    }
+
+    return FormatterService.formatResponse(null, {
+      message: "Material checklist deleted successfully",
+    });
   } catch (err) {
-    reply.code(500).send({ error: err });
+    logger.error(`Error deleting material checklist ${request.params.id}`, err);
+    return ErrorHandlerService.handleError(err, reply);
   }
 };
 

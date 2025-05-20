@@ -5,8 +5,13 @@ const { Car } = require("../schema/car.schema");
 const { CarChecklist } = require("../schema/carChecklist.schema");
 const { User } = require("../schema/user.schema");
 const { printCarChecklist, findPDF } = require("./pdfController");
-const { CarInventory } = require("../schema/inventory.schema");
-const { InventoryItem } = require("../schema/inventory.schema");
+const InventoryService = require("../services/InventoryService");
+const FormatterService = require("../services/FormatterService");
+const ErrorHandlerService = require("../services/ErrorHandlerService");
+const LoggingService = require("../services/LoggingService");
+
+// Create a component-specific logger
+const logger = LoggingService.getComponentLogger("CarChecklistController");
 
 const labels = {
   luciPosizioneAnteriori: "Luci posizione anteriori",
@@ -34,8 +39,10 @@ const labels = {
   carbon_level: "Livello carburante",
   kilometers: "Chilometri",
 };
+
 const createCarChecklist = async (request, reply) => {
   try {
+    logger.debug("Creating new car checklist");
     const { car, items, notes, user } = request.body;
 
     // Create the checklist
@@ -48,22 +55,13 @@ const createCarChecklist = async (request, reply) => {
     await checklist.save();
 
     // Update inventory based on checklist items
-    const inventoryUpdates = items.map(async (item) => {
-      const inventoryItem = await InventoryItem.findOne({ name: item.name });
-      if (inventoryItem) {
-        await CarInventory.findOneAndUpdate(
-          { car, item: inventoryItem._id },
-          {
-            quantity: item.is_present ? 1 : 0, // For car items, quantity is 1 if present, 0 if not
-            updated_by: user,
-            last_updated: new Date(),
-          },
-          { upsert: true, new: true }
-        );
-      }
-    });
-
-    await Promise.all(inventoryUpdates);
+    try {
+      await InventoryService.updateFromChecklist(car, items, user);
+      logger.debug("Updated inventory based on checklist items");
+    } catch (inventoryError) {
+      logger.error("Error updating inventory", inventoryError);
+      // Continue execution even if inventory update fails
+    }
 
     // Generate PDF
     await printCarChecklist({
@@ -72,23 +70,30 @@ const createCarChecklist = async (request, reply) => {
       photos: checklist.photos,
     });
 
-    return checklist;
+    return FormatterService.formatResponse(checklist, {
+      message: "Car checklist created successfully",
+    });
   } catch (err) {
-    reply.code(500).send({ error: err });
+    logger.error("Error creating car checklist", err);
+    return ErrorHandlerService.handleError(err, reply);
   }
 };
 
 const listCarChecklists = async (request, reply) => {
-  const { page = 1, limit = 10, date, car } = request.query;
-  const query = {};
-  if (date) {
-    const startDate = new Date(date);
-    const endDate = new Date(date);
-    endDate.setDate(endDate.getDate() + 1);
-    query.created_at = { $gte: startDate, $lt: endDate };
-  }
-  if (car) query.car = car;
   try {
+    logger.debug("Listing car checklists");
+    const { page = 1, limit = 10, date, car } = request.query;
+    const query = {};
+
+    if (date) {
+      const startDate = new Date(date);
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + 1);
+      query.created_at = { $gte: startDate, $lt: endDate };
+    }
+
+    if (car) query.car = car;
+
     const checklists = await CarChecklist.find(query)
       .populate("car", "name _id meta")
       .populate("user", "first_name last_name _id")
@@ -96,55 +101,120 @@ const listCarChecklists = async (request, reply) => {
       .limit(limit)
       .sort({ created_at: -1 })
       .exec();
-    return { checklists, page, limit };
+
+    const total = await CarChecklist.countDocuments(query);
+
+    return FormatterService.formatPaginated(checklists, page, limit, total);
   } catch (err) {
-    reply.code(500).send({ error: err });
+    logger.error("Error listing car checklists", err);
+    return ErrorHandlerService.handleError(err, reply);
   }
 };
 
 const getCarChecklist = async (request, reply) => {
   try {
+    logger.debug(`Getting car checklist ${request.params.id}`);
     const checklist = await CarChecklist.findOne({
       _id: request.params.id,
-    }).exec();
-    return checklist;
+    })
+      .populate("car", "name _id meta")
+      .populate("user", "first_name last_name _id")
+      .exec();
+
+    if (!checklist) {
+      return ErrorHandlerService.handleNotFound(
+        reply,
+        "Car checklist not found"
+      );
+    }
+
+    return FormatterService.formatResponse(checklist);
   } catch (err) {
-    reply.code(500).send({ error: err });
+    logger.error(`Error getting car checklist ${request.params.id}`, err);
+    return ErrorHandlerService.handleError(err, reply);
   }
 };
 
 const updateCarChecklist = async (request, reply) => {
-  const { car, checklist, user } = request.body;
-  const updates = {};
-  if (car) updates.car = car;
-  if (checklist) updates.checklist = checklist;
-  if (user) updates.user = user;
-  updates.updated_at = Date.now();
   try {
-    const checklist = await CarChecklist.updateOne(
+    logger.debug(`Updating car checklist ${request.params.id}`);
+    const { car, items, notes, user } = request.body;
+    const updates = {};
+
+    if (car) updates.car = car;
+    if (items) updates.items = items;
+    if (notes) updates.notes = notes;
+    if (user) updates.user = user;
+    updates.updated_at = new Date();
+
+    const checklist = await CarChecklist.findOneAndUpdate(
       { _id: request.params.id },
-      { $set: updates }
+      updates,
+      { new: true }
     );
-    reply.send(checklist);
+
+    if (!checklist) {
+      return ErrorHandlerService.handleNotFound(
+        reply,
+        "Car checklist not found"
+      );
+    }
+
+    // Update inventory if items were changed
+    if (items) {
+      try {
+        await InventoryService.updateFromChecklist(car, items, user);
+        logger.debug("Updated inventory based on checklist items");
+      } catch (inventoryError) {
+        logger.error("Error updating inventory", inventoryError);
+        // Continue execution even if inventory update fails
+      }
+    }
+
+    return FormatterService.formatResponse(checklist, {
+      message: "Car checklist updated successfully",
+    });
   } catch (err) {
-    reply.code(500).send({ error: err });
+    logger.error(`Error updating car checklist ${request.params.id}`, err);
+    return ErrorHandlerService.handleError(err, reply);
   }
 };
 
 const deleteCarChecklist = async (request, reply) => {
   try {
-    await CarChecklist.deleteOne({
+    logger.debug(`Deleting car checklist ${request.params.id}`);
+    const result = await CarChecklist.deleteOne({
       _id: request.params.id,
     });
-    reply.send({ message: request.params.id + " checklist deleted" });
+
+    if (result.deletedCount === 0) {
+      return ErrorHandlerService.handleNotFound(
+        reply,
+        "Car checklist not found"
+      );
+    }
+
+    return FormatterService.formatResponse(null, {
+      message: "Car checklist deleted successfully",
+    });
   } catch (err) {
-    reply.code(500).send({ error: err });
+    logger.error(`Error deleting car checklist ${request.params.id}`, err);
+    return ErrorHandlerService.handleError(err, reply);
   }
 };
 
 const getPdfForCarChecklist = async (request, reply) => {
-  const { id } = request.params;
-  await findPDF({ checklistId: id }, reply);
+  try {
+    logger.debug(`Getting PDF for car checklist ${request.params.id}`);
+    const { id } = request.params;
+    await findPDF({ checklistId: id }, reply);
+  } catch (err) {
+    logger.error(
+      `Error getting PDF for car checklist ${request.params.id}`,
+      err
+    );
+    return ErrorHandlerService.handleError(err, reply);
+  }
 };
 
 const carChecklistRoutes = () => {
