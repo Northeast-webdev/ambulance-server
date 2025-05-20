@@ -124,14 +124,11 @@ const setupRoutes = async () => {
     process.exit(1);
   }
 };
-
-setupRoutes();
-
 // Start the server
 const start = async () => {
   try {
     fastify.listen(
-      { port: process.env.PORT || 8080, host: "0.0.0.0" },
+      { host: "0.0.0.0", port: process.env.PORT || 8080 },
       async () => {
         // Start all cron jobs
         fastify.cron.startAllJobs();
@@ -144,7 +141,9 @@ const start = async () => {
   }
 };
 
-start();
+setupRoutes().then(() => {
+  start();
+});
 
 // Connect to MongoDB
 connectToDatabase().then(async () => {
