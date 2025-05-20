@@ -129,22 +129,20 @@ const setupRoutes = async () => {
 const start = async () => {
   try {
     const port = process.env.PORT || 3000;
-    await fastify.listen({
-      host: "0.0.0.0",
-      port: port,
-    });
-    // Start all cron jobs
-    fastify.cron.startAllJobs();
-    logger.info(`Server is running on port ${port}`);
+    fastify.listen(
+      {
+        host: "0.0.0.0",
+        port: port,
+      },
+      async () => {
+        logger.info(`Server is running on port ${port}`);
+      }
+    );
   } catch (err) {
     logger.error("Error starting server:", err);
     process.exit(1);
   }
 };
-
-setupRoutes().then(() => {
-  start();
-});
 
 // Connect to MongoDB
 connectToDatabase().then(async () => {
@@ -159,4 +157,8 @@ connectToDatabase().then(async () => {
   } catch (error) {
     logger.error("Error initializing database:", error);
   }
+});
+
+setupRoutes().then(() => {
+  start();
 });
