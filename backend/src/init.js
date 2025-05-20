@@ -89,14 +89,6 @@ async function connectToDatabase() {
 
 async function setupWebSockets() {
   try {
-    // Register WebSocket plugin
-    await fastify.register(require("@fastify/websocket"), {
-      options: {
-        maxPayload: 1048576, // 1MB
-        pingInterval: 30000,
-      },
-    });
-
     // Initialize WebSocket service
     services.websocket = new WebSocketService(fastify, {
       logger: services.logger.child("websocket"),

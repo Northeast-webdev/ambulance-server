@@ -23,9 +23,6 @@ const carChecklistController = require("./src/controllers/carChecklistController
 const materialChecklistController = require("./src/controllers/materialChecklistController");
 const inventoryController = require("./src/controllers/inventoryController");
 const shiftController = require("./src/controllers/shiftController");
-const carController = require("./src/controllers/carController");
-const patientController = require("./src/controllers/patientController");
-const userController = require("./src/controllers/userController");
 
 // Import V2 controllers (using BaseController pattern)
 const UserControllerV2 = require("./src/controllers/UserControllerV2");
@@ -97,6 +94,13 @@ fastify.register(require("@fastify/cors"), {
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow only these HTTP methods.
 });
 
+fastify.register(require("@fastify/websocket"), {
+  options: {
+    maxPayload: 1048576, // 1MB
+    pingInterval: 30000,
+  },
+});
+
 // Add health check endpoint for deployment environments
 fastify.get("/health", async (request, reply) => {
   return { status: "ok", timestamp: new Date().toISOString() };
@@ -109,7 +113,7 @@ fastify.decorate("authenticate", verifyToken);
 const setupRoutes = async () => {
   try {
     // Initialize WebSockets
-    await setupWebSockets();
+    // await setupWebSockets();
 
     // Register routes
     authController();
@@ -118,14 +122,11 @@ const setupRoutes = async () => {
     materialChecklistController();
     inventoryController();
     shiftController();
-    carController();
-    patientController();
-    userController();
 
     // Register V2 controllers (using BaseController pattern)
-    // UserControllerV2(fastify);
-    // CarControllerV2(fastify);
-    // PatientControllerV2(fastify);
+    UserControllerV2();
+    CarControllerV2();
+    PatientControllerV2();
 
     logger.info("Routes setup completed successfully");
 
