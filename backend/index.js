@@ -23,6 +23,9 @@ const carChecklistController = require("./src/controllers/carChecklistController
 const materialChecklistController = require("./src/controllers/materialChecklistController");
 const inventoryController = require("./src/controllers/inventoryController");
 const shiftController = require("./src/controllers/shiftController");
+const carController = require("./src/controllers/carController");
+const patientController = require("./src/controllers/patientController");
+const userController = require("./src/controllers/userController");
 
 // Import V2 controllers (using BaseController pattern)
 const UserControllerV2 = require("./src/controllers/UserControllerV2");
@@ -109,17 +112,20 @@ const setupRoutes = async () => {
     await setupWebSockets();
 
     // Register routes
-    authController(fastify);
-    runController(fastify);
-    carChecklistController(fastify);
-    materialChecklistController(fastify);
-    inventoryController(fastify);
-    shiftController(fastify);
+    authController();
+    runController();
+    carChecklistController();
+    materialChecklistController();
+    inventoryController();
+    shiftController();
+    carController();
+    patientController();
+    userController();
 
     // Register V2 controllers (using BaseController pattern)
-    UserControllerV2();
-    CarControllerV2();
-    PatientControllerV2();
+    // UserControllerV2(fastify);
+    // CarControllerV2(fastify);
+    // PatientControllerV2(fastify);
 
     logger.info("Routes setup completed successfully");
 
