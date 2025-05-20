@@ -21,15 +21,17 @@ const uri = process.env.MONGODB_URI;
 
 // Initialize services
 const services = {
-  validation: new ValidationService(fastify),
-  authorization: new AuthorizationService(),
-  formatter: new FormatterService(),
-  errorHandler: new ErrorHandlerService(),
-  logger: new LoggingService(),
+  validation: ValidationService,
+  authorization: AuthorizationService,
+  formatter: FormatterService,
+  errorHandler: ErrorHandlerService,
+  logger: LoggingService.getInstance(),
 };
 
-// Set up service dependencies
-services.errorHandler.setFormatter(services.formatter);
+// Initialize ValidationService with fastify instance
+new ValidationService(fastify);
+
+// No need for additional setup as we're using static methods
 
 async function connectToDatabase() {
   try {

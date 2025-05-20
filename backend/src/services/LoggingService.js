@@ -3,6 +3,9 @@
  * Service for standardized logging across the application
  */
 
+// Initialize static property
+let mainInstance = null;
+
 class LoggingService {
   constructor(options = {}) {
     this.options = {
@@ -120,16 +123,24 @@ class LoggingService {
    */
   static getComponentLogger(componentName, options = {}) {
     // Create main service instance if it doesn't exist
-    if (!LoggingService.mainInstance) {
-      LoggingService.mainInstance = new LoggingService();
+    if (!mainInstance) {
+      mainInstance = new LoggingService();
     }
 
     // Create child logger for the component
-    return LoggingService.mainInstance.child(componentName, options);
+    return mainInstance.child(componentName, options);
+  }
+
+  /**
+   * Get or create the main logger instance
+   * @returns {LoggingService} - Main logger instance
+   */
+  static getInstance(options = {}) {
+    if (!mainInstance) {
+      mainInstance = new LoggingService(options);
+    }
+    return mainInstance;
   }
 }
-
-// Initialize static property
-LoggingService.mainInstance = null;
 
 module.exports = LoggingService;

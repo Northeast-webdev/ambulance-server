@@ -3,9 +3,12 @@
  * Service for schema validation using fastify's validation capabilities
  */
 
+let _fastify = null;
+
 class ValidationService {
   constructor(fastify) {
-    this.fastify = fastify;
+    // Store fastify instance for static methods to use
+    _fastify = fastify;
   }
 
   /**
@@ -14,11 +17,15 @@ class ValidationService {
    * @param {Object} schema - Validation schema
    * @returns {Object} - Validation result with isValid and errors
    */
-  validate(data, schema) {
+  static validate(data, schema) {
     const result = { isValid: true, errors: null };
 
     try {
-      const validate = this.fastify.ajv.compile(schema);
+      if (!_fastify || !_fastify.ajv) {
+        throw new Error("Fastify instance not initialized");
+      }
+
+      const validate = _fastify.ajv.compile(schema);
       const valid = validate(data);
 
       if (!valid) {
@@ -38,9 +45,9 @@ class ValidationService {
    * @param {Object} schema - Schema to validate against
    * @returns {Function} - Middleware function
    */
-  createValidator(schema) {
+  static createValidator(schema) {
     return (request, reply, done) => {
-      const result = this.validate(request.body, schema);
+      const result = ValidationService.validate(request.body, schema);
 
       if (!result.isValid) {
         reply.code(400).send({

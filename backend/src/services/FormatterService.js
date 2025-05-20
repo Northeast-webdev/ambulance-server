@@ -10,7 +10,7 @@ class FormatterService {
    * @param {Object} options - Additional options
    * @returns {Object} - Formatted response
    */
-  formatResponse(data, options = {}) {
+  static formatResponse(data, options = {}) {
     const response = {
       success: true,
       data,
@@ -26,6 +26,11 @@ class FormatterService {
       response.pagination = options.pagination;
     }
 
+    // Include message if provided
+    if (options.message) {
+      response.message = options.message;
+    }
+
     return response;
   }
 
@@ -37,10 +42,10 @@ class FormatterService {
    * @param {Number} total - Total items
    * @returns {Object} - Formatted paginated response
    */
-  formatPaginated(data, page, limit, total) {
+  static formatPaginated(data, page, limit, total) {
     const totalPages = Math.ceil(total / limit);
 
-    return this.formatResponse(data, {
+    return FormatterService.formatResponse(data, {
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
@@ -59,7 +64,7 @@ class FormatterService {
    * @param {Object} details - Additional error details
    * @returns {Object} - Formatted error response
    */
-  formatError(error, statusCode = 500, details = null) {
+  static formatError(error, statusCode = 500, details = null) {
     const response = {
       success: false,
       error: {

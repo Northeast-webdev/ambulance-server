@@ -3,14 +3,17 @@
  * Service for handling user authorization and permission checks
  */
 
+// Role-based permissions map
+const rolePermissions = {
+  admin: ["read", "write", "update", "delete", "manage"],
+  supervisor: ["read", "write", "update"],
+  user: ["read", "write"],
+  guest: ["read"],
+};
+
 class AuthorizationService {
   constructor() {
-    this.rolePermissions = {
-      admin: ["read", "write", "update", "delete", "manage"],
-      supervisor: ["read", "write", "update"],
-      user: ["read", "write"],
-      guest: ["read"],
-    };
+    // No initialization needed for static methods
   }
 
   /**
@@ -20,7 +23,7 @@ class AuthorizationService {
    * @returns {Boolean} - True if user has permission
    * @throws {Error} - If user doesn't have permission
    */
-  async checkPermission(request, permission) {
+  static async checkPermission(request, permission) {
     // If no permission specified, allow the request
     if (!permission) return true;
 
@@ -36,7 +39,7 @@ class AuthorizationService {
     const role = user.role || "guest";
 
     // Check if role has the required permission
-    const permissions = this.rolePermissions[role] || [];
+    const permissions = rolePermissions[role] || [];
 
     if (!permissions.includes(permission) && !permissions.includes("manage")) {
       throw new Error(
@@ -52,10 +55,10 @@ class AuthorizationService {
    * @param {String} permission - Required permission
    * @returns {Function} - Middleware function
    */
-  requirePermission(permission) {
+  static requirePermission(permission) {
     return async (request, reply) => {
       try {
-        await this.checkPermission(request, permission);
+        await AuthorizationService.checkPermission(request, permission);
       } catch (error) {
         reply.code(403).send({ error: error.message });
         return false;
@@ -71,7 +74,7 @@ class AuthorizationService {
    * @param {String} field - Field to compare (default: 'user_id')
    * @returns {Boolean} - True if user owns the resource
    */
-  isOwner(user, resource, field = "user_id") {
+  static isOwner(user, resource, field = "user_id") {
     if (!user || !resource) return false;
 
     const userId = user.id || user._id?.toString();
