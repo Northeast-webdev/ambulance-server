@@ -124,17 +124,18 @@ const setupRoutes = async () => {
     process.exit(1);
   }
 };
+
 // Start the server
 const start = async () => {
   try {
-    fastify.listen(
-      { host: "0.0.0.0", port: process.env.PORT || 8080 },
-      async () => {
-        // Start all cron jobs
-        fastify.cron.startAllJobs();
-      }
-    );
-    logger.info(`Server is running on port ${process.env.PORT || 8080}`);
+    const port = process.env.PORT || 3000;
+    await fastify.listen({
+      host: "0.0.0.0",
+      port: port,
+    });
+    // Start all cron jobs
+    fastify.cron.startAllJobs();
+    logger.info(`Server is running on port ${port}`);
   } catch (err) {
     logger.error("Error starting server:", err);
     process.exit(1);
