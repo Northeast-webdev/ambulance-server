@@ -113,7 +113,7 @@ fastify.decorate("authenticate", verifyToken);
 const setupRoutes = async () => {
   try {
     // Initialize WebSockets
-    // await setupWebSockets();
+    await setupWebSockets();
 
     // Register routes
     authController();
