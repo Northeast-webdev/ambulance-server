@@ -118,9 +118,6 @@ const setupRoutes = async () => {
 
     logger.info("Routes setup completed successfully");
 
-    // Start all cron jobs
-    fastify.cron.startAllJobs();
-
     logger.info("Cron jobs started successfully");
   } catch (err) {
     logger.error("Error starting routes and cron jobs:", err);
@@ -131,13 +128,21 @@ const setupRoutes = async () => {
 // Start the server
 const start = async () => {
   try {
-    await fastify.listen({ port: 8080, host: "0.0.0.0" });
+    fastify.listen({ port: 8080, host: "0.0.0.0" }, async () => {
+      await setupRoutes();
+
+      // Start all cron jobs
+      fastify.cron.startAllJobs();
+    });
     logger.info(`Server is running on port 8080`);
   } catch (err) {
     logger.error("Error starting server:", err);
     process.exit(1);
   }
 };
+
+start();
+
 // Connect to MongoDB
 connectToDatabase().then(async () => {
   try {
@@ -148,9 +153,6 @@ connectToDatabase().then(async () => {
     await initializeAllCarsInventory();
 
     logger.info("Database initialization completed successfully");
-
-    await setupRoutes();
-    await start();
   } catch (error) {
     logger.error("Error initializing database:", error);
   }
