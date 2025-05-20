@@ -94,6 +94,11 @@ fastify.register(require("@fastify/cors"), {
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow only these HTTP methods.
 });
 
+// Add health check endpoint for deployment environments
+fastify.get("/health", async (request, reply) => {
+  return { status: "ok", timestamp: new Date().toISOString() };
+});
+
 // Add the authenticate decorator for jwt
 fastify.decorate("authenticate", verifyToken);
 
@@ -129,36 +134,62 @@ const setupRoutes = async () => {
 const start = async () => {
   try {
     const port = process.env.PORT || 3000;
-    fastify.listen(
-      {
-        host: "0.0.0.0",
-        port: port,
-      },
-      async () => {
-        logger.info(`Server is running on port ${port}`);
-      }
-    );
+    await fastify.listen({
+      host: "0.0.0.0",
+      port: port,
+    });
+    // Start all cron jobs
+    fastify.cron.startAllJobs();
+    logger.info(`Server is running on port ${port}`);
   } catch (err) {
     logger.error("Error starting server:", err);
     process.exit(1);
   }
 };
 
-// Connect to MongoDB
-connectToDatabase().then(async () => {
+// Main execution flow
+async function main() {
   try {
-    // Initialize checklist items
-    await initializeMaterialChecklistItems();
-    await initializeCarChecklistItems();
-    // Initialize inventory for all cars
-    await initializeAllCarsInventory();
+    // Check if we're in local development
+    const isLocalDev = process.env.NODE_ENV !== "production";
+    console.log(`Running in ${isLocalDev ? "development" : "production"} mode`);
 
-    logger.info("Database initialization completed successfully");
-  } catch (error) {
-    logger.error("Error initializing database:", error);
+    // First connect to the database
+    try {
+      await connectToDatabase();
+
+      // Only initialize database items if not in local development
+      if (!isLocalDev) {
+        try {
+          // Initialize checklist items
+          await initializeMaterialChecklistItems();
+          await initializeCarChecklistItems();
+          // Initialize inventory for all cars
+          await initializeAllCarsInventory();
+          logger.info("Database initialization completed successfully");
+        } catch (error) {
+          logger.error("Error initializing database:", error);
+        }
+      } else {
+        logger.info("Skipping database initialization in development mode");
+      }
+    } catch (dbError) {
+      logger.error(
+        "Database connection failed, but continuing server startup:",
+        dbError
+      );
+    }
+
+    // Then set up routes and websockets
+    await setupRoutes();
+
+    // Finally start the server
+    await start();
+  } catch (err) {
+    logger.error("Failed to start application:", err);
+    process.exit(1);
   }
-});
+}
 
-setupRoutes().then(() => {
-  start();
-});
+// Start the application
+main();

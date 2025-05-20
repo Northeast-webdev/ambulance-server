@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "A project with a Node.js Fastify backend and a Svelte frontend",
   "main": "backend/index.js",
+  "engines": {
+    "node": ">=16"
+  },
   "scripts": {
     "start": "node backend/index.js",
     "dev": "concurrently \"yarn dev:backend\" \"yarn dev:frontend\"",

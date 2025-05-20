@@ -34,12 +34,57 @@ const services = {
 services.errorHandler.setFormatter(services.formatter);
 
 async function connectToDatabase() {
-  mongoose
-    .connect(uri)
-    .then(async () => {
-      console.log("Connected to MongoDB");
-    })
-    .catch((error) => console.error("Connection error", error));
+  try {
+    // Add connection options for better reliability
+    const options = {
+      serverSelectionTimeoutMS: 30000, // 30 seconds
+      socketTimeoutMS: 45000, // 45 seconds
+      connectTimeoutMS: 30000, // 30 seconds
+      maxPoolSize: 10, // Maintain up to 10 socket connections
+      retryWrites: true,
+      retryReads: true,
+    };
+
+    // Check if we're in local development or on Render
+    const isLocalDev = process.env.NODE_ENV !== "production";
+
+    if (isLocalDev) {
+      console.log(
+        "Local development detected - using alternate connection strategy"
+      );
+      // For local development where ISP may block MongoDB Atlas
+      try {
+        // You can add a mock DB connection for local dev or use a local MongoDB
+        console.log("Local development - skipping MongoDB connection");
+        return true;
+      } catch (localError) {
+        console.error("Local connection error", localError);
+        return false;
+      }
+    } else {
+      // Production environment - connect to MongoDB Atlas
+      // Retry connection up to 3 times
+      let retries = 3;
+      while (retries > 0) {
+        try {
+          await mongoose.connect(uri, options);
+          console.log("Connected to MongoDB");
+          return true;
+        } catch (innerError) {
+          retries--;
+          if (retries === 0) throw innerError;
+          console.log(
+            `Connection attempt failed. Retrying... (${retries} attempts left)`
+          );
+          // Wait 5 seconds between retries
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Connection error", error);
+    throw error;
+  }
 }
 
 async function setupWebSockets() {
