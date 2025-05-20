@@ -20,10 +20,13 @@ const inventoryController = require("./src/controllers/inventoryController");
 const shiftController = require("./src/controllers/shiftController");
 
 // Import V2 controllers (using BaseController pattern)
-const UserControllerV2 = require("./src/controllers/UserControllerV2");
-const PatientControllerV2 = require("./src/controllers/PatientControllerV2");
-const CarControllerV2 = require("./src/controllers/CarControllerV2");
+//const UserControllerV2 = require("./src/controllers/UserControllerV2");
+//const PatientControllerV2 = require("./src/controllers/PatientControllerV2");
+//const CarControllerV2 = require("./src/controllers/CarControllerV2");
 
+const userController = require("./src/controllers/userController");
+const patientController = require("./src/controllers/patientController");
+const carController = require("./src/controllers/carController");
 // Get component logger
 const logger = services.logger.child("Server");
 
@@ -115,11 +118,13 @@ const setupRoutes = async () => {
     materialChecklistController(fastify);
     inventoryController(fastify);
     shiftController(fastify);
-
+    userController(fastify);
+    carController(fastify);
+    patientController(fastify);
     // Register V2 controllers (using BaseController pattern)
-    UserControllerV2();
-    CarControllerV2();
-    PatientControllerV2();
+    // UserControllerV2();
+    // CarControllerV2();
+    // PatientControllerV2();
 
     logger.info("Routes setup completed successfully");
 

@@ -2,12 +2,6 @@ const Fastify = require("fastify");
 const fastify = Fastify({ logger: true });
 const mongoose = require("mongoose");
 require("dotenv").config();
-const {
-  initializeMaterialChecklistItems,
-} = require("./init/materialChecklistItems");
-const {
-  initializeAllCarsInventory,
-} = require("./init/initializeAllCarsInventory");
 
 // Import services
 const ValidationService = require("./services/ValidationService");
