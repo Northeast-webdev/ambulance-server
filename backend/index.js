@@ -125,12 +125,12 @@ const setupRoutes = async () => {
   }
 };
 
+setupRoutes();
+
 // Start the server
 const start = async () => {
   try {
     fastify.listen({ port: 8080, host: "0.0.0.0" }, async () => {
-      await setupRoutes();
-
       // Start all cron jobs
       fastify.cron.startAllJobs();
     });
