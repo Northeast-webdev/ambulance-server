@@ -20,54 +20,65 @@ class InventoryService {
   static async updateFromChecklist(carId, items, userId) {
     try {
       logger.debug(`Updating inventory for car ${carId} from checklist`);
-
-      const updates = [];
-
-      // Process each item from the checklist
-      for (const item of items) {
-        // Skip items without a valid item reference
-        if (!item.item || !item.item._id) {
-          logger.warn(`Skipping invalid item in checklist for car ${carId}`);
-          continue;
-        }
-
-        const itemId = item.item._id;
-        // Determine the quantity based on item type
-        // For car items: if is_present is true, set to 1, otherwise 0
-        // For material items: use the quantity field
-        const quantity =
-          item.item.type === "car"
-            ? item.is_present
-              ? 1
-              : 0
-            : item.quantity || 0;
-
-        // Validate the quantity change
-        if (!InventoryService.validateQuantityChange(item.item, quantity)) {
-          logger.warn(
-            `Invalid quantity change for item ${itemId} in car ${carId}`
+      const inventoryUpdates = items.map(async (item) => {
+        const inventoryItem = await InventoryItem.findOne({ name: item.name });
+        if (inventoryItem) {
+          await CarInventory.findOneAndUpdate(
+            { car: carId, item: inventoryItem._id },
+            {
+              quantity: item.is_present ? 1 : 0, // For car items, quantity is 1 if present, 0 if not
+              updated_by: userId,
+              last_updated: new Date(),
+            },
+            { upsert: true, new: true }
           );
-          continue;
         }
+      });
 
-        // Update the inventory
-        const updatedItem = await CarInventory.findOneAndUpdate(
-          { car: carId, item: itemId },
-          {
-            quantity,
-            updated_by: userId,
-            last_updated: new Date(),
-          },
-          { new: true }
-        ).populate("item");
+      await Promise.all(inventoryUpdates);
 
-        if (updatedItem) {
-          updates.push(updatedItem);
-        }
-      }
+      logger.info(
+        `Updated ${inventoryUpdates.length} inventory items for car ${carId}`
+      );
+      return inventoryUpdates;
+    } catch (error) {
+      logger.error(
+        `Error updating inventory from checklist: ${error.message}`,
+        error
+      );
+      throw error;
+    }
+  }
 
-      logger.info(`Updated ${updates.length} inventory items for car ${carId}`);
-      return updates;
+  /**
+   * Update inventory based on material checklist items
+   * @param {String} carId - Car ID
+   * @param {Array} items - Checklist items with quantities
+   * @param {String} userId - User who updated the checklist
+   * @returns {Boolean} - Whether the inventory was updated successfully
+   */
+  static async updateFromMaterialChecklist(carId, items, userId) {
+    try {
+      logger.debug(`Updating inventory for car ${carId} from checklist`);
+      items.map(async (item) => {
+        item.map(async (i) => {
+          const inventoryItem = await InventoryItem.findOne({ name: i.name });
+          if (inventoryItem) {
+            await CarInventory.findOneAndUpdate(
+              { car: carId, item: inventoryItem._id },
+              {
+                quantity: isNaN(Number(i.quantity)) ? 1 : Number(i.quantity),
+                updated_by: userId,
+                last_updated: new Date(),
+              },
+              { upsert: true, new: true }
+            );
+          }
+        });
+      });
+
+      logger.info(`Updated ${items.length} inventory items for car ${carId}`);
+      return true;
     } catch (error) {
       logger.error(
         `Error updating inventory from checklist: ${error.message}`,

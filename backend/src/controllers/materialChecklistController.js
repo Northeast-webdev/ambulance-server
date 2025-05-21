@@ -26,7 +26,7 @@ const createMaterialChecklist = async (request, reply) => {
 
     // Update inventory based on checklist items
     try {
-      await InventoryService.updateFromChecklist(car, items.flat(), user);
+      await InventoryService.updateFromMaterialChecklist(car, items, user);
       logger.debug("Updated inventory based on checklist items");
     } catch (inventoryError) {
       logger.error("Error updating inventory", inventoryError);
