@@ -23,9 +23,8 @@
       },
     })
       .then((response) => response.json())
-      .then((data) => {
-        checklists = data.checklists;
-        console.log(checklists);
+      .then((req) => {
+        checklists = req.data;
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -49,9 +48,8 @@
       }
     )
       .then((response) => response.json())
-      .then((data) => {
-        checklists = data.checklists;
-        console.log(checklists);
+      .then((req) => {
+        checklists = req.data;
       })
       .catch((error) => {
         console.error("Error:", error);

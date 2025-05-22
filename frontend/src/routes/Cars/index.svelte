@@ -110,9 +110,9 @@
           },
         }
       );
-      const data = await response.json();
-      console.log("data: ", data);
-      car_checklists = data.checklists;
+      const req = await response.json();
+      console.log("data: ", req);
+      car_checklists = req.data;
     } catch (error) {
       console.error("Error:", error);
     }
@@ -501,8 +501,9 @@
           },
         }
       );
-      const data = await response.json();
-      inventory = data.map((item) => ({
+      const req = await response.json();
+      console.log("data: ", req);
+      inventory = req.data.map((item) => ({
         ...item,
         editing: false,
       }));
