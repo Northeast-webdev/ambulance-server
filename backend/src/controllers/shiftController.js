@@ -33,7 +33,7 @@ const createShift = async (request, reply) => {
       shift_end,
       crew,
       notes,
-      status: status || "scheduled",
+      status: "scheduled",
     });
 
     await shift.save();
@@ -190,9 +190,6 @@ const getUserShifts = async (request, reply) => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    console.log("request.user:", request.user);
-    console.log("userId:", userId);
-
     // Find shifts where the user is in any crew role
     const shifts = await Shift.find({
       $or: [
@@ -278,16 +275,10 @@ const getUserShifts = async (request, reply) => {
 
 const completeShift = async (request, reply) => {
   try {
-    const userId = request.user._id;
-    const shiftId = request.params.id;
+    const shiftId = new mongoose.Types.ObjectId(`${request.params.id}`);
 
     const shift = await Shift.findOne({
       _id: shiftId,
-      $or: [
-        { "crew.driver.user": userId },
-        { "crew.doctor.user": userId },
-        { "crew.nurse.user": userId },
-      ],
       status: "in_progress",
     });
 
