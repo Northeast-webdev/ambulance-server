@@ -353,7 +353,7 @@ const completeShift = async (request, reply) => {
 
     const now = new Date();
     let userRoleCompleted = null;
-    const currentTime = now.toLocaleTimeString("en-US", {
+    const currentTime = now.toLocaleTimeString("it-IT", {
       hour12: false,
       hour: "2-digit",
       minute: "2-digit",
@@ -362,7 +362,7 @@ const completeShift = async (request, reply) => {
     if (
       shift.crew.driver &&
       shift.crew.driver.user &&
-      shift.crew.driver.user.equals(userId) &&
+      shift.crew.driver.user._id.equals(userId) &&
       (shift.crew.driver.status === "assigned" ||
         shift.crew.driver.status === "in_progress")
     ) {
@@ -372,7 +372,7 @@ const completeShift = async (request, reply) => {
     } else if (
       shift.crew.doctor &&
       shift.crew.doctor.user &&
-      shift.crew.doctor.user.equals(userId) &&
+      shift.crew.doctor.user._id.equals(userId) &&
       (shift.crew.doctor.status === "assigned" ||
         shift.crew.doctor.status === "in_progress")
     ) {
@@ -382,7 +382,7 @@ const completeShift = async (request, reply) => {
     } else if (
       shift.crew.nurse &&
       shift.crew.nurse.user &&
-      shift.crew.nurse.user.equals(userId) &&
+      shift.crew.nurse.user._id.equals(userId) &&
       (shift.crew.nurse.status === "assigned" ||
         shift.crew.nurse.status === "in_progress")
     ) {
