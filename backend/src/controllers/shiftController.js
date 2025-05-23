@@ -208,7 +208,7 @@ const getUserShifts = async (request, reply) => {
       .sort({ date: 1, shift_start: 1 });
 
     // Transform shifts to match app's expected format
-    const transformedShifts = shifts.map(async (shift) => {
+    const transformedShifts = shifts.map((shift) => {
       // Create date objects with exact hours and minutes as stored
       const startDate = new Date(shift.date);
       const [startHours, startMinutes] = shift.shift_start
@@ -227,7 +227,7 @@ const getUserShifts = async (request, reply) => {
       // If this is the current shift and it's not already in progress, update it
       if (isCurrentShift && shift.status === "scheduled") {
         shift.status = "in_progress";
-        await shift.save();
+        shift.save();
       }
 
       // Create array of crew members
