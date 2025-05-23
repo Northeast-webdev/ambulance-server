@@ -27,6 +27,11 @@ const shiftSchema = new mongoose.Schema(
         },
         start_time: String,
         end_time: String,
+        status: {
+          type: String,
+          enum: ["assigned", "in_progress", "completed", "absent", "cancelled"],
+          default: "assigned",
+        },
       },
       doctor: {
         user: {
@@ -35,6 +40,11 @@ const shiftSchema = new mongoose.Schema(
         },
         start_time: String,
         end_time: String,
+        status: {
+          type: String,
+          enum: ["assigned", "in_progress", "completed", "absent", "cancelled"],
+          default: "assigned",
+        },
       },
       nurse: {
         user: {
@@ -43,11 +53,22 @@ const shiftSchema = new mongoose.Schema(
         },
         start_time: String,
         end_time: String,
+        status: {
+          type: String,
+          enum: ["assigned", "in_progress", "completed", "absent", "cancelled"],
+          default: "assigned",
+        },
       },
     },
     status: {
       type: String,
-      enum: ["scheduled", "in_progress", "completed", "cancelled"],
+      enum: [
+        "scheduled",
+        "in_progress",
+        "partially_completed",
+        "completed",
+        "cancelled",
+      ],
       default: "scheduled",
     },
     notes: String,
