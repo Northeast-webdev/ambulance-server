@@ -340,21 +340,6 @@ const completeShift = async (request, reply) => {
 
     const shift = await Shift.findOne({
       _id: shiftId,
-      // Ensure the user is part of the crew and their specific part is active
-      $or: [
-        {
-          "crew.driver.user": userId,
-          "crew.driver.status": { $in: ["assigned", "in_progress"] },
-        },
-        {
-          "crew.doctor.user": userId,
-          "crew.doctor.status": { $in: ["assigned", "in_progress"] },
-        },
-        {
-          "crew.nurse.user": userId,
-          "crew.nurse.status": { $in: ["assigned", "in_progress"] },
-        },
-      ],
       // Overall shift status should ideally be 'in_progress' or 'partially_completed'
       // but an individual can complete their part even if it's just 'scheduled' for them.
     });
