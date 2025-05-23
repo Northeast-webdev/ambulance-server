@@ -1060,7 +1060,8 @@
                     >
                       {shift.status === "scheduled"
                         ? "Pianificato"
-                        : shift.status === "in_progress"
+                        : shift.status === "in_progress" ||
+                            shift.status === "partially_completed"
                           ? "In corso"
                           : "Completato"}
                     </span>

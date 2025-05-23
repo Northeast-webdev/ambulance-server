@@ -105,9 +105,9 @@ const listShifts = async (request, reply) => {
 
     const shifts = await Shift.find(query)
       .populate("vehicle")
-      .populate("crew.driver.user")
-      .populate("crew.doctor.user")
-      .populate("crew.nurse.user")
+      .populate("crew.driver.user", "-password -__v")
+      .populate("crew.doctor.user", "-password -__v")
+      .populate("crew.nurse.user", "-password -__v")
       .sort({ date: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
@@ -127,9 +127,9 @@ const getShift = async (request, reply) => {
   try {
     const shift = await Shift.findById(request.params.id)
       .populate("vehicle")
-      .populate("crew.driver.user")
-      .populate("crew.doctor.user")
-      .populate("crew.nurse.user");
+      .populate("crew.driver.user", "-password -__v")
+      .populate("crew.doctor.user", "-password -__v")
+      .populate("crew.nurse.user", "-password -__v");
 
     if (!shift) {
       return reply.code(404).send({ error: "Shift not found" });
@@ -147,7 +147,12 @@ const updateShift = async (request, reply) => {
     const { vehicle, date, shift_start, shift_end, crew, status, notes } =
       request.body;
 
-    const shift = await Shift.findById(request.params.id);
+    const shift = await Shift.findById(request.params.id)
+      .populate("vehicle")
+      .populate("crew.driver.user", "-password -__v")
+      .populate("crew.doctor.user", "-password -__v")
+      .populate("crew.nurse.user", "-password -__v");
+
     if (!shift) {
       return reply.code(404).send({ error: "Shift not found" });
     }
@@ -178,16 +183,29 @@ const updateShift = async (request, reply) => {
     if (date) shift.date = new Date(date);
     if (shift_start) shift.shift_start = shift_start;
     if (shift_end) shift.shift_end = shift_end;
-    if (status) shift.status = status;
+    if (status) {
+      // If the shift is in progress and not all crew members are completed, set status to partially_completed
+      // This is to prevent a shift from being set to completed if only some crew members are completed
+      if (
+        status === "in_progress" &&
+        (shift.crew.driver.status === "completed" ||
+          shift.crew.doctor.status === "completed" ||
+          shift.crew.nurse.status === "completed")
+      ) {
+        shift.status = "partially_completed";
+      } else {
+        shift.status = status;
+      }
+    }
     if (notes !== undefined) shift.notes = notes;
 
     await shift.save();
 
     const updatedShift = await Shift.findById(shift._id)
       .populate("vehicle")
-      .populate("crew.driver.user")
-      .populate("crew.doctor.user")
-      .populate("crew.nurse.user");
+      .populate("crew.driver.user", "-password -__v")
+      .populate("crew.doctor.user", "-password -__v")
+      .populate("crew.nurse.user", "-password -__v");
 
     return reply.send(updatedShift);
   } catch (error) {
