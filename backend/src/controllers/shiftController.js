@@ -2,6 +2,7 @@ const { fastify } = require("../init");
 const { Shift } = require("../schema/shift.schema");
 const { User } = require("../schema/user.schema");
 const { Car } = require("../schema/car.schema");
+const mongoose = require("mongoose");
 
 const createShift = async (request, reply) => {
   try {
@@ -185,9 +186,12 @@ const deleteShift = async (request, reply) => {
 
 const getUserShifts = async (request, reply) => {
   try {
-    const userId = request.user._id;
+    const userId = new mongoose.Types.ObjectId(`${request.user.id}`);
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    console.log("request.user:", request.user);
+    console.log("userId:", userId);
 
     // Find shifts where the user is in any crew role
     const shifts = await Shift.find({
@@ -204,7 +208,7 @@ const getUserShifts = async (request, reply) => {
       .sort({ date: 1, shift_start: 1 });
 
     // Transform shifts to match app's expected format
-    const transformedShifts = shifts.map((shift) => {
+    const transformedShifts = shifts.map(async (shift) => {
       // Create date objects with exact hours and minutes as stored
       const startDate = new Date(shift.date);
       const [startHours, startMinutes] = shift.shift_start
@@ -223,7 +227,7 @@ const getUserShifts = async (request, reply) => {
       // If this is the current shift and it's not already in progress, update it
       if (isCurrentShift && shift.status === "scheduled") {
         shift.status = "in_progress";
-        shift.save();
+        await shift.save();
       }
 
       // Create array of crew members
@@ -379,7 +383,7 @@ const shiftRoutes = () => {
 
   // Get shifts for the logged-in user
   fastify.get(
-    "/api/shifts/user/:id",
+    "/api/shifts/user/me",
     { preHandler: [fastify.authenticate] },
     getUserShifts
   );
