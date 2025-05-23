@@ -94,7 +94,13 @@ const listShifts = async (request, reply) => {
     }
 
     if (status) {
-      query.status = status;
+      if (status === "in_progress") {
+        query.status = {
+          $in: ["scheduled", "in_progress", "partially_completed"],
+        };
+      } else {
+        query.status = status;
+      }
     }
 
     const shifts = await Shift.find(query)
@@ -328,7 +334,7 @@ const getUserShifts = async (request, reply) => {
     return reply.send(transformedShifts);
   } catch (error) {
     console.error("Error fetching user shifts:", error);
-    return reply.code(500).send({ error: "Error fetching user shifts" }); // Consistent error key
+    return reply.code(500).send({ error: "Error fetching user shifts" });
   }
 };
 
