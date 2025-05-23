@@ -284,17 +284,17 @@ const completeShift = async (request, reply) => {
 
     if (!shift) {
       return reply
-        .status(404)
-        .json({ message: "Shift not found or not in progress" });
+        .code(404)
+        .send({ message: "Shift not found or not in progress" });
     }
 
     shift.status = "completed";
     await shift.save();
 
-    return reply.json({ message: "Shift completed successfully" });
+    return reply.send({ message: "Shift completed successfully" });
   } catch (error) {
     console.error("Error completing shift:", error);
-    return reply.status(500).json({ message: "Error completing shift" });
+    return reply.code(500).send({ message: "Error completing shift" });
   }
 };
 
