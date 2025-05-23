@@ -37,7 +37,9 @@ const createMaterialChecklist = async (request, reply) => {
     await printMaterialChecklist(materialChecklist._id, checklist);
 
     // Populate the response with item details
-    const populatedChecklist = await MaterialChecklist.findById(checklist._id)
+    const populatedChecklist = await MaterialChecklist.findById(
+      materialChecklist._id
+    )
       .populate({
         path: "items.item",
         model: "InventoryItem",
