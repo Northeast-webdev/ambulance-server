@@ -1,6 +1,6 @@
-# CROCE DEMO - Manual Testing Instructions
+# Croceverde - Manual Testing Instructions
 
-This document provides step-by-step instructions for manual testing of the CROCE DEMO features. Use this as a checklist and reference during your testing sessions.
+This document provides step-by-step instructions for manual testing of the Croceverde features. Use this as a checklist and reference during your testing sessions.
 
 ---
 
