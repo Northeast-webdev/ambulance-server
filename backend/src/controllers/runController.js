@@ -301,7 +301,6 @@ const updateRun = async (request, reply) => {
     }
     // Send new run to the assigned user via WebSocket
     const assignedUserConnection = userConnections.get(assignedUserId);
-    console.log("Assigned user connection:", typeof assignedUserConnection);
     if (assignedUserConnection) {
       assignedUserConnection.send(
         JSON.stringify({
@@ -352,8 +351,6 @@ const websocketHandler = (socket, req) => {
     existingConnection.close(); // Optionally close existing connection
   }
   userConnections.set(userId, socket);
-
-  console.log(`User ${userId} connected`);
 
   socket.on("message", async (message) => {
     const data = JSON.parse(message);

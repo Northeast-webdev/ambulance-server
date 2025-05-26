@@ -4,6 +4,9 @@ const { User } = require("../schema/user.schema");
 const { Car } = require("../schema/car.schema");
 const mongoose = require("mongoose");
 
+// Store WebSocket connections per user
+const shiftConnections = new Map();
+
 const createShift = async (request, reply) => {
   try {
     const { vehicle, date, shift_start, shift_end, crew, notes } = request.body;
@@ -495,52 +498,52 @@ const completeShift = async (request, reply) => {
   }
 };
 
-// TODO: This is a temporary function to schedule shift notifications for testing purposes
-const scheduleShiftNotifications = async () => {
-  try {
-    const now = new Date();
-    const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+const websocketHandler = (socket, req) => {
+  // Example: Parse user ID from query or authentication headers
+  const userId = req.query.userId;
+  console.log("User ID:", userId);
 
-    // Find shifts starting in the next hour
-    const upcomingShifts = await Shift.find({
-      status: "scheduled",
-      date: { $lte: oneHourFromNow },
-      shift_start: {
-        $gte: now.toLocaleTimeString("en-US", {
-          hour12: false,
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        $lte: oneHourFromNow.toLocaleTimeString("en-US", {
-          hour12: false,
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      },
-    }).populate("crew.driver.user crew.doctor.user crew.nurse.user");
-
-    for (const shift of upcomingShifts) {
-      const crewMembers = [
-        shift.crew.driver?.user,
-        shift.crew.doctor?.user,
-        shift.crew.nurse?.user,
-      ].filter(Boolean);
-
-      for (const member of crewMembers) {
-        if (member.pushToken) {
-          // Send push notification
-          await sendPushNotification({
-            to: member.pushToken,
-            title: "Shift Starting Soon",
-            body: `Your shift starts in 1 hour at ${shift.shift_start}`,
-            data: { shiftId: shift._id },
-          });
-        }
-      }
-    }
-  } catch (error) {
-    console.error("Error scheduling shift notifications:", error);
+  if (!userId) {
+    socket.send(
+      JSON.stringify({
+        error: "Unauthorized",
+      })
+    );
+    socket.close();
+    return;
   }
+
+  if (shiftConnections.has(userId)) {
+    const existingConnection = shiftConnections.get(userId);
+    existingConnection.close(); // Optionally close existing connection
+  }
+
+  shiftConnections.set(userId, socket);
+
+  socket.on("message", async (message) => {
+    const data = JSON.parse(message);
+    switch (data.type) {
+      case "ping":
+        socket.send(
+          JSON.stringify({
+            type: "pong",
+            data: "pong",
+          })
+        );
+        break;
+    }
+  });
+
+  // Handle connection close
+  socket.on("close", () => {
+    console.log(`User ${userId} disconnected`);
+    shiftConnections.delete(userId); // Remove connection when closed
+  });
+
+  socket.on("error", (error) => {
+    console.log("Error shift websocket", error);
+    socket.close();
+  });
 };
 
 const shiftRoutes = () => {
@@ -583,6 +586,24 @@ const shiftRoutes = () => {
     { preHandler: [fastify.authenticate] },
     completeShift
   );
+
+  fastify.register(async () => {
+    fastify.get(
+      "/api/shifts/notifications",
+      {
+        websocket: true,
+        onTimeout: () => {
+          console.log("Client timeout notifications");
+        },
+        onError: (_socket, _req, error) => {
+          console.log("Error notifications", error);
+        },
+      },
+      (socket, req) => {
+        websocketHandler(socket, req);
+      }
+    );
+  });
 };
 
 module.exports = shiftRoutes;
