@@ -145,11 +145,13 @@ const getChecklistsForCar = async (request, reply) => {
       car: request.params.id,
     })
       .populate("user", "first_name last_name _id")
+      .sort({ created_at: -1 })
       .exec();
     const material_checklists = await MaterialChecklist.find({
       car: request.params.id,
     })
       .populate("user", "first_name last_name _id")
+      .sort({ created_at: -1 })
       .exec();
     return { car_checklists, material_checklists };
   } catch (err) {

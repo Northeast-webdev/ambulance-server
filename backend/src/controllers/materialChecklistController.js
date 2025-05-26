@@ -80,7 +80,7 @@ const listMaterialChecklists = async (request, reply) => {
       .populate("user", "first_name last_name _id")
       .skip((page - 1) * limit)
       .limit(limit)
-      .sort({ created_at: 1 })
+      .sort({ created_at: -1 })
       .exec();
 
     const total = await MaterialChecklist.countDocuments(query);
