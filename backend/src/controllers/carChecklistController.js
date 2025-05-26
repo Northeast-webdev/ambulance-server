@@ -43,13 +43,13 @@ const labels = {
 const createCarChecklist = async (request, reply) => {
   try {
     logger.debug("Creating new car checklist");
-    const { car, items, notes, user } = request.body;
+    const { car, items, photos, user } = request.body;
 
     // Create the checklist
     const checklist = new CarChecklist({
       car,
       items,
-      notes,
+      photos,
       user,
     });
     await checklist.save();
@@ -67,7 +67,7 @@ const createCarChecklist = async (request, reply) => {
     await printCarChecklist({
       checklistId: checklist._id,
       items: items,
-      photos: checklist.photos,
+      photos: photos,
     });
 
     return FormatterService.formatResponse(checklist, {
@@ -138,12 +138,11 @@ const getCarChecklist = async (request, reply) => {
 const updateCarChecklist = async (request, reply) => {
   try {
     logger.debug(`Updating car checklist ${request.params.id}`);
-    const { car, items, notes, user } = request.body;
+    const { car, items, user } = request.body;
     const updates = {};
 
     if (car) updates.car = car;
     if (items) updates.items = items;
-    if (notes) updates.notes = notes;
     if (user) updates.user = user;
     updates.updated_at = new Date();
 
