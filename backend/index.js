@@ -88,12 +88,7 @@ fastify.register(require("@fastify/cors"), {
 });
 
 // Register WebSocket plugin directly
-fastify.register(require("@fastify/websocket"), {
-  options: {
-    maxPayload: 1048576, // 1MB
-    pingInterval: 30000,
-  },
-});
+fastify.register(require("@fastify/websocket"));
 
 // Add health check endpoint for deployment environments
 fastify.get("/health", async (request, reply) => {
