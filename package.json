@@ -4,7 +4,7 @@
   "description": "A project with a Node.js Fastify backend and a Svelte frontend",
   "main": "backend/index.js",
   "engines": {
-    "node": ">=16"
+    "node": "18.x"
   },
   "scripts": {
     "start": "node backend/index.js",
