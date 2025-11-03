@@ -803,7 +803,7 @@
                   on:click={() => disableCar(selectedCar._id)}
                   class="mt-2 block bg-red-600 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-lg w-full max-w-52 transition duration-200"
                 >
-                  Rimosci
+                  Rimuovi
                 </button>
               {/if}
               <button
