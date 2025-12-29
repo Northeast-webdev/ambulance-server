@@ -7,6 +7,25 @@ const { MaterialChecklist } = require("../schema/materialChecklist.schema");
 const { Car } = require("../schema/car.schema");
 const { User } = require("../schema/user.schema");
 const { fastify } = require("../init");
+const LoggingService = require("../services/LoggingService");
+
+// Create a component-specific logger
+const logger = LoggingService.getComponentLogger("PDFController");
+
+// PDF output directory
+const PDF_OUTPUT_DIR = "/var/data";
+
+// Ensure PDF output directory exists
+const ensurePdfDirectory = () => {
+  try {
+    if (!fs.existsSync(PDF_OUTPUT_DIR)) {
+      fs.mkdirSync(PDF_OUTPUT_DIR, { recursive: true });
+      logger.info(`Created PDF output directory: ${PDF_OUTPUT_DIR}`);
+    }
+  } catch (error) {
+    logger.error(`Failed to create PDF output directory: ${error.message}`, error);
+  }
+};
 
 // Helper to generate consistent filenames
 const generateFilename = (prefix, username, carName, date) => {
@@ -18,11 +37,23 @@ const generateFilename = (prefix, username, carName, date) => {
 
 const printCarChecklist = async (request) => {
   try {
-    const browser = await puppeteer.launch();
+    logger.debug(`Starting car checklist PDF generation for checklistId: ${request.checklistId}`);
+    
+    // Ensure output directory exists
+    ensurePdfDirectory();
+    
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+    logger.debug("Puppeteer browser launched successfully");
+    
     const page = await browser.newPage();
 
     // Fetch checklist from database or request body
     const { checklistId, items, photos } = request;
+    logger.debug(`Generating PDF with ${items?.length || 0} items and ${photos?.length || 0} photos`);
+    
     const carChecklist = await CarChecklist.findById(checklistId)
       .populate("car")
       .populate("user");
@@ -374,20 +405,31 @@ const printCarChecklist = async (request) => {
   `;
     await page.setContent(htmlContent);
 
+    const pdfPath = `${PDF_OUTPUT_DIR}/${filename}.pdf`;
+    logger.debug(`Writing car checklist PDF to: ${pdfPath}`);
+    
     await page.pdf({
-      path: `/var/data/${filename}.pdf`,
+      path: pdfPath,
       format: "A4",
       scale: 0.8,
       printBackground: true,
     });
     await browser.close();
 
+    // Verify PDF was created
+    if (fs.existsSync(pdfPath)) {
+      const stats = fs.statSync(pdfPath);
+      logger.info(`Successfully generated car checklist PDF: ${filename} (${stats.size} bytes)`);
+    } else {
+      logger.error(`PDF file was not created: ${pdfPath}`);
+    }
+    
     return {
       statusCode: 200,
       filename: filename,
     };
   } catch (error) {
-    console.error("Error generating PDF:", error);
+    logger.error(`Error generating car checklist PDF: ${error.message}`, error);
     return {
       statusCode: 500,
       message: "Error generating PDF",
@@ -409,7 +451,7 @@ const getMaterialChecklist = async (checklistId) => {
       .populate("user", "first_name last_name _id")
       .exec();
   } catch (err) {
-    console.error("Error getting material checklist:", err);
+    logger.error(`Error getting material checklist: ${err.message}`, err);
     return null;
   }
 };
@@ -490,13 +532,18 @@ const materialChecklistToFormattedData = async (materialChecklist, userId) => {
 
     return formattedChecklist;
   } catch (error) {
-    console.error("Error formatting material checklist:", error);
+    logger.error(`Error formatting material checklist: ${error.message}`, error);
     return { error: "Error formatting material checklist" };
   }
 };
 
 const printMaterialChecklist = async (checklistId, checklist) => {
   try {
+    logger.debug(`Starting material checklist PDF generation for checklistId: ${checklistId}`);
+    
+    // Ensure output directory exists
+    ensurePdfDirectory();
+    
     const materialChecklist = await MaterialChecklist.findById(checklistId)
       .populate("car")
       .populate("user");
@@ -508,21 +555,33 @@ const printMaterialChecklist = async (checklistId, checklist) => {
       materialChecklist.car.name,
       materialChecklist.created_at
     ) + ".pdf";
+    
+    logger.debug(`Will generate PDF: ${filename}`);
 
     // Launch a browser instance
     const browser = await puppeteer.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
+    logger.debug("Puppeteer browser launched successfully");
+    
     const page = await browser.newPage();
 
     // Read the HTML template
+    const htmlTemplatePath = path.join(process.cwd(), 'backend', 'src', 'html', 'material_page.html');
+    logger.debug(`Reading HTML template from: ${htmlTemplatePath}`);
     const htmlContent = fs.readFileSync(
-      path.join(process.cwd(), 'backend', 'src', 'html', 'material_page.html'),
+      htmlTemplatePath,
       "utf-8"
     );
 
     // Inject the checklist data into the template
+    if (!checklist) {
+      logger.warn("Checklist data is undefined or null");
+    } else {
+      logger.debug(`Checklist has keys: ${Object.keys(checklist).join(', ')}`);
+    }
+    
     let newContent = htmlContent.replace(
       "</head>",
       `<script>const checklist = ${JSON.stringify(checklist)};</script></head>`
@@ -531,8 +590,11 @@ const printMaterialChecklist = async (checklistId, checklist) => {
     await page.setContent(newContent, { waitUntil: "networkidle0" });
 
     // Generate PDF
+    const pdfPath = `${PDF_OUTPUT_DIR}/${filename}`;
+    logger.debug(`Writing PDF to: ${pdfPath}`);
+    
     await page.pdf({
-      path: `/var/data/${filename}`,
+      path: pdfPath,
       format: "A4",
       scale: 0.8,
       printBackground: true,
@@ -541,13 +603,21 @@ const printMaterialChecklist = async (checklistId, checklist) => {
     // Close the browser
     await browser.close();
 
+    // Verify PDF was created
+    if (fs.existsSync(pdfPath)) {
+      const stats = fs.statSync(pdfPath);
+      logger.info(`Successfully generated material checklist PDF: ${filename} (${stats.size} bytes)`);
+    } else {
+      logger.error(`PDF file was not created: ${pdfPath}`);
+    }
+    
     return {
       statusCode: 200,
       message: "PDF generated successfully",
       filename: filename,
     };
   } catch (error) {
-    console.error("Error generating material checklist PDF:", error);
+    logger.error(`Error generating material checklist PDF: ${error.message}`, error);
     return { statusCode: 500, message: "Error generating PDF" };
   }
 };
@@ -634,7 +704,7 @@ const getPdfForChecklist = async (request, reply) => {
     request.checklistId = request.params.id;
     return findPDF(request, reply);
   } catch (error) {
-    console.error("Error fetching PDF:", error);
+    logger.error(`Error fetching PDF: ${error.message}`, error);
     return reply.code(500).send({
       message: "Error retrieving PDF",
     });

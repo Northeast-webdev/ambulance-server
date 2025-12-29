@@ -67,7 +67,14 @@ class InventoryService {
    */
   static async updateFromMaterialChecklist(carId, items, userId) {
     try {
-      logger.debug(`Updating inventory for car ${carId} from checklist`);
+      logger.debug(`Updating inventory for car ${carId} from material checklist`);
+      
+      // Guard clause: check if items is defined and is an array
+      if (!items || !Array.isArray(items)) {
+        logger.warn(`Items is undefined or not an array for car ${carId} (material checklist)`);
+        return false;
+      }
+      
       items.map(async (item) => {
         item.map(async (i) => {
           const inventoryItem = await InventoryItem.findOne({ name: i.name });

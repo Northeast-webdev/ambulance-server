@@ -43,12 +43,24 @@ const labels = {
 const createCarChecklist = async (request, reply) => {
   try {
     logger.debug("Creating new car checklist");
-    const { car, items, photos, user } = request.body;
+    const { car, items, checklist: checklistData, photos, user } = request.body;
+
+    // Convert checklist object format to items array format if needed
+    // App sends: { checklist: { luciPosizioneAnteriori: true, ... } }
+    // Server needs: items array with { name, is_present }
+    let checklistItems = items;
+    if (!items && checklistData && typeof checklistData === 'object') {
+      checklistItems = Object.entries(checklistData).map(([key, value]) => ({
+        name: labels[key] || key,
+        is_present: Boolean(value),
+      }));
+      logger.debug(`Converted checklist object to ${checklistItems.length} items`);
+    }
 
     // Create the checklist
     const checklist = new CarChecklist({
       car,
-      items,
+      items: checklistItems,
       photos,
       user,
     });
@@ -56,7 +68,7 @@ const createCarChecklist = async (request, reply) => {
 
     // Update inventory based on checklist items
     try {
-      await InventoryService.updateFromChecklist(car, items, user);
+      await InventoryService.updateFromChecklist(car, checklistItems, user);
       logger.debug("Updated inventory based on checklist items");
     } catch (inventoryError) {
       logger.error("Error updating inventory", inventoryError);
@@ -66,7 +78,7 @@ const createCarChecklist = async (request, reply) => {
     // Generate PDF
     await printCarChecklist({
       checklistId: checklist._id,
-      items: items,
+      items: checklistItems,
       photos: photos,
     });
 
