@@ -12,6 +12,7 @@ const materialChecklistSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: "User" },
   items: [materialChecklistItemSchema],
   photos: [{ type: String }],
+  pdf_filename: { type: String }, // Stores the generated PDF filename
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
 });

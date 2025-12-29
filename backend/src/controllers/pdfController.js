@@ -625,6 +625,8 @@ const printMaterialChecklist = async (checklistId, checklist) => {
 const findPDF = async (request, reply) => {
   const checklistId = request.checklistId || request.params?.id || request.query?.checklistId || request.body?.checklistId;
   
+  logger.debug(`Finding PDF for checklist ID: ${checklistId}`);
+  
   const carChecklist = await CarChecklist.findById(checklistId)
     .populate("car")
     .populate("user");
@@ -636,22 +638,49 @@ const findPDF = async (request, reply) => {
   let downloadName;
 
   if (carChecklist) {
-    // Try consistent format
-    const filename = generateFilename(
-      "checklist",
-      carChecklist.user.username,
-      carChecklist.car.name,
-      carChecklist.created_at
-    );
-    const consistentPath = `/var/data/${filename}.pdf`;
+    logger.debug(`Found car checklist, user: ${carChecklist.user?.username}, car: ${carChecklist.car?.name}, pdf_filename: ${carChecklist.pdf_filename}`);
     
-    // Try ID-based format (fallback for any created during the brief change)
-    const idPath = `/var/data/checklist-${carChecklist._id}.pdf`;
+    // First try the stored filename (most reliable)
+    if (carChecklist.pdf_filename) {
+      const storedPath = `${PDF_OUTPUT_DIR}/${carChecklist.pdf_filename}`;
+      if (fs.existsSync(storedPath)) {
+        filePath = storedPath;
+        logger.debug(`Found PDF using stored filename: ${storedPath}`);
+      }
+    }
+    
+    // Fallback: Try consistent format based on created_at
+    if (!filePath) {
+      const filename = generateFilename(
+        "checklist",
+        carChecklist.user.username,
+        carChecklist.car.name,
+        carChecklist.created_at
+      );
+      const consistentPath = `${PDF_OUTPUT_DIR}/${filename}.pdf`;
+      
+      // Try ID-based format (fallback for any created during the brief change)
+      const idPath = `${PDF_OUTPUT_DIR}/checklist-${carChecklist._id}.pdf`;
+      
+      logger.debug(`Looking for car checklist PDF at: ${consistentPath}`);
 
-    if (fs.existsSync(consistentPath)) {
-      filePath = consistentPath;
-    } else if (fs.existsSync(idPath)) {
-      filePath = idPath;
+      if (fs.existsSync(consistentPath)) {
+        filePath = consistentPath;
+        logger.debug(`Found PDF at consistent path`);
+      } else if (fs.existsSync(idPath)) {
+        filePath = idPath;
+        logger.debug(`Found PDF at ID path`);
+      } else {
+        logger.warn(`PDF not found at either path`);
+        // List files in directory for debugging
+        try {
+          const files = fs.readdirSync(PDF_OUTPUT_DIR);
+          const matchingFiles = files.filter(f => f.includes(carChecklist.user.username) || f.includes(carChecklist._id.toString()));
+          logger.debug(`Files in ${PDF_OUTPUT_DIR} matching user/id: ${matchingFiles.join(', ') || 'none'}`);
+        } catch (e) {
+          logger.debug(`Could not list directory: ${e.message}`);
+        }
+      }
     }
 
     // Construct descriptive name for download
@@ -659,22 +688,43 @@ const findPDF = async (request, reply) => {
     downloadName = `checklist-${carChecklist.user.username}-${carChecklist.car.name}-${formattedDate}.pdf`;
 
   } else if (materialChecklist) {
+    logger.debug(`Found material checklist, user: ${materialChecklist.user?.username}, car: ${materialChecklist.car?.name}, pdf_filename: ${materialChecklist.pdf_filename}`);
+    
     // Try consistent format
     const filename = generateFilename(
-      "checklist_inf",
-      materialChecklist.user.username,
-      materialChecklist.car.name,
-      materialChecklist.created_at
-    ) + ".pdf";
-    const consistentPath = `/var/data/${filename}`;
+    // First try the stored filename (most reliable)
+    if (materialChecklist.pdf_filename) {
+      const storedPath = `${PDF_OUTPUT_DIR}/${materialChecklist.pdf_filename}`;
+      if (fs.existsSync(storedPath)) {
+        filePath = storedPath;
+        logger.debug(`Found PDF using stored filename: ${storedPath}`);
+      }
+    }
+    
+    // Fallback: Try consistent format based on created_at
+    if (!filePath) {
+      const filename = generateFilename(
+        "checklist_inf",
+        materialChecklist.user.username,
+        materialChecklist.car.name,
+        materialChecklist.created_at
+      ) + ".pdf";
+      const consistentPath = `${PDF_OUTPUT_DIR}/${filename}`;
 
-    // Try ID-based format (fallback)
-    const idPath = `/var/data/checklist_inf-${materialChecklist._id}.pdf`;
+      // Try ID-based format (fallback)
+      const idPath = `${PDF_OUTPUT_DIR}/checklist_inf-${materialChecklist._id}.pdf`;
+      
+      logger.debug(`Looking for material checklist PDF at: ${consistentPath}`);
 
-    if (fs.existsSync(consistentPath)) {
-      filePath = consistentPath;
-    } else if (fs.existsSync(idPath)) {
-      filePath = idPath;
+      if (fs.existsSync(consistentPath)) {
+        filePath = consistentPath;
+        logger.debug(`Found PDF at consistent path`);
+      } else if (fs.existsSync(idPath)) {
+        filePath = idPath;
+        logger.debug(`Found PDF at ID path`);
+      } else {
+        logger.warn(`Material checklist PDF not found at either path`);
+      }
     }
 
     // Construct descriptive name for download
@@ -683,15 +733,21 @@ const findPDF = async (request, reply) => {
   }
 
   if (filePath && fs.existsSync(filePath)) {
-    const fileStream = fs.createReadStream(filePath);
-    // download the PDF
+    const stats = fs.statSync(filePath);
+    logger.info(`Serving PDF: ${filePath} (${stats.size} bytes)`);
+    
+    // Read file as buffer instead of streaming for more reliable delivery
+    const fileBuffer = fs.readFileSync(filePath);
+    
     reply.header("Content-Type", "application/pdf");
+    reply.header("Content-Length", fileBuffer.length);
     reply.header(
       "Content-Disposition",
-      `attachment; filename=${downloadName || path.basename(filePath)}`
+      `attachment; filename="${downloadName || path.basename(filePath)}"`
     );
-    reply.send(fileStream);
+    return reply.send(fileBuffer);
   } else {
+    logger.warn(`PDF not found for checklist ${checklistId}`);
     return reply.code(404).send({
       message: "Checklist PDF not found",
     });
@@ -702,7 +758,7 @@ const getPdfForChecklist = async (request, reply) => {
   try {
     // Delegate to findPDF which handles both types and correct paths
     request.checklistId = request.params.id;
-    return findPDF(request, reply);
+    return await findPDF(request, reply);
   } catch (error) {
     logger.error(`Error fetching PDF: ${error.message}`, error);
     return reply.code(500).send({

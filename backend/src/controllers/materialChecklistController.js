@@ -33,8 +33,14 @@ const createMaterialChecklist = async (request, reply) => {
       // Continue execution even if inventory update fails
     }
 
-    // Generate PDF
-    await printMaterialChecklist(materialChecklist._id, checklist);
+    // Generate PDF and save filename to checklist
+    const pdfResult = await printMaterialChecklist(materialChecklist._id, checklist);
+    
+    if (pdfResult.statusCode === 200 && pdfResult.filename) {
+      materialChecklist.pdf_filename = pdfResult.filename;
+      await materialChecklist.save();
+      logger.debug(`Saved PDF filename to checklist: ${materialChecklist.pdf_filename}`);
+    }
 
     // Populate the response with item details
     const populatedChecklist = await MaterialChecklist.findById(

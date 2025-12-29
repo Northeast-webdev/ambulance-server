@@ -75,12 +75,18 @@ const createCarChecklist = async (request, reply) => {
       // Continue execution even if inventory update fails
     }
 
-    // Generate PDF
-    await printCarChecklist({
+    // Generate PDF and save filename to checklist
+    const pdfResult = await printCarChecklist({
       checklistId: checklist._id,
       items: checklistItems,
       photos: photos,
     });
+    
+    if (pdfResult.statusCode === 200 && pdfResult.filename) {
+      checklist.pdf_filename = pdfResult.filename + ".pdf";
+      await checklist.save();
+      logger.debug(`Saved PDF filename to checklist: ${checklist.pdf_filename}`);
+    }
 
     return FormatterService.formatResponse(checklist, {
       message: "Car checklist created successfully",
