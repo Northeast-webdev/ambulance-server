@@ -690,8 +690,6 @@ const findPDF = async (request, reply) => {
   } else if (materialChecklist) {
     logger.debug(`Found material checklist, user: ${materialChecklist.user?.username}, car: ${materialChecklist.car?.name}, pdf_filename: ${materialChecklist.pdf_filename}`);
     
-    // Try consistent format
-    const filename = generateFilename(
     // First try the stored filename (most reliable)
     if (materialChecklist.pdf_filename) {
       const storedPath = `${PDF_OUTPUT_DIR}/${materialChecklist.pdf_filename}`;
