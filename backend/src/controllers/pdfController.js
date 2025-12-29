@@ -8,6 +8,14 @@ const { Car } = require("../schema/car.schema");
 const { User } = require("../schema/user.schema");
 const { fastify } = require("../init");
 
+// Helper to generate consistent filenames
+const generateFilename = (prefix, username, carName, date) => {
+  // Force Europe/Rome timezone for consistency across environments
+  const dateStr = date.toLocaleDateString("it-IT", { timeZone: "Europe/Rome" }).replace(/\//g, "-");
+  const timeStr = date.toLocaleTimeString("it-IT", { timeZone: "Europe/Rome" });
+  return `${prefix}-${username}-${carName}-${dateStr}-${timeStr}`;
+};
+
 const printCarChecklist = async (request) => {
   try {
     const browser = await puppeteer.launch();
@@ -22,26 +30,25 @@ const printCarChecklist = async (request) => {
     const car = await Car.findById(carChecklist.car._id.toString());
     const damages = car.damages;
 
-    // Load van images
+    // Load van images - use path.join for proper path resolution
+    const imgBasePath = path.join(process.cwd(), 'backend', 'img', 'van');
     const VAN_IMAGES = {
-      front: fs.readFileSync(`${process.cwd()}/img/van/front.png`),
-      back: fs.readFileSync(`${process.cwd()}/img/van/back.png`),
-      left: fs.readFileSync(`${process.cwd()}/img/van/left.png`),
-      right: fs.readFileSync(`${process.cwd()}/img/van/right.png`),
+      front: fs.readFileSync(path.join(imgBasePath, 'front.png')),
+      back: fs.readFileSync(path.join(imgBasePath, 'back.png')),
+      left: fs.readFileSync(path.join(imgBasePath, 'left.png')),
+      right: fs.readFileSync(path.join(imgBasePath, 'right.png')),
     };
 
-    const filename =
-      "checklist-" +
-      carChecklist.user.username +
-      "-" +
-      carChecklist.car.name +
-      "-" +
-      carChecklist.created_at.toLocaleDateString("it-IT").replace(/\//g, "-") +
-      "-" +
-      carChecklist.created_at.toLocaleTimeString("it-IT");
+    // Use consistent filename format
+    const filename = generateFilename(
+      "checklist",
+      carChecklist.user.username,
+      carChecklist.car.name,
+      carChecklist.created_at
+    );
 
     const logo = fs
-      .readFileSync(`${process.cwd()}/img/logo.png`)
+      .readFileSync(path.join(process.cwd(), 'backend', 'img', 'logo.png'))
       .toString("base64");
 
     // Generate table rows based on the checklist items
@@ -494,18 +501,13 @@ const printMaterialChecklist = async (checklistId, checklist) => {
       .populate("car")
       .populate("user");
 
-    const filename =
-      "checklist_inf-" +
-      materialChecklist.user.username +
-      "-" +
-      materialChecklist.car.name +
-      "-" +
+    // Use consistent filename format
+    const filename = generateFilename(
+      "checklist_inf",
+      materialChecklist.user.username,
+      materialChecklist.car.name,
       materialChecklist.created_at
-        .toLocaleDateString("it-IT")
-        .replace(/\//g, "-") +
-      "-" +
-      materialChecklist.created_at.toLocaleTimeString("it-IT") +
-      ".pdf";
+    ) + ".pdf";
 
     // Launch a browser instance
     const browser = await puppeteer.launch({
@@ -516,7 +518,7 @@ const printMaterialChecklist = async (checklistId, checklist) => {
 
     // Read the HTML template
     const htmlContent = fs.readFileSync(
-      `${process.cwd()}/src/html/material_page.html`,
+      path.join(process.cwd(), 'backend', 'src', 'html', 'material_page.html'),
       "utf-8"
     );
 
@@ -551,7 +553,8 @@ const printMaterialChecklist = async (checklistId, checklist) => {
 };
 
 const findPDF = async (request, reply) => {
-  const { checklistId } = request;
+  const checklistId = request.checklistId || request.params?.id || request.query?.checklistId || request.body?.checklistId;
+  
   const carChecklist = await CarChecklist.findById(checklistId)
     .populate("car")
     .populate("user");
@@ -559,92 +562,77 @@ const findPDF = async (request, reply) => {
     .populate("car")
     .populate("user");
 
+  let filePath;
+  let downloadName;
+
   if (carChecklist) {
-    const filePath = `/var/data/checklist-${carChecklist.user.username}-${
-      carChecklist.car.name
-    }-${carChecklist.created_at
-      .toLocaleDateString("it-IT")
-      .replace(/\//g, "-")}-${carChecklist.created_at.toLocaleTimeString(
-      "it-IT"
-    )}.pdf`;
-    const fileStream = fs.readFileSync(filePath);
-    // download the PDF
-    reply.header("Content-Type", "application/pdf");
-    reply.header(
-      "Content-Disposition",
-      `attachment; filename=${filePath.split("/").pop()}`
+    // Try consistent format
+    const filename = generateFilename(
+      "checklist",
+      carChecklist.user.username,
+      carChecklist.car.name,
+      carChecklist.created_at
     );
-    reply.send(fileStream);
+    const consistentPath = `/var/data/${filename}.pdf`;
+    
+    // Try ID-based format (fallback for any created during the brief change)
+    const idPath = `/var/data/checklist-${carChecklist._id}.pdf`;
+
+    if (fs.existsSync(consistentPath)) {
+      filePath = consistentPath;
+    } else if (fs.existsSync(idPath)) {
+      filePath = idPath;
+    }
+
+    // Construct descriptive name for download
+    const formattedDate = carChecklist.created_at.toLocaleDateString("it-IT", { timeZone: "Europe/Rome" }).replace(/\//g, "-");
+    downloadName = `checklist-${carChecklist.user.username}-${carChecklist.car.name}-${formattedDate}.pdf`;
+
   } else if (materialChecklist) {
-    const filePath = `/var/data/checklist_inf-${
-      materialChecklist.user.username
-    }-${materialChecklist.car.name}-${materialChecklist.created_at
-      .toLocaleDateString("it-IT")
-      .replace(/\//g, "-")}-${materialChecklist.created_at.toLocaleTimeString(
-      "it-IT"
-    )}.pdf`;
-    const fileStream = fs.readFileSync(filePath);
+    // Try consistent format
+    const filename = generateFilename(
+      "checklist_inf",
+      materialChecklist.user.username,
+      materialChecklist.car.name,
+      materialChecklist.created_at
+    ) + ".pdf";
+    const consistentPath = `/var/data/${filename}`;
+
+    // Try ID-based format (fallback)
+    const idPath = `/var/data/checklist_inf-${materialChecklist._id}.pdf`;
+
+    if (fs.existsSync(consistentPath)) {
+      filePath = consistentPath;
+    } else if (fs.existsSync(idPath)) {
+      filePath = idPath;
+    }
+
+    // Construct descriptive name for download
+    const formattedDate = materialChecklist.created_at.toLocaleDateString("it-IT", { timeZone: "Europe/Rome" }).replace(/\//g, "-");
+    downloadName = `checklist_inf-${materialChecklist.user.username}-${materialChecklist.car.name}-${formattedDate}.pdf`;
+  }
+
+  if (filePath && fs.existsSync(filePath)) {
+    const fileStream = fs.createReadStream(filePath);
     // download the PDF
     reply.header("Content-Type", "application/pdf");
     reply.header(
       "Content-Disposition",
-      `attachment; filename=${filePath.split("/").pop()}`
+      `attachment; filename=${downloadName || path.basename(filePath)}`
     );
     reply.send(fileStream);
   } else {
-    return {
-      statusCode: 404,
-      message: "Checklist not found",
-    };
+    return reply.code(404).send({
+      message: "Checklist PDF not found",
+    });
   }
 };
 
 const getPdfForChecklist = async (request, reply) => {
   try {
-    const { id } = request.params;
-
-    // Check if it's a car checklist
-    let checklist = await CarChecklist.findById(id);
-    let isCarChecklist = true;
-
-    if (!checklist) {
-      // If not found, check if it's a material checklist
-      checklist = await getMaterialChecklist(id);
-      isCarChecklist = false;
-
-      if (!checklist) {
-        return reply.code(404).send({
-          message: "Checklist not found",
-        });
-      }
-    }
-
-    // Construct filename based on checklist type
-    const checklistDate = new Date(checklist.created_at);
-    const formattedDate = checklistDate
-      .toLocaleDateString("it-IT")
-      .replace(/\//g, "-");
-
-    let fileName;
-    if (isCarChecklist) {
-      fileName = `checklist_${checklist.user.firstName}_${checklist.user.lastName}_${checklist.car.name}_${formattedDate}.pdf`;
-    } else {
-      fileName = `material_checklist_${checklist.user.firstName}_${checklist.user.lastName}_${checklist.car.name}_${formattedDate}.pdf`;
-    }
-
-    const filePath = path.join(__dirname, "../pdf", fileName);
-
-    // Check if the file exists
-    if (fs.existsSync(filePath)) {
-      reply.header("Content-Type", "application/pdf");
-      reply.header("Content-Disposition", `attachment; filename=${fileName}`);
-      const fileStream = fs.createReadStream(filePath);
-      return reply.send(fileStream);
-    } else {
-      return reply.code(404).send({
-        message: "PDF file not found",
-      });
-    }
+    // Delegate to findPDF which handles both types and correct paths
+    request.checklistId = request.params.id;
+    return findPDF(request, reply);
   } catch (error) {
     console.error("Error fetching PDF:", error);
     return reply.code(500).send({

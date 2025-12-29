@@ -20,13 +20,21 @@ class InventoryService {
   static async updateFromChecklist(carId, items, userId) {
     try {
       logger.debug(`Updating inventory for car ${carId} from checklist`);
-      const inventoryUpdates = items.map(async (item) => {
-        const inventoryItem = await InventoryItem.findOne({ name: item.name });
+      
+      // Guard clause: check if items is defined and is an array
+      if (!items || !Array.isArray(items)) {
+        logger.warn(`Items is undefined or not an array for car ${carId}`);
+        return [];
+      }
+      
+      const inventoryUpdates = items.map(async (checklistItem) => {
+        // checklistItem.item is an ObjectId reference, we need to find by that ID
+        const inventoryItem = checklistItem.item ? await InventoryItem.findById(checklistItem.item) : null;
         if (inventoryItem) {
           await CarInventory.findOneAndUpdate(
             { car: carId, item: inventoryItem._id },
             {
-              quantity: item.is_present ? 1 : 0, // For car items, quantity is 1 if present, 0 if not
+              quantity: checklistItem.is_present ? 1 : 0, // For car items, quantity is 1 if present, 0 if not
               updated_by: userId,
               last_updated: new Date(),
             },
